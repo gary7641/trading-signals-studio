@@ -10,22 +10,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .light { --bg: #F4F6F9; --sidebar-bg: #FFFFFF; --navbar-bg: #FFFFFF; --content-bg: #F4F6F9; --text: #0A2540; --text-sub: #687C93; --border: #E0E6ED; --primary: #4F8EF7; --accent: #A259FF; --success: #28C76F; --warning: #FF9F43; --danger: #EA5455; }
 .dark { --bg: #0A1929; --sidebar-bg: #132F4C; --navbar-bg: #001E3C; --content-bg: #0A1929; --text: #E0E6ED; --text-sub: #687C93; --border: #1A2027; --primary: #4F8EF7; --accent: #A259FF; --success: #28C76F; --warning: #FF9F43; --danger: #EA5455; }
 #app { background: var(--bg); min-height: 100vh; color: var(--text); display: flex; transition: all 0.3s; }
-.sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: all 0.3s; }
+.sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: all 0.3s; position: relative; }
 .sidebar.collapsed { width: 80px; }
 .sidebar-top { padding: 24px 20px; border-bottom: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon { width: 32px; height: 32px; }
-.brand-text { font-size: 18px; font-weight: 700; }
-  .sidebar.collapsed .brand-text,
-.sidebar.collapsed .nav-item span:not(.nav-icon),
-.sidebar.collapsed .nav-label { display: none; }
-#collapseBtn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 4px; }
+.brand-icon { width: 32px; height: 32px; flex-shrink: 0; }
+.brand-text { font-size: 18px; font-weight: 700; transition: opacity 0.3s; }
+.sidebar.collapsed .brand-text { opacity: 0; width: 0; overflow: hidden; }
 nav { padding: 20px 0; flex: 1; }
-.nav-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-sub); padding: 0 20px; margin-bottom: 8px; }
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-sub); padding: 0 20px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; transition: font-size 0.3s; }
+.sidebar.collapsed .nav-label { font-size: 8px; padding: 0 10px; justify-content: center; }
+#collapseBtn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 4px; transition: transform 0.3s; }
+.sidebar.collapsed #collapseBtn { transform: rotate(180deg); }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; cursor: pointer; transition: all 0.2s; color: var(--text); text-decoration: none; }
 .nav-item:hover { background: rgba(79, 142, 247, 0.1); }
 .nav-item.active { background: linear-gradient(90deg, rgba(79, 142, 247, 0.1) 0%, transparent); border-left: 3px solid var(--primary); }
-.nav-icon { font-size: 20px; }
+.nav-icon { font-size: 20px; flex-shrink: 0; }
+.sidebar.collapsed .nav-item { padding: 12px 0; justify-content: center; }
+.sidebar.collapsed .nav-item span:not(.nav-icon) { opacity: 0; width: 0; overflow: hidden; }
 .main-content { flex: 1; display: flex; flex-direction: column; }
 .navbar { background: var(--navbar-bg); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
 .navbar-brand { font-size: 20px; font-weight: 700; }
@@ -33,10 +36,14 @@ nav { padding: 20px 0; flex: 1; }
 .toggle-switch { position: relative; display: inline-flex; align-items: center; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: relative; cursor: pointer; width: 52px; height: 28px; background-color: #ddd; border-radius: 28px; transition: 0.4s; }
-.slider:before { position: absolute; content: '☀️'; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.slider:before { position: absolute; content: '\u2600\ufe0f'; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 input:checked + .slider { background-color: var(--primary); }
-input:checked + .slider:before { content: '🌙'; transform: translateX(24px); }
-.user-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+input:checked + .slider:before { content: '\ud83c\udf19'; transform: translateX(24px); }
+.user-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; position: relative; }
+.user-menu { position: absolute; top: 100%; right: 0; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; min-width: 200px; display: none; z-index: 1000; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.user-menu.show { display: block; }
+.user-menu a { display: block; padding: 12px 20px; color: var(--text); text-decoration: none; transition: background 0.2s; }
+.user-menu a:hover { background: rgba(79, 142, 247, 0.1); }
 .content { padding: 32px; flex: 1; overflow-y: auto; }
 .page { display: none; }
 .page.active { display: block; }
@@ -44,8 +51,14 @@ input:checked + .slider:before { content: '🌙'; transform: translateX(24px); }
 .page-subtitle { color: var(--text-sub); margin-bottom: 32px; }
 .card { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
 .card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+.form-group { margin-bottom: 20px; }
+label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+input[type="number"], select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; }
 button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; }
 .btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { opacity: 0.9; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
 .footer { text-align: center; padding: 16px; color: var(--text-sub); font-size: 14px; border-top: 1px solid var(--border); }
 </style>
 </head>
@@ -62,7 +75,8 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 <span class="brand-text">Trading Signals Studio</span>
 </div>
 </div>
-<nav id="navList">
+<nav>
+<div class="nav-section">
 <div class="nav-label">MAIN <button id="collapseBtn">◀</button></div>
 <a href="#home" class="nav-item active" data-page="home"><span class="nav-icon">🏠</span><span>Home</span></a>
 <a href="#signals" class="nav-item" data-page="signals"><span class="nav-icon">📶</span><span>Live Signals</span></a>
@@ -71,6 +85,7 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 <a href="#performance" class="nav-item" data-page="performance"><span class="nav-icon">📊</span><span>Performance</span></a>
 <a href="#fx-tools" class="nav-item" data-page="fx-tools"><span class="nav-icon">🔧</span><span>FX Tools</span></a>
 <a href="#ea-rules" class="nav-item" data-page="ea-rules"><span class="nav-icon">🪓</span><span>EA Rules</span></a>
+</div>
 </nav>
 </aside>
 <div class="main-content">
@@ -81,7 +96,15 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 <input type="checkbox" id="themeToggle">
 <span class="slider"></span>
 </label>
+<div style="position: relative;">
 <button class="user-btn" id="userBtn">👤</button>
+<div class="user-menu" id="userMenu">
+<a href="#">🔐 Login / Profile</a>
+<a href="#">⚙️ Admin Console</a>
+<a href="#">🌐 Languages (English / 繁 / 日)</a>
+<a href="#">⚙️ Settings</a>
+</div>
+</div>
 </div>
 </header>
 <main class="content">
@@ -110,12 +133,65 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 <p class="page-subtitle">Track your trading performance over time.</p>
 <div class="card"><div class="card-title">Performance Metrics</div><p>Analytics dashboard coming soon...</p></div>
 </div>
-<div 110
-  class="page">
+<div id="fx-tools" class="page">
 <h1 class="page-title">FX Tools</h1>
 <p class="page-subtitle">Calculate optimal position size based on risk percentage.</p>
-<div class="card"><div class="card-title">Position Size Calculator</div><button class="btn-primary">Open Calculator</button></div>
-<div class="card"><div class="card-title">Pip Calculator</div><button class="btn-primary">Open Calculator</button></div>
+<div class="grid-2">
+<div class="card">
+<div class="card-title">💰 Position Size Calculator</div>
+<div class="form-group">
+<label>Account Balance ($)</label>
+<input type="number" id="accountBalance" placeholder="10000" value="10000">
+</div>
+<div class="form-group">
+<label>Risk Percentage (%)</label>
+<input type="number" id="riskPercent" placeholder="2" value="2" step="0.1">
+</div>
+<div class="form-group">
+<label>Stop Loss (pips)</label>
+<input type="number" id="stopLoss" placeholder="50" value="50">
+</div>
+<div class="form-group">
+<label>Currency Pair</label>
+<select id="currencyPair">
+<option>EURUSD</option>
+<option>GBPUSD</option>
+<option>USDJPY</option>
+<option>AUDUSD</option>
+</select>
+</div>
+<button class="btn-primary" onclick="calculatePosition()">Calculate Position Size</button>
+<div id="positionResult" style="margin-top: 20px; padding: 16px; background: var(--bg); border-radius: 8px; display: none;">
+<strong>Position Size:</strong> <span id="positionLots"></span> lots<br>
+<strong>Risk Amount:</strong> $<span id="riskAmount"></span>
+</div>
+</div>
+<div class="card">
+<div class="card-title">📊 Pip Calculator</div>
+<div class="form-group">
+<label>Currency Pair</label>
+<select id="pipCurrencyPair">
+<option>EURUSD</option>
+<option>GBPUSD</option>
+<option>USDJPY</option>
+<option>AUDUSD</option>
+</select>
+</div>
+<div class="form-group">
+<label>Lot Size</label>
+<input type="number" id="lotSize" placeholder="1.0" value="1.0" step="0.01">
+</div>
+<div class="form-group">
+<label>Pips</label>
+<input type="number" id="pips" placeholder="50" value="50">
+</div>
+<button class="btn-primary" onclick="calculatePipValue()">Calculate Pip Value</button>
+<div id="pipResult" style="margin-top: 20px; padding: 16px; background: var(--bg); border-radius: 8px; display: none;">
+<strong>Pip Value:</strong> $<span id="pipValue"></span><br>
+<strong>Total Value:</strong> $<span id="totalValue"></span>
+</div>
+</div>
+</div>
 </div>
 <div id="ea-rules" class="page">
 <h1 class="page-title">EA Rules</h1>
@@ -127,36 +203,74 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-const app = document.getElementById('app');
-const themeToggle = document.getElementById('themeToggle');
-const collapseBtn = document.getElementById('collapseBtn');
-const sidebar = document.getElementById('sidebar');
-const navItems = document.querySelectorAll('.nav-item');
-const pages = document.querySelectorAll('.page');
-themeToggle.addEventListener('change', function() {
-if (this.checked) {
-app.classList.remove('light');
-app.classList.add('dark');
-} else {
-app.classList.remove('dark');
-app.classList.add('light');
+function calculatePosition() {
+  const balance = parseFloat(document.getElementById('accountBalance').value);
+  const risk = parseFloat(document.getElementById('riskPercent').value);
+  const sl = parseFloat(document.getElementById('stopLoss').value);
+  const riskAmount = (balance * risk) / 100;
+  const pipValue = 10;
+  const lots = (riskAmount / (sl * pipValue)).toFixed(2);
+  document.getElementById('positionLots').textContent = lots;
+  document.getElementById('riskAmount').textContent = riskAmount.toFixed(2);
+  document.getElementById('positionResult').style.display = 'block';
 }
-});
-collapseBtn.addEventListener('click', function(e) {
-e.stopPropagation();
-sidebar.classList.toggle('collapsed');
-});
-navItems.forEach(item => {
-item.addEventListener('click', function(e) {
-e.preventDefault();
-const pageId = this.getAttribute('data-page');
-navItems.forEach(nav => nav.classList.remove('active'));
-this.classList.add('active');
-pages.forEach(page => page.classList.remove('active'));
-document.getElementById(pageId).classList.add('active');
-});
-});
+
+function calculatePipValue() {
+  const lots = parseFloat(document.getElementById('lotSize').value);
+  const pips = parseFloat(document.getElementById('pips').value);
+  const pipVal = 10 * lots;
+  const total = pipVal * pips;
+  document.getElementById('pipValue').textContent = pipVal.toFixed(2);
+  document.getElementById('totalValue').textContent = total.toFixed(2);
+  document.getElementById('pipResult').style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const app = document.getElementById('app');
+  const themeToggle = document.getElementById('themeToggle');
+  const collapseBtn = document.getElementById('collapseBtn');
+  const sidebar = document.getElementById('sidebar');
+  const navItems = document.querySelectorAll('.nav-item');
+  const pages = document.querySelectorAll('.page');
+  const userBtn = document.getElementById('userBtn');
+  const userMenu = document.getElementById('userMenu');
+
+  themeToggle.addEventListener('change', function() {
+    if (this.checked) {
+      app.classList.remove('light');
+      app.classList.add('dark');
+    } else {
+      app.classList.remove('dark');
+      app.classList.add('light');
+    }
+  });
+
+  collapseBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    sidebar.classList.toggle('collapsed');
+  });
+
+  navItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const pageId = this.getAttribute('data-page');
+      navItems.forEach(nav => nav.classList.remove('active'));
+      this.classList.add('active');
+      pages.forEach(page => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    });
+  });
+
+  userBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    userMenu.classList.toggle('show');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+      userMenu.classList.remove('show');
+    }
+  });
 });
 </script>
 </body>
