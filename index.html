@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Signals Studio</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.light { --bg: #F4F6F9; --sidebar-bg: #FFFFFF; --navbar-bg: #FFFFFF; --content-bg: #F4F6F9; --text: #0A2540; --text-sub: #687C93; --border: #E0E6ED; --primary: #4F8EF7; --accent: #A259FF; --success: #28C76F; --warning: #FF9F43; --danger: #EA5455; }
+.dark { --bg: #0A1929; --sidebar-bg: #132F4C; --navbar-bg: #001E3C; --content-bg: #0A1929; --text: #E0E6ED; --text-sub: #687C93; --border: #1A2027; --primary: #4F8EF7; --accent: #A259FF; --success: #28C76F; --warning: #FF9F43; --danger: #EA5455; }
+#app { background: var(--bg); min-height: 100vh; color: var(--text); display: flex; transition: all 0.3s; }
+.sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: all 0.3s; }
+.sidebar.collapsed { width: 80px; }
+.sidebar-top { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon { width: 32px; height: 32px; }
+.brand-text { font-size: 18px; font-weight: 700; }
+#collapseBtn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 4px; }
+nav { padding: 20px 0; flex: 1; }
+.nav-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-sub); padding: 0 20px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; cursor: pointer; transition: all 0.2s; color: var(--text); text-decoration: none; }
+.nav-item:hover { background: rgba(79, 142, 247, 0.1); }
+.nav-item.active { background: linear-gradient(90deg, rgba(79, 142, 247, 0.1) 0%, transparent); border-left: 3px solid var(--primary); }
+.nav-icon { font-size: 20px; }
+.main-content { flex: 1; display: flex; flex-direction: column; }
+.navbar { background: var(--navbar-bg); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+.navbar-brand { font-size: 20px; font-weight: 700; }
+.navbar-right { display: flex; align-items: center; gap: 20px; }
+.toggle-switch { position: relative; display: inline-flex; align-items: center; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: relative; cursor: pointer; width: 52px; height: 28px; background-color: #ddd; border-radius: 28px; transition: 0.4s; }
+.slider:before { position: absolute; content: '☀️'; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.4s; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+input:checked + .slider { background-color: var(--primary); }
+input:checked + .slider:before { content: '🌙'; transform: translateX(24px); }
+.user-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+.content { padding: 32px; flex: 1; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+.page-subtitle { color: var(--text-sub); margin-bottom: 32px; }
+.card { background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: var(--primary); color: white; }
+.footer { text-align: center; padding: 16px; color: var(--text-sub); font-size: 14px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div id="app" class="light">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<div class="brand">
+<svg class="brand-icon" width="32" height="32" viewBox="0 0 64 64" fill="none">
+<defs><linearGradient id="g" x1="0" y1="0" x2="64" y2="64"><stop offset="0%" stop-color="#4F8EF7"/><stop offset="100%" stop-color="#A259FF"/></linearGradient></defs>
+<rect width="64" height="64" rx="16" fill="url(#g)"/>
+<path d="M20 30L32 42L44 30" stroke="white" stroke-width="4" stroke-linecap="round"/>
+</svg>
+<span class="brand-text">Trading Signals Studio</span>
+</div>
+</div>
+<nav id="navList">
+<div class="nav-label">MAIN <button id="collapseBtn">◀</button></div>
+<a href="#home" class="nav-item active" data-page="home"><span class="nav-icon">🏠</span><span>Home</span></a>
+<a href="#signals" class="nav-item" data-page="signals"><span class="nav-icon">📶</span><span>Live Signals</span></a>
+<a href="#analyzer" class="nav-item" data-page="analyzer"><span class="nav-icon">📈</span><span>Trade History Analyzer</span></a>
+<a href="#news" class="nav-item" data-page="news"><span class="nav-icon">📰</span><span>Market News</span></a>
+<a href="#performance" class="nav-item" data-page="performance"><span class="nav-icon">📊</span><span>Performance</span></a>
+<a href="#fx-tools" class="nav-item" data-page="fx-tools"><span class="nav-icon">🔧</span><span>FX Tools</span></a>
+<a href="#ea-rules" class="nav-item" data-page="ea-rules"><span class="nav-icon">🪓</span><span>EA Rules</span></a>
+</nav>
+</aside>
+<div class="main-content">
+<header class="navbar">
+<div class="navbar-brand">Trading Signals Studio</div>
+<div class="navbar-right">
+<label class="toggle-switch">
+<input type="checkbox" id="themeToggle">
+<span class="slider"></span>
+</label>
+<button class="user-btn" id="userBtn">👤</button>
+</div>
+</header>
+<main class="content">
+<div id="home" class="page active">
+<h1 class="page-title">Welcome to Trading Signals Studio</h1>
+<p class="page-subtitle">Your professional trading analytics platform.</p>
+<div class="card"><div class="card-title">🏠 Home</div><p>Dashboard overview coming soon...</p></div>
+</div>
+<div id="signals" class="page">
+<h1 class="page-title">Live Signals</h1>
+<p class="page-subtitle">Connect to broker APIs and view real-time trading signals from multiple EAs.</p>
+<div class="card"><div class="card-title">Broker Connection</div><p>MT4, MT5, API, Webhook connections coming soon...</p></div>
+</div>
+<div id="analyzer" class="page">
+<h1 class="page-title">Trade History Analyzer</h1>
+<p class="page-subtitle">Upload CSV files and analyze your trading performance.</p>
+<div class="card"><div class="card-title">Upload Trade Data</div><p>CSV parser and analysis tools coming soon...</p></div>
+</div>
+<div id="news" class="page">
+<h1 class="page-title">Market News</h1>
+<p class="page-subtitle">Stay updated with forex and crypto market news.</p>
+<div class="card"><div class="card-title">Latest News</div><p>News feed coming soon...</p></div>
+</div>
+<div id="performance" class="page">
+<h1 class="page-title">Performance Dashboard</h1>
+<p class="page-subtitle">Track your trading performance over time.</p>
+<div class="card"><div class="card-title">Performance Metrics</div><p>Analytics dashboard coming soon...</p></div>
+</div>
+<div id="fx-tools" class="page">
+<h1 class="page-title">FX Tools</h1>
+<p class="page-subtitle">Calculate optimal position size based on risk percentage.</p>
+<div class="card"><div class="card-title">Position Size Calculator</div><button class="btn-primary">Open Calculator</button></div>
+<div class="card"><div class="card-title">Pip Calculator</div><button class="btn-primary">Open Calculator</button></div>
+</div>
+<div id="ea-rules" class="page">
+<h1 class="page-title">EA Rules</h1>
+<p class="page-subtitle">EA rules management coming soon...</p>
+<div class="card"><div class="card-title">EA Configuration</div><p>Rule management interface coming soon...</p></div>
+</div>
+</main>
+<footer class="footer">Powered by ShenXu</footer>
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const app = document.getElementById('app');
+const themeToggle = document.getElementById('themeToggle');
+const collapseBtn = document.getElementById('collapseBtn');
+const sidebar = document.getElementById('sidebar');
+const navItems = document.querySelectorAll('.nav-item');
+const pages = document.querySelectorAll('.page');
+themeToggle.addEventListener('change', function() {
+if (this.checked) {
+app.classList.remove('light');
+app.classList.add('dark');
+} else {
+app.classList.remove('dark');
+app.classList.add('light');
+}
+});
+collapseBtn.addEventListener('click', function(e) {
+e.stopPropagation();
+sidebar.classList.toggle('collapsed');
+});
+navItems.forEach(item => {
+item.addEventListener('click', function(e) {
+e.preventDefault();
+const pageId = this.getAttribute('data-page');
+navItems.forEach(nav => nav.classList.remove('active'));
+this.classList.add('active');
+pages.forEach(page => page.classList.remove('active'));
+document.getElementById(pageId).classList.add('active');
+});
+});
+});
+</script>
+</body>
+</html>
