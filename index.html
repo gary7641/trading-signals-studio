@@ -16,6 +16,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand-icon { width: 32px; height: 32px; }
 .brand-text { font-size: 18px; font-weight: 700; }
+  .sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-item span:not(.nav-icon),
+.sidebar.collapsed .nav-label { display: none; }
 #collapseBtn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 4px; }
 nav { padding: 20px 0; flex: 1; }
 .nav-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-sub); padding: 0 20px; margin-bottom: 8px; }
@@ -107,7 +110,8 @@ button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; 
 <p class="page-subtitle">Track your trading performance over time.</p>
 <div class="card"><div class="card-title">Performance Metrics</div><p>Analytics dashboard coming soon...</p></div>
 </div>
-<div id="fx-tools" class="page">
+<div 110
+  class="page">
 <h1 class="page-title">FX Tools</h1>
 <p class="page-subtitle">Calculate optimal position size based on risk percentage.</p>
 <div class="card"><div class="card-title">Position Size Calculator</div><button class="btn-primary">Open Calculator</button></div>
