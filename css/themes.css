@@ -1,0 +1,388 @@
+/* =============================================================================
+   Wu Xing Theme System - Magic Orb Styles
+   ============================================================================= */
+
+/* Theme Variables */
+:root {
+  /* Light Mode - Wu Xing Colors */
+  --light-metal: linear-gradient(135deg, #E8E8E8 0%, #C0C0C0 50%, #A8A8A8 100%);
+  --light-wood: linear-gradient(135deg, #7CB342 0%, #558B2F 50%, #33691E 100%);
+  --light-water: linear-gradient(135deg, #29B6F6 0%, #0288D1 50%, #01579B 100%);
+  --light-fire: linear-gradient(135deg, #FF7043 0%, #F4511E 50%, #D84315 100%);
+  --light-earth: linear-gradient(135deg, #D4A574 0%, #A1887F 50%, #6D4C41 100%);
+  
+  /* Dark Mode - Wu Xing Colors */
+  --dark-metal: linear-gradient(135deg, #757575 0%, #424242 50%, #212121 100%);
+  --dark-wood: linear-gradient(135deg, #9CCC65 0%, #7CB342 50%, #558B2F 100%);
+  --dark-water: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 50%, #0288D1 100%);
+  --dark-fire: linear-gradient(135deg, #FF8A65 0%, #FF7043 50%, #F4511E 100%);
+  --dark-earth: linear-gradient(135deg, #BCAAA4 0%, #A1887F 50%, #8D6E63 100%);
+  
+  /* Light/Dark Mode Base Colors */
+  --light-mode-bg: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+  --dark-mode-bg: linear-gradient(135deg, #424242 0%, #212121 100%);
+}
+
+/* Theme Panel Container */
+.theme-panel {
+  position: fixed;
+  top: 60px;
+  right: -350px;
+  width: 320px;
+  max-height: calc(100vh - 80px);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.theme-panel.active {
+  right: 20px;
+}
+
+/* Theme Panel Header */
+.theme-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 1;
+}
+
+.theme-panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+/* Theme Panel Body */
+.theme-panel-body {
+  padding: 20px;
+}
+
+.theme-section {
+  margin-bottom: 24px;
+}
+
+.theme-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Orb Container */
+.orb-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Magic Orb Base Styles */
+.theme-orb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.theme-orb::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  right: 10%;
+  height: 30%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.8;
+}
+
+.theme-orb:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.theme-orb.active {
+  transform: scale(1.1);
+  box-shadow: 
+    0 0 0 3px var(--primary-color),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Orb Glow Effect */
+.orb-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  transition: all 0.3s;
+  z-index: -1;
+}
+
+.theme-orb:hover .orb-glow {
+  filter: blur(12px);
+  opacity: 0.8;
+}
+
+.theme-orb.active .orb-glow {
+  filter: blur(16px);
+  opacity: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Light Mode Orb */
+.light-orb {
+  background: var(--light-mode-bg);
+}
+
+.light-orb .orb-glow {
+  background: var(--light-mode-bg);
+}
+
+/* Dark Mode Orb */
+.dark-orb {
+  background: var(--dark-mode-bg);
+}
+
+.dark-orb .orb-glow {
+  background: var(--dark-mode-bg);
+}
+
+/* Wu Xing Element Orbs */
+.metal-orb {
+  background: var(--light-metal);
+}
+
+.metal-orb .orb-glow {
+  background: var(--light-metal);
+}
+
+.wood-orb {
+  background: var(--light-wood);
+}
+
+.wood-orb .orb-glow {
+  background: var(--light-wood);
+}
+
+.water-orb {
+  background: var(--light-water);
+}
+
+.water-orb .orb-glow {
+  background: var(--light-water);
+}
+
+.fire-orb {
+  background: var(--light-fire);
+}
+
+.fire-orb .orb-glow {
+  background: var(--light-fire);
+}
+
+.earth-orb {
+  background: var(--light-earth);
+}
+
+.earth-orb .orb-glow {
+  background: var(--light-earth);
+}
+
+/* Dark Mode Element Colors */
+[data-theme="dark"] .metal-orb {
+  background: var(--dark-metal);
+}
+
+[data-theme="dark"] .metal-orb .orb-glow {
+  background: var(--dark-metal);
+}
+
+[data-theme="dark"] .wood-orb {
+  background: var(--dark-wood);
+}
+
+[data-theme="dark"] .wood-orb .orb-glow {
+  background: var(--dark-wood);
+}
+
+[data-theme="dark"] .water-orb {
+  background: var(--dark-water);
+}
+
+[data-theme="dark"] .water-orb .orb-glow {
+  background: var(--dark-water);
+}
+
+[data-theme="dark"] .fire-orb {
+  background: var(--dark-fire);
+}
+
+[data-theme="dark"] .fire-orb .orb-glow {
+  background: var(--dark-fire);
+}
+
+[data-theme="dark"] .earth-orb {
+  background: var(--dark-earth);
+}
+
+[data-theme="dark"] .earth-orb .orb-glow {
+  background: var(--dark-earth);
+}
+
+/* Theme Menu Button */
+.theme-menu-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.theme-menu-btn:hover {
+  background: var(--hover-bg);
+}
+
+.theme-menu-btn .theme-orb {
+  width: 24px;
+  height: 24px;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Light/Dark Mode Toggle */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.mode-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 50px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .theme-panel {
+    right: -100%;
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .theme-panel.active {
+    right: 0;
+  }
+}
