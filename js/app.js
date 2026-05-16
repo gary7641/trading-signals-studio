@@ -89,7 +89,7 @@ function initNavigation() {
 
 // Show/hide page content
 function showPage(pageName) {
-    const pages = document.querySelectorAll('.page-content');
+    const pages = document.querySelectorAll('.page');
     
     pages.forEach(page => {
         if (page.id === pageName || page.id === pageName + '-page') {
