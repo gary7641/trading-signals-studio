@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,246 +9,254 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/themes.css">
 </head>
-<body>
-    <div id="app" class="light">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-top">
-                <div class="brand">
-                    <span class="brand-icon">⚡</span>
-                    <span class="brand-text">Trading Signals Studio</span>
+<body data-theme="light" data-element="metal">
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Trading Signals Studio</span>
+            </div>
+        </div>
+        
+        <!-- News Ticker -->
+        <div class="header-center">
+            <div class="news-ticker">
+                <div class="news-ticker-content">
+                    <span class="news-item">📈 EURUSD +50 pips today</span>
+                    <span class="news-item">💰 New EA performance update</span>
+                    <span class="news-item">🎯 Signal accuracy: 85%</span>
                 </div>
-                <button id="sidebar-toggle" class="toggle-switch">
-                    <span>☰</span>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <!-- Light/Dark Mode Switch -->
+            <div class="mode-toggle">
+                <span class="mode-label">Light</span>
+                <label class="switch">
+                    <input type="checkbox" id="mode-toggle-input">
+                    <span class="slider"></span>
+                </label>
+                <span class="mode-label">Dark</span>
+            </div>
+            
+            <!-- Theme Menu Button -->
+            <button class="theme-menu-btn" id="theme-menu-btn" title="選擇主題">
+                <span class="theme-orb" data-element="current"></span>
+            </button>
+            
+            <!-- User Avatar / Login -->
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <span>U</span>
+                </div>
+                <div class="user-dropdown">
+                    <a href="#" class="dropdown-item">Profile</a>
+                    <a href="#" class="dropdown-item">Settings</a>
+                    <a href="#" class="dropdown-item">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Theme Selector Panel -->
+    <div class="theme-panel" id="theme-panel">
+        <div class="theme-panel-header">
+            <h3>選擇主題</h3>
+            <button class="close-btn" id="close-theme-panel">&times;</button>
+        </div>
+        <div class="theme-panel-body">
+            <!-- Mode Selection -->
+            <div class="theme-section">
+                <h4>模式</h4>
+                <div class="orb-container">
+                    <button class="theme-orb light-orb active" data-mode="light" title="Light Mode">
+                        <span class="orb-glow"></span>
+                    </button>
+                    <button class="theme-orb dark-orb" data-mode="dark" title="Dark Mode">
+                        <span class="orb-glow"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Element Selection -->
+            <div class="theme-section">
+                <h4>五行元素</h4>
+                <div class="orb-container">
+                    <button class="theme-orb metal-orb active" data-element="metal" title="金">
+                        <span class="orb-glow"></span>
+                    </button>
+                    <button class="theme-orb wood-orb" data-element="wood" title="木">
+                        <span class="orb-glow"></span>
+                    </button>
+                    <button class="theme-orb water-orb" data-element="water" title="水">
+                        <span class="orb-glow"></span>
+                    </button>
+                    <button class="theme-orb fire-orb" data-element="fire" title="火">
+                        <span class="orb-glow"></span>
+                    </button>
+                    <button class="theme-orb earth-orb" data-element="earth" title="土">
+                        <span class="orb-glow"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-text">MAIN</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <span class="arrow">◀</span>
                 </button>
             </div>
             
-            <div class="nav-section">
-                <div class="nav-label">MAIN</div>
-                <nav>
-                    <a href="#home" class="nav-item active" data-page="home">
-                        <span class="nav-icon">🏠</span>
-                        <span class="nav-text">Home</span>
-                    </a>
-                    <a href="#live-signals" class="nav-item" data-page="live-signals">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-text">Live Signals</span>
-                    </a>
-                    <a href="#trade-history" class="nav-item" data-page="trade-history">
-                        <span class="nav-icon">📈</span>
-                        <span class="nav-text">Trade History Analyzer</span>
-                    </a>
-                    <a href="#market-news" class="nav-item" data-page="market-news">
-                        <span class="nav-icon">📰</span>
-                        <span class="nav-text">Market News</span>
-                    </a>
-                    <a href="#performance" class="nav-item" data-page="performance">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-text">Performance</span>
-                    </a>
-                    <a href="#fx-tools" class="nav-item" data-page="fx-tools">
-                        <span class="nav-icon">🔧</span>
-                        <span class="nav-text">FX Tools</span>
-                    </a>
-                    <a href="#ea-rules" class="nav-item" data-page="ea-rules">
-                        <span class="nav-icon">⚙️</span>
-                        <span class="nav-text">EA Rules</span>
-                    </a>
-                </nav>
-            </div>
+            <nav class="sidebar-nav">
+                <a href="#home" class="nav-item active" data-page="home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Home</span>
+                </a>
+                <a href="#live-signals" class="nav-item" data-page="live-signals">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Live Signals</span>
+                </a>
+                <a href="#trade-history" class="nav-item" data-page="trade-history">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Trade History Analyzer</span>
+                </a>
+                <a href="#market-news" class="nav-item" data-page="market-news">
+                    <span class="nav-icon">📰</span>
+                    <span class="nav-text">Market News</span>
+                </a>
+                <a href="#performance" class="nav-item" data-page="performance">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Performance</span>
+                </a>
+                <a href="#fx-tools" class="nav-item" data-page="fx-tools">
+                    <span class="nav-icon">🔧</span>
+                    <span class="nav-text">FX Tools</span>
+                </a>
+                <a href="#abundance-forest" class="nav-item" data-page="abundance-forest">
+                    <span class="nav-icon">🌳</span>
+                    <span class="nav-text">豐盛森林</span>
+                </a>
+                <a href="#ea-rules" class="nav-item" data-page="ea-rules">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">EA Rules</span>
+                </a>
+            </nav>
         </aside>
-
-        <!-- Main Content Area -->
-        <div class="main-content">
-            <!-- Top Navbar -->
-            <header class="navbar">
-                <div class="navbar-left">
-                    <h1>Dashboard</h1>
+        
+        <!-- Main Content -->
+        <main class="main-content" id="main-content">
+            <!-- Home Page -->
+            <div class="page active" id="home">
+                <div class="page-title">
+                    <h1>🏠 Home</h1>
                 </div>
-                <div class="navbar-right">
-                    <!-- Theme Toggle -->
-                    <div class="theme-switch">
-                        <label for="theme-toggle">Theme</label>
-                        <label class="switch">
-                            <input type="checkbox" id="theme-toggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    
-                    <!-- User Profile -->
-                    <div class="user-profile">
-                        <div class="profile-trigger">
-                            <div class="user-avatar">U</div>
+                <p>Dashboard overview coming soon...</p>
+            </div>
+            
+            <!-- Live Signals Page -->
+            <div class="page" id="live-signals">
+                <div class="page-title">
+                    <h1>📊 Live Signals</h1>
+                </div>
+                <p>Broker-connected live signals will be displayed here...</p>
+            </div>
+            
+            <!-- Trade History Analyzer Page -->
+            <div class="page" id="trade-history">
+                <div class="page-title">
+                    <h1>📈 Trade History Analyzer</h1>
+                </div>
+                <p>Upload and analyze your trading history...</p>
+            </div>
+            
+            <!-- Market News Page -->
+            <div class="page" id="market-news">
+                <div class="page-title">
+                    <h1>📰 Market News</h1>
+                </div>
+                <p>Latest market news and analysis...</p>
+            </div>
+            
+            <!-- Performance Page -->
+            <div class="page" id="performance">
+                <div class="page-title">
+                    <h1>📊 Performance</h1>
+                </div>
+                <p>View your trading performance metrics...</p>
+            </div>
+            
+            <!-- FX Tools Page -->
+            <div class="page" id="fx-tools">
+                <div class="page-title">
+                    <h1>🔧 FX Tools</h1>
+                </div>
+                <p>12 FX calculators coming soon...</p>
+            </div>
+            
+            <!-- Abundance Forest Page (豐盛森林) -->
+            <div class="page" id="abundance-forest">
+                <div class="page-title">
+                    <h1>🌳 豐盛森林</h1>
+                </div>
+                <div class="forest-intro">
+                    <p>500個小故事，提升意識、幫助人、累積福報</p>
+                    <div class="story-categories">
+                        <div class="category-card">
+                            <h3>💫 提升意識</h3>
+                            <p>開啟心靈覺醒的智慧故事</p>
                         </div>
-                        <div class="profile-dropdown">
-                            <div class="profile-dropdown-item">Profile</div>
-                            <div class="profile-dropdown-item">Settings</div>
-                            <div class="profile-dropdown-item">Logout</div>
+                        <div class="category-card">
+                            <h3>🤝 幫助人</h3>
+                            <p>傳播善念與愛的力量</p>
                         </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <div class="content">
-                <!-- Home Page -->
-                <div id="home" class="page active">
-                    <div class="page-title">🏠 Home</div>
-                    <p>Dashboard overview coming soon...</p>
-                </div>
-
-                <!-- Live Signals Page -->
-                <div id="live-signals" class="page">
-                    <div class="page-title">📊 Live Signals</div>
-                    <p>Broker-connected live signals will be displayed here...</p>
-                </div>
-
-                <!-- Trade History Analyzer Page -->
-                <div id="trade-history" class="page">
-                    <div class="page-title">📈 Trade History Analyzer</div>
-                    <p>Upload and analyze your trading history...</p>
-                </div>
-
-                <!-- Market News Page -->
-                <div id="market-news" class="page">
-                    <div class="page-title">📰 Market News</div>
-                    <p>Latest market news and analysis...</p>
-                </div>
-
-                <!-- Performance Page -->
-                <div id="performance" class="page">
-                    <div class="page-title">📊 Performance</div>
-                    <p>View your trading performance metrics...</p>
-                </div>
-
-                <!-- FX Tools Page -->
-                <div id="fx-tools" class="page">
-                    <div class="page-title">🔧 FX Tools</div>
-                    <p>Calculate optimal position size based on risk percentage.</p>
-                    
-                    <div class="grid-2">
-                        <!-- Position Size Calculator -->
-                        <div class="card">
-                            <div class="card-title">💰 Position Size Calculator</div>
-                            <div class="form-group">
-                                <label>Account Balance ($)</label>
-                                <input type="number" id="ps-balance" placeholder="10000">
-                            </div>
-                            <div class="form-group">
-                                <label>Risk Percentage (%)</label>
-                                <input type="number" id="ps-risk" placeholder="2">
-                            </div>
-                            <div class="form-group">
-                                <label>Stop Loss (pips)</label>
-                                <input type="number" id="ps-stoploss" placeholder="50">
-                            </div>
-                            <div class="form-group">
-                                <label>Currency Pair</label>
-                                <select id="ps-pair">
-                                    <option>EURUSD</option>
-                                    <option>GBPUSD</option>
-                                    <option>USDJPY</option>
-                                </select>
-                            </div>
-                            <button class="btn-primary" onclick="calculatePositionSize()">Calculate Position Size</button>
-                            <div id="ps-result"></div>
+                        <div class="category-card">
+                            <h3>🙏 福報</h3>
+                            <p>種善因得善果的因果故事</p>
                         </div>
-
-                        <!-- Pip Calculator -->
-                        <div class="card">
-                            <div class="card-title">📊 Pip Calculator</div>
-                            <div class="form-group">
-                                <label>Currency Pair</label>
-                                <select id="pip-pair">
-                                    <option>EURUSD</option>
-                                    <option>GBPUSD</option>
-                                    <option>USDJPY</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Lot Size</label>
-                                <input type="number" id="pip-lotsize" placeholder="1.0" step="0.01">
-                            </div>
-                            <div class="form-group">
-                                <label>Pips</label>
-                                <input type="number" id="pip-pips" placeholder="50">
-                            </div>
-                            <button class="btn-primary" onclick="calculatePipValue()">Calculate Pip Value</button>
-                            <div id="pip-result"></div>
+                        <div class="category-card">
+                            <h3>⚖️ 因果</h3>
+                            <p>了解因果循環的真理</p>
+                        </div>
+                        <div class="category-card">
+                            <h3>✨ 提升維度</h3>
+                            <p>跨越層次的靈性成長</p>
                         </div>
                     </div>
-
-                    <p><strong>More calculators coming soon:</strong></p>
-                    <ul>
-                        <li>Profit/Loss Calculator</li>
-                        <li>Margin Calculator</li>
-                        <li>Fibonacci Calculator</li>
-                        <li>Pivot Points Calculator</li>
-                        <li>Lot Size Calculator</li>
-                        <li>Currency Converter</li>
-                        <li>Risk/Reward Calculator</li>
-                        <li>Swap Calculator</li>
-                        <li>Volatility Calculator</li>
-                        <li>Correlation Calculator</li>
-                    </ul>
-                </div>
-
-                <!-- EA Rules Page -->
-                <div id="ea-rules" class="page">
-                    <div class="page-title">⚙️ EA Rules</div>
-                    <p>Manage your Expert Advisor trading rules...</p>
                 </div>
             </div>
-
-            <footer class="footer">
-                Powered by ShenXu
-            </footer>
-        </div>
+            
+            <!-- EA Rules Page -->
+            <div class="page" id="ea-rules">
+                <div class="page-title">
+                    <h1>⚙️ EA Rules</h1>
+                </div>
+                <p>EA trading rules and strategies...</p>
+            </div>
+        </main>
     </div>
-
-    <!-- External JavaScript -->
-    <script src="js/theme.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/calculators/fx-calculators.js"></script>
     
-    <script>
-        // Calculator UI functions
-        function calculatePositionSize() {
-            const balance = parseFloat(document.getElementById('ps-balance').value);
-            const risk = parseFloat(document.getElementById('ps-risk').value);
-            const stopLoss = parseFloat(document.getElementById('ps-stoploss').value);
-            const pair = document.getElementById('ps-pair').value;
-            
-            if (balance && risk && stopLoss) {
-                const result = FXCalculators.calculatePositionSize(balance, risk, stopLoss, 10);
-                document.getElementById('ps-result').innerHTML = `
-                    <div style="margin-top: 16px; padding: 16px; background: var(--hover-bg); border-radius: 8px;">
-                        <strong>Results:</strong><br>
-                        Position Size: ${result.positionSize} units<br>
-                        Risk Amount: $${result.riskAmount}<br>
-                        Lots: ${result.lots}
-                    </div>
-                `;
-            }
-        }
-        
-        function calculatePipValue() {
-            const pair = document.getElementById('pip-pair').value;
-            const lotSize = parseFloat(document.getElementById('pip-lotsize').value);
-            const pips = parseFloat(document.getElementById('pip-pips').value);
-            
-            if (pair && lotSize && pips) {
-                const result = FXCalculators.calculatePipValue(pair, 'USD', lotSize);
-                document.getElementById('pip-result').innerHTML = `
-                    <div style="margin-top: 16px; padding: 16px; background: var(--hover-bg); border-radius: 8px;">
-                        <strong>Results:</strong><br>
-                        Pip Value: $${result.pipValue}<br>
-                        ${pips} pips = $${(parseFloat(result.pipValue) * pips).toFixed(2)}
-                    </div>
-                `;
-            }
-        }
-    </script>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Powered by ShenXu</p>
+    </footer>
+    
+    <!-- External JS -->
+    <script src="js/app.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/calculators/fx-calculators.js"></script>
 </body>
 </html>
