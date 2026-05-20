@@ -8,8 +8,8 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: var(--navbar-bg);
-  border-bottom: 1px solid var(--border);
+        background: linear-gradient(90deg, #0ea5e9, #22c55e);
+       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
