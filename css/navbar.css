@@ -21,14 +21,12 @@
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
+    gap: 6px;}
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  text-decoration: none;
+    gap: 4px;  text-decoration: none;
 }
 
 .logo-icon {
@@ -70,15 +68,13 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
+    gap: 8px;}
 
 /* Mode Toggle */
 .mode-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
+    gap: 4px;}
 
 .mode-label {
   font-size: 13px;
