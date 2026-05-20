@@ -62,8 +62,7 @@ body {
 
 /* Sidebar (left side like GitHub Files panel) */
 .sidebar {
-  width: 260px;
-  background: var(--sidebar-bg);
+    width: 200px;  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
