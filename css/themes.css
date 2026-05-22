@@ -386,3 +386,147 @@ input:checked + .slider:before {
     right: 0;
   }
 }
+
+
+/* ========================================================================
+   Magic Orb Buttons - Header & Theme Panel
+   ======================================================================== */
+
+/* Theme Menu Button in Header */
+.theme-menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.theme-menu-btn:hover {
+  transform: scale(1.1);
+}
+
+.theme-menu-btn .theme-orb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4AF37, #FFD700);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.theme-menu-btn .theme-orb::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent);
+}
+
+/* Orb Container */
+.orb-container {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  padding: 12px 0;
+}
+
+/* Base Orb Button Styles */
+.theme-orb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, var(--orb-color-1), var(--orb-color-2));
+  box-shadow: 0 2px 8px var(--orb-shadow);
+}
+
+.theme-orb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px var(--orb-shadow);
+}
+
+.theme-orb.active {
+  transform: scale(1.2);
+  box-shadow: 0 0 20px var(--orb-shadow);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Orb Glow Effect */
+.orb-glow {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent);
+  pointer-events: none;
+}
+
+/* Light/Dark Mode Orbs */
+.light-orb {
+  --orb-color-1: #FFE57F;
+  --orb-color-2: #FFF9C4;
+  --orb-shadow: rgba(255, 235, 59, 0.5);
+}
+
+.dark-orb {
+  --orb-color-1: #424242;
+  --orb-color-2: #212121;
+  --orb-shadow: rgba(33, 33, 33, 0.5);
+}
+
+/* Element Orbs - Wu Xing (Five Elements) */
+.metal-orb {
+  --orb-color-1: #D4AF37;
+  --orb-color-2: #FFD700;
+  --orb-shadow: rgba(212, 175, 55, 0.5);
+}
+
+.wood-orb {
+  --orb-color-1: #7CB342;
+  --orb-color-2: #9CCC65;
+  --orb-shadow: rgba(124, 179, 66, 0.5);
+}
+
+.water-orb {
+  --orb-color-1: #29B6F6;
+  --orb-color-2: #81D4FA;
+  --orb-shadow: rgba(41, 182, 246, 0.5);
+}
+
+.fire-orb {
+  --orb-color-1: #FF8A65;
+  --orb-color-2: #FFAB91;
+  --orb-shadow: rgba(255, 138, 101, 0.5);
+}
+
+.earth-orb {
+  --orb-color-1: #D7CCC8;
+  --orb-color-2: #BCAAA4;
+  --orb-shadow: rgba(188, 170, 164, 0.5);
+}
+
+/* Theme Section Styling */
+.theme-section {
+  margin-bottom: 24px;
+}
+
+.theme-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+  opacity: 0.8;
+}
