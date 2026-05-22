@@ -39,6 +39,20 @@ function initEventListeners() {
             themePanel.classList.toggle('active');
         });
     }
+
+    // Theme menu item in user dropdown
+    const themeMenuItem = document.getElementById('theme-menu-item');
+    if (themeMenuItem && themePanel) {
+        themeMenuItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            themePanel.classList.toggle('active');
+            // Close user dropdown if open
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown) {
+                userDropdown.style.display = 'none';
+            }
+        });
+    }
     
     if (closePanelBtn && themePanel) {
         closePanelBtn.addEventListener('click', () => {
