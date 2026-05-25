@@ -43,69 +43,60 @@
                 <span class="mode-label">Dark</span>
             </div>
             
-            <!-- Theme Menu Button -->
-            <button class="theme-menu-btn" id="theme-menu-btn" title="選擇主題">
-                <span class="theme-orb" data-element="current"></span>
-            </button>
             
             <!-- User Avatar / Login -->
             <div class="user-menu">
                 <div class="user-avatar">
                     <span>U</span>
                 </div>
-                <div class="user-dropdown">
-                    <a href="#" class="dropdown-item">Profile</a>
-                                          <a href="#" class="dropdown-item" id="theme-menu-item">🎨 Theme</a>
-                    <a href="#" class="dropdown-item">Settings</a>
-                    <a href="#" class="dropdown-item">Logout</a>
+            <div class="user-dropdown">
+                <a href="#" class="dropdown-item">Profile</a>
+                
+                <!-- Theme Section with expandable orbs -->
+                <div class="dropdown-item theme-dropdown-item" id="theme-menu-item">
+                    <span class="theme-label">🎨 Theme</span>
+                    <span class="expand-icon">▼</span>
                 </div>
-            </div>
+                
+                <!-- Theme Orbs Container (initially hidden) -->
+                <div class="theme-orbs-container" id="theme-orbs-container">
+                    <!-- Light/Dark Mode -->
+                    <div class="orb-row">
+                        <button class="theme-orb light-orb active" data-mode="light" title="Light Mode">
+                            <span class="orb-icon">☀️</span>
+                        </button>
+                        <button class="theme-orb dark-orb" data-mode="dark" title="Dark Mode">
+                            <span class="orb-icon">🌙</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Five Elements -->
+                    <div class="orb-row">
+                        <button class="theme-orb metal-orb active" data-element="metal" title="金">
+                            <span class="orb-icon">🌟</span>
+                        </button>
+                        <button class="theme-orb wood-orb" data-element="wood" title="木">
+                            <span class="orb-icon">🍃</span>
+                        </button>
+                        <button class="theme-orb water-orb" data-element="water" title="水">
+                            <span class="orb-icon">💧</span>
+                        </button>
+                        <button class="theme-orb fire-orb" data-element="fire" title="火">
+                            <span class="orb-icon">🔥</span>
+                        </button>
+                        <button class="theme-orb earth-orb" data-element="earth" title="土">
+                            <span class="orb-icon">🪨</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <a href="#" class="dropdown-item">Settings</a>
+                <a href="#" class="dropdown-item">Logout</a>
+            </div>            </div>
         </div>
     </header>
     
-    <!-- Theme Selector Panel -->
-    <div class="theme-panel" id="theme-panel">
-        <div class="theme-panel-header">
-            <h3>選擇主題</h3>
-            <button class="close-btn" id="close-theme-panel">&times;</button>
-        </div>
-        <div class="theme-panel-body">
-            <!-- Mode Selection -->
-            <div class="theme-section">
-                <h4>模式</h4>
-                <div class="orb-container">
-                    <button class="theme-orb light-orb active" data-mode="light" title="Light Mode">
-                        <span class="orb-glow"></span>
-                    </button>
-                    <button class="theme-orb dark-orb" data-mode="dark" title="Dark Mode">
-                        <span class="orb-glow"></span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Element Selection -->
-            <div class="theme-section">
-                <h4>五行元素</h4>
-                <div class="orb-container">
-                    <button class="theme-orb metal-orb active" data-element="metal" title="金">
-                        <span class="orb-glow"></span>
-                    </button>
-                    <button class="theme-orb wood-orb" data-element="wood" title="木">
-                        <span class="orb-glow"></span>
-                    </button>
-                    <button class="theme-orb water-orb" data-element="water" title="水">
-                        <span class="orb-glow"></span>
-                    </button>
-                    <button class="theme-orb fire-orb" data-element="fire" title="火">
-                        <span class="orb-glow"></span>
-                    </button>
-                    <button class="theme-orb earth-orb" data-element="earth" title="土">
-                        <span class="orb-glow"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     
     <!-- Main Container -->
     <div class="container">
