@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="zh-HK" data-theme="wood" data-mode="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSS Portal - 旗艦級交易數據分析平台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- TradingView Script -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    borderRadius: {
+                        'xl': '10px',
+                        '2xl': '14px',
+                        '3xl': '20px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ======================================================= */
+        /* TSS PORTAL 全域多主題色彩 CSS 變數                      */
+        /* ======================================================= */
+        
+        /* --- 1. LIGHT MODE (柔和底蘊) --- */
+        html[data-mode="light"][data-theme="gold"] {
+            --bg-main: #fffaf0; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #f1dfc1;
+            --text-primary: #c26900; --text-primary-hover: #a15300; --bg-accent-soft: #fff3db; --text-main: #2d2a24; --text-muted: #7c7568; --bg-accent-active: #b45309;
+        }
+        html[data-mode="light"][data-theme="wood"] {
+            --bg-main: #f1fcf5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #d0ebd9;
+            --text-primary: #047857; --text-primary-hover: #065f46; --bg-accent-soft: #e6f9ed; --text-main: #222d26; --text-muted: #6f7d74; --bg-accent-active: #047857;
+        }
+        html[data-mode="light"][data-theme="water"] {
+            --bg-main: #f0f7fc; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #cfe3f1;
+            --text-primary: #0369a1; --text-primary-hover: #075985; --bg-accent-soft: #e0f2fe; --text-main: #202b36; --text-muted: #697785; --bg-accent-active: #0369a1;
+        }
+        html[data-mode="light"][data-theme="fire"] {
+            --bg-main: #fff5f5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #fcd4d4;
+            --text-primary: #dc2626; --text-primary-hover: #b91c1c; --bg-accent-soft: #ffebeb; --text-main: #331f1f; --text-muted: #8a6d6d; --bg-accent-active: #dc2626;
+        }
+        html[data-mode="light"][data-theme="earth"] {
+            --bg-main: #fcf8f2; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #eddcc4;
+            --text-primary: #92400e; --text-primary-hover: #78350f; --bg-accent-soft: #fcf1df; --text-main: #2e241f; --text-muted: #7d6b60; --bg-accent-active: #92400e;
+        }
+
+        /* --- 2. DARK MODE (神秘紫黑底蘊) --- */
+        html[data-mode="dark"] {
+            --bg-main: #080413; --bg-sidebar: #0e0721; --bg-card: #130a2a; --border-theme: #2d1854; --text-main: #ede9f5; --text-muted: #9c8fb8;
+        }
+        html[data-mode="dark"][data-theme="gold"] {
+            --text-primary: #f59e0b; --text-primary-hover: #d97706; --bg-accent-soft: #2e1c05; --bg-accent-active: #f59e0b;
+        }
+        html[data-mode="dark"][data-theme="wood"] {
+            --text-primary: #10b981; --text-primary-hover: #059669; --bg-accent-soft: #062f20; --bg-accent-active: #10b981;
+        }
+        html[data-mode="dark"][data-theme="water"] {
+            --text-primary: #0ea5e9; --text-primary-hover: #0284c7; --bg-accent-soft: #082d47; --bg-accent-active: #0ea5e9;
+        }
+        html[data-mode="dark"][data-theme="fire"] {
+            --text-primary: #ef4444; --text-primary-hover: #dc2626; --bg-accent-soft: #380b0b; --bg-accent-active: #ef4444;
+        }
+        html[data-mode="dark"][data-theme="earth"] {
+            --text-primary: #f97316; --text-primary-hover: #ea580c; --bg-accent-soft: #351505; --bg-accent-active: #f97316;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: all 0.25s ease;
+        }
+        .theme-sidebar { background-color: var(--bg-sidebar); border-color: var(--border-theme); }
+        .theme-card { background-color: var(--bg-card); border-color: var(--border-theme); }
+        .theme-border { border-color: var(--border-theme); }
+        .theme-text { color: var(--text-primary); }
+        .theme-btn-active { background-color: var(--bg-accent-active); color: #ffffff !important; }
+        .theme-bg-soft { background-color: var(--bg-accent-soft); }
+        .theme-muted-text { color: var(--text-muted); }
+
+        /* ======================================================= */
+        /* 🔮 3D 水晶半透明元素魔法球及能量環                      */
+        /* ======================================================= */
+        .orb-wrapper {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .magic-ring {
+            position: absolute;
+            inset: 0px;
+            border: 1.5px dashed transparent;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            transform: rotate(0deg);
+        }
+        .orb-wrapper:hover .magic-ring {
+            border-width: 1.5px;
+            transform: rotate(180deg);
+        }
+        .magic-orb {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 
+                inset 0 -3px 6px rgba(0, 0, 0, 0.4), 
+                inset 0 3px 6px rgba(255, 255, 255, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .magic-orb::before {
+            content: '';
+            position: absolute;
+            top: 1.5px; left: 2.5px; right: 2.5px; height: 40%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 100%);
+            border-radius: 50% 50% 25% 25%;
+            pointer-events: none;
+        }
+        .magic-orb:hover {
+            transform: translateY(-2px) scale(1.12);
+            box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.3), inset 0 4px 6px rgba(255, 255, 255, 0.7), 0 8px 16px rgba(0, 0, 0, 0.35);
+        }
+        @keyframes spin-clockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .orb-wrapper.active .magic-ring { animation: spin-clockwise 10s linear infinite; }
+
+        /* 呼吸光暈 */
+        @keyframes pulse-light { 0%, 100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-dark { 0%, 100% { box-shadow: 0 0 4px rgba(168, 85, 247, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 4px rgba(245, 158, 11, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(245, 158, 11, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-wood { 0%, 100% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-water { 0%, 100% { box-shadow: 0 0 4px rgba(14, 165, 233, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(14, 165, 233, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-fire { 0%, 100% { box-shadow: 0 0 4px rgba(239, 110, 110, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(239, 110, 110, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+        @keyframes pulse-earth { 0%, 100% { box-shadow: 0 0 4px rgba(180, 83, 9, 0.4), inset 0 -3px 6px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 14px rgba(180, 83, 9, 0.8), inset 0 -3px 6px rgba(0,0,0,0.3); } }
+
+        .orb-light { background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.6) 0%, rgba(251, 191, 36, 0.45) 50%, rgba(180, 83, 9, 0.75) 100%); }
+        .orb-wrapper.active .orb-light { animation: pulse-light 1.8s infinite ease-in-out; border-color: rgba(251, 191, 36, 0.8); }
+        .orb-wrapper.active .ring-light { border-color: rgba(251, 191, 36, 0.6); }
+
+        .orb-dark { background: radial-gradient(circle at 35% 35%, rgba(168, 85, 247, 0.5) 0%, rgba(88, 28, 135, 0.4) 60%, rgba(15, 23, 42, 0.9) 100%); }
+        .orb-wrapper.active .orb-dark { animation: pulse-dark 1.8s infinite ease-in-out; border-color: rgba(168, 85, 247, 0.8); }
+        .orb-wrapper.active .ring-dark { border-color: rgba(168, 85, 247, 0.6); }
+
+        .orb-gold { background: radial-gradient(circle at 35% 35%, rgba(254, 243, 199, 0.7) 0%, rgba(245, 158, 11, 0.4) 60%, rgba(146, 64, 14, 0.8) 100%); }
+        .orb-wrapper.active .orb-gold { animation: pulse-gold 1.8s infinite ease-in-out; border-color: rgba(245, 158, 11, 0.8); }
+        .orb-wrapper.active .ring-gold { border-color: rgba(245, 158, 11, 0.6); }
+
+        .orb-wood { background: radial-gradient(circle at 35% 35%, rgba(209, 250, 229, 0.7) 0%, rgba(16, 185, 129, 0.35) 60%, rgba(6, 95, 70, 0.8) 100%); }
+        .orb-wrapper.active .orb-wood { animation: pulse-wood 1.8s infinite ease-in-out; border-color: rgba(16, 185, 129, 0.8); }
+        .orb-wrapper.active .ring-wood { border-color: rgba(16, 185, 129, 0.6); }
+
+        .orb-water { background: radial-gradient(circle at 35% 35%, rgba(224, 242, 254, 0.7) 0%, rgba(14, 165, 233, 0.35) 60%, rgba(7, 89, 133, 0.8) 100%); }
+        .orb-wrapper.active .orb-water { animation: pulse-water 1.8s infinite ease-in-out; border-color: rgba(14, 165, 233, 0.8); }
+        .orb-wrapper.active .ring-water { border-color: rgba(14, 165, 233, 0.6); }
+
+        .orb-fire { background: radial-gradient(circle at 35% 35%, rgba(254, 226, 226, 0.7) 0%, rgba(239, 68, 68, 0.35) 60%, rgba(153, 27, 27, 0.8) 100%); }
+        .orb-wrapper.active .orb-fire { animation: pulse-fire 1.8s infinite ease-in-out; border-color: rgba(239, 68, 68, 0.8); }
+        .orb-wrapper.active .ring-fire { border-color: rgba(239, 68, 68, 0.6); }
+
+        .orb-earth { background: radial-gradient(circle at 35% 35%, rgba(253, 237, 225, 0.7) 0%, rgba(180, 83, 9, 0.35) 60%, rgba(120, 53, 4, 0.8) 100%); }
+        .orb-wrapper.active .orb-earth { animation: pulse-earth 1.8s infinite ease-in-out; border-color: rgba(180, 83, 9, 0.8); }
+        .orb-wrapper.active .ring-earth { border-color: rgba(180, 83, 9, 0.6); }
+
+        /* Flashing Animation for Live updates */
+        @keyframes flash-green { 0% { background-color: rgba(16, 185, 129, 0.4); } 100% { background-color: transparent; } }
+        @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.4); } 100% { background-color: transparent; } }
+        .flash-up { animation: flash-green 0.8s ease-out; }
+        .flash-down { animation: flash-red 0.8s ease-out; }
+
+        /* 🔮 100% 勝率立體霓虹藍色呼吸閃爍高亮 */
+        @keyframes flash-blue-win {
+            0%, 100% { 
+                background-color: rgba(29, 78, 216, 0.15); 
+                color: #2563eb; 
+                border-color: rgba(37, 99, 235, 0.3);
+                box-shadow: 0 0 4px rgba(37, 99, 235, 0.1), inset 0 0 2px rgba(37, 99, 235, 0.05); 
+            }
+            50% { 
+                background-color: rgba(37, 99, 235, 0.85); 
+                color: #ffffff; 
+                border-color: #2563eb;
+                box-shadow: 0 0 15px rgba(37, 99, 235, 0.8), inset 0 0 5px rgba(255, 255, 255, 0.5); 
+            }
+        }
+        .animate-flash-blue {
+            animation: flash-blue-win 1.4s infinite ease-in-out;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        /* Toast Alert Container */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- 📢 Toast 通知容器 -->
+    <div id="toast-container"></div>
+
+    <!-- 📢 Header 與走馬燈 -->
+    <header class="h-14 border-b border-slate-200 dark:border-slate-800 theme-sidebar flex items-center justify-between px-6 z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-crown theme-text"></i> <span class="tracking-tight">TSS</span> <span class="theme-text">PORTAL</span>
+            </div>
+            <div class="h-4 w-[1px] bg-slate-300 dark:bg-purple-900/40 mx-2"></div>
+            <!-- 走馬燈廣告 -->
+            <div class="w-[280px] md:w-[420px] lg:w-[500px] overflow-hidden text-xs theme-muted-text relative whitespace-nowrap">
+                <div class="inline-block animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] cursor-pointer">
+                    <span class="mx-4 text-emerald-600 font-semibold"><i class="fa-solid fa-leaf"></i> 系統已啟動預設「木元素」淡雅風控主題運算</span>
+                    <span class="mx-4 text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> 快訊：黃金多幣對特殊交叉匯率模型解算完成！</span>
+                    <span class="mx-4"><i class="fa-solid fa-circle-info"></i> S10 LITE 綜合運行勝率維持 76% 領先水準</span>
+                    <span class="mx-4"><i class="fa-solid fa-clock"></i> 即時資料傳輸正常 2026-05-31 18:50</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔮 右側：顯示設置 -->
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1 px-2 py-1 bg-slate-100/40 dark:bg-purple-950/20 border theme-border rounded-full shadow-inner">
+                <div class="orb-wrapper active" id="header-wrapper-light">
+                    <div class="magic-ring ring-light"></div>
+                    <button onclick="switchMode('light')" id="orb-light-btn" class="magic-orb orb-light" title="☀️ 光之法球">
+                        <span class="text-[9px] select-none pointer-events-none">☀️</span>
+                    </button>
+                </div>
+                <div class="orb-wrapper" id="header-wrapper-dark">
+                    <div class="magic-ring ring-dark"></div>
+                    <button onclick="switchMode('dark')" id="orb-dark-btn" class="magic-orb orb-dark" title="🌙 暗之法球">
+                        <span class="text-[9px] text-purple-200 select-none pointer-events-none">🌙</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Mode 狀態燈 -->
+            <div id="admin-mode-tag" class="text-xs bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 px-2.5 py-1 rounded-xl text-red-600 dark:text-red-400 font-medium shadow-sm">
+                <i class="fa-solid fa-eye"></i> Admin Mode
+            </div>
+
+            <!-- 🌟 G 頭像 -->
+            <div class="relative">
+                <button onclick="toggleProfileMenu(event)" class="w-9 h-9 rounded-full theme-btn-active font-extrabold flex items-center justify-center border theme-border hover:scale-105 transition-all text-sm shadow-sm">
+                    G
+                </button>
+                <div id="profileMenu" class="hidden absolute right-0 mt-2 w-72 theme-card border theme-border rounded-xl shadow-xl py-3 z-50">
+                    <div class="px-4 py-2 border-b theme-border">
+                        <div class="text-[10px] font-bold text-slate-400 dark:text-purple-400 uppercase mb-2">混沌之源 (顯示模式)</div>
+                        <div class="flex items-center justify-around py-1 bg-slate-50 dark:bg-black/30 rounded-xl border theme-border">
+                            <div class="orb-wrapper active" id="profile-wrapper-light">
+                                <div class="magic-ring ring-light"></div>
+                                <button onclick="switchMode('light')" class="magic-orb orb-light" title="☀️ 光之法球"><span class="text-[9px] select-none pointer-events-none">☀️</span></button>
+                            </div>
+                            <div class="orb-wrapper" id="profile-wrapper-dark">
+                                <div class="magic-ring ring-dark"></div>
+                                <button onclick="switchMode('dark')" class="magic-orb orb-dark" title="🌙 暗之法球"><span class="text-[9px] text-purple-200 select-none pointer-events-none">🌙</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 border-b theme-border">
+                        <div class="text-[10px] font-bold text-slate-400 dark:text-purple-400 uppercase mb-2">五行元素神殿 (主題配色)</div>
+                        <div class="grid grid-cols-5 gap-1.5 py-1.5 bg-slate-50 dark:bg-black/30 rounded-xl border theme-border justify-items-center">
+                            <div class="orb-wrapper" id="wrapper-gold">
+                                <div class="magic-ring ring-gold"></div>
+                                <button onclick="switchTheme('gold', this)" class="magic-orb orb-gold" title="🟡 金元素"><span class="text-[9px] text-yellow-100 select-none pointer-events-none font-bold">金</span></button>
+                            </div>
+                            <div class="orb-wrapper active" id="wrapper-wood">
+                                <div class="magic-ring ring-wood"></div>
+                                <button onclick="switchTheme('wood', this)" class="magic-orb orb-wood" title="🟢 木元素"><span class="text-[9px] text-green-100 select-none pointer-events-none font-bold">木</span></button>
+                            </div>
+                            <div class="orb-wrapper" id="wrapper-water">
+                                <div class="magic-ring ring-water"></div>
+                                <button onclick="switchTheme('water', this)" class="magic-orb orb-water" title="🔵 水元素"><span class="text-[9px] text-blue-100 select-none pointer-events-none font-bold">水</span></button>
+                            </div>
+                            <div class="orb-wrapper" id="wrapper-fire">
+                                <div class="magic-ring ring-fire"></div>
+                                <button onclick="switchTheme('fire', this)" class="magic-orb orb-fire" title="🔴 火元素"><span class="text-[9px] text-red-100 select-none pointer-events-none font-bold">火</span></button>
+                            </div>
+                            <div class="orb-wrapper" id="wrapper-earth">
+                                <div class="magic-ring ring-earth"></div>
+                                <button onclick="switchTheme('earth', this)" class="magic-orb orb-earth" title="🟤 土元素"><span class="text-[9px] text-amber-100 select-none pointer-events-none font-bold">土</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- ◀ 左側 Sidebar -->
+        <aside class="w-48 border-r border-slate-200 dark:border-slate-800 theme-sidebar p-4 flex flex-col justify-between shadow-sm shrink-0 overflow-y-auto">
+            <div class="space-y-1">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">主要功能</div>
+                <button onclick="switchPage('home')" id="nav-home" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-btn-active font-semibold shadow-sm transition-all">
+                    <i class="fa-solid fa-house w-4"></i> 首頁控制台
+                </button>
+                
+                <button onclick="switchPage('crosspower')" id="nav-crosspower" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold">
+                    <i class="fa-solid fa-chart-line w-4"></i> Cross Power
+                </button>
+
+                <div class="space-y-1 pt-1">
+                    <div class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs theme-muted-text font-semibold">
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-tower-broadcast w-4"></i> Live Signals</span>
+                    </div>
+                    <div class="pl-3 border-l-2 border-slate-200 dark:border-purple-900/40 ml-4 space-y-1 my-1">
+                        <button onclick="switchPage('signals')" id="nav-signals" class="w-full text-left px-3 py-1.5 rounded-lg text-[11px] theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-wave-square text-[10px]"></i> 實時監控 (Live)
+                        </button>
+                        <button onclick="switchPage('portfolio')" id="nav-portfolio" class="w-full text-left px-3 py-1.5 rounded-lg text-[11px] theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-[10px]"></i> Portfolio 組合
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 pt-3 pb-1">交易分析與歸檔</div>
+                <button onclick="switchPage('analyzer')" id="nav-analyzer" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold">
+                    <i class="fa-solid fa-magnifying-glass-chart w-4"></i> History Analyzer
+                </button>
+            </div>
+        </aside>
+
+        <!-- 💻 主工作區 -->
+        <main class="flex-1 p-6 space-y-6 overflow-y-auto max-w-full">
+            
+            <!-- ================= PAGE 1: 首頁控制台 (左右對調升級版) ================= -->
+            <div id="page-home" class="space-y-6">
+                <div class="border theme-border theme-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-black">歡迎回到 TSS Portal 交易控制台</h2>
+                        <p class="text-xs theme-muted-text mt-1">目前系統已完美連接全球實時數據心跳，木元素風控主題與多幣對對沖模組運行平穩。</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- 📊 左側（col-span-7）：TradingView行情 (原本在右邊) -->
+                    <div class="lg:col-span-7 border theme-border theme-card rounded-2xl p-5 shadow-sm flex flex-col h-[520px]">
+                        <div class="flex justify-between items-center border-b theme-border pb-3 mb-4">
+                            <span class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                                <i class="fa-solid fa-chart-line theme-text"></i> TradingView 實時黃金/外匯行情圖表
+                            </span>
+                        </div>
+                        <div id="tv-chart-wrapper" class="flex-1 w-full rounded-xl overflow-hidden border theme-border bg-slate-50 dark:bg-slate-950/20 relative">
+                            <div id="tradingview_chart_container" class="w-full h-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- 📢 右側（col-span-5）：財經新聞快訊 (原本在左邊) -->
+                    <div class="lg:col-span-5 border theme-border theme-card rounded-2xl p-5 shadow-sm flex flex-col h-[520px]">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b theme-border pb-3 mb-4 gap-2">
+                            <span class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                                <i class="fa-solid fa-newspaper text-red-500 animate-pulse"></i> 即時財經新聞快訊
+                            </span>
+                            <div class="flex bg-slate-100 dark:bg-purple-950/30 p-0.5 rounded-xl border theme-border gap-0.5 text-[10px] font-bold">
+                                <button onclick="switchNewsTab('1h')" id="news-tab-1h" class="px-2 py-0.5 rounded-lg transition-all theme-btn-active">1h內</button>
+                                <button onclick="switchNewsTab('today')" id="news-tab-today" class="px-2 py-0.5 rounded-lg transition-all text-slate-400">今日</button>
+                                <button onclick="switchNewsTab('week')" id="news-tab-week" class="px-2 py-0.5 rounded-lg transition-all text-slate-400">本周</button>
+                                <button onclick="switchNewsTab('next')" id="news-tab-next" class="px-2 py-0.5 rounded-lg transition-all text-slate-400">下周</button>
+                            </div>
+                        </div>
+                        <ul class="space-y-3 text-xs overflow-y-auto flex-1 pr-1" id="news-container"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 2: CROSS POWER 專屬頁面 (核心重構版) ================= -->
+            <div id="page-crosspower" class="space-y-6 hidden">
+                
+                <!-- 👑 黃金特殊交叉匯率行情 (8組完整交叉盤) -->
+                <div class="border theme-border theme-card rounded-2xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-coins theme-text mr-1.5 animate-bounce"></i> 黃金特殊多維交叉匯率行情 (Live XAU Crosses)
+                        </h3>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 px-2.5 py-0.5 rounded-full font-bold animate-pulse">● 實時串流中</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3" id="xau-crosses-grid">
+                        <!-- XAUUSD -->
+                        <div id="card-XAUUSD" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUUSD</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUUSD">2345.50</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUUSD">+0.32%</div>
+                        </div>
+                        <!-- XAUEUR -->
+                        <div id="card-XAUEUR" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUEUR</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUEUR">2155.20</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUEUR">+0.18%</div>
+                        </div>
+                        <!-- XAUGBP -->
+                        <div id="card-XAUGBP" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUGBP</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUGBP">1840.15</div>
+                            <div class="text-[9px] text-rose-500 font-bold" id="pct-XAUGBP">-0.05%</div>
+                        </div>
+                        <!-- XAUJPY -->
+                        <div id="card-XAUJPY" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUJPY</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUJPY">366550</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUJPY">+0.84%</div>
+                        </div>
+                        <!-- XAUAUD -->
+                        <div id="card-XAUAUD" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUAUD</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUAUD">3510.40</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUAUD">+0.42%</div>
+                        </div>
+                        <!-- XAUCHF -->
+                        <div id="card-XAUCHF" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUCHF</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUCHF">2118.80</div>
+                            <div class="text-[9px] text-rose-500 font-bold" id="pct-XAUCHF">-0.12%</div>
+                        </div>
+                        <!-- XAUCAD -->
+                        <div id="card-XAUCAD" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUCAD</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUCAD">3202.60</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUCAD">+0.25%</div>
+                        </div>
+                        <!-- XAUNZD -->
+                        <div id="card-XAUNZD" class="p-3 rounded-xl border theme-border bg-slate-50/40 dark:bg-purple-950/10 transition-all hover:scale-105 duration-200">
+                            <div class="text-[10px] font-black text-slate-400">XAUNZD</div>
+                            <div class="text-sm font-black font-mono mt-1 text-slate-700 dark:text-slate-200" id="val-XAUNZD">3812.30</div>
+                            <div class="text-[9px] text-emerald-600 font-bold" id="pct-XAUNZD">+0.38%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 CURRENCY POWER METER 走勢與進階操控 -->
+                <div class="border theme-border theme-card rounded-2xl p-5 shadow-sm space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-area theme-text animate-pulse"></i> Currency Power Meter (相對強度走勢 - 500 Ticks 模式)
+                        </h3>
+                    </div>
+
+                    <!-- 1️⃣ 第一行：時段選擇 (TF M1 - MN1) -->
+                    <div class="flex flex-col gap-1.5 bg-slate-50 dark:bg-black/20 p-3 rounded-xl border theme-border">
+                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider">時段選擇 (Timeframe Selectors)</span>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold" id="tf-selectors-container">
+                            <button onclick="changeTimeframe('M1')" id="tf-M1" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">M1</button>
+                            <button onclick="changeTimeframe('M5')" id="tf-M5" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">M5</button>
+                            <button onclick="changeTimeframe('M15')" id="tf-M15" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">M15</button>
+                            <button onclick="changeTimeframe('M30')" id="tf-M30" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">M30</button>
+                            <button onclick="changeTimeframe('H1')" id="tf-H1" class="px-3 py-1 rounded-lg transition-all theme-btn-active">H1</button>
+                            <button onclick="changeTimeframe('H4')" id="tf-H4" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">H4</button>
+                            <button onclick="changeTimeframe('D1')" id="tf-D1" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">D1</button>
+                            <button onclick="changeTimeframe('W1')" id="tf-W1" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">W1</button>
+                            <button onclick="changeTimeframe('MN1')" id="tf-MN1" class="px-3 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">MN1</button>
+                        </div>
+                    </div>
+
+                    <!-- 2️⃣ 第二行：貨幣隔離 (CCY ALL / EUR / USD ...) 與 Power 數值即時顯現 -->
+                    <div class="flex flex-col gap-1.5 bg-slate-50 dark:bg-black/20 p-3 rounded-xl border theme-border">
+                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider flex justify-between items-center">
+                            <span>貨幣隔離與實時 Power 數值 (CCY Power Selectors)</span>
+                            <span class="text-[9px] text-amber-500 font-black italic">提示：數值代表相對力量，點擊可快速剔除/加入繪圖</span>
+                        </span>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold" id="ccy-selectors-row">
+                            <!-- JS將會在此動態渲染含 Power 的按鈕 -->
+                        </div>
+                    </div>
+
+                    <!-- 3️⃣ 第三行：XAU 黃金交叉 (ALL / XAUUSD ...) 隔離簡選 -->
+                    <div class="flex flex-col gap-1.5 bg-slate-50 dark:bg-black/20 p-3 rounded-xl border theme-border">
+                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider">黃金交叉篩選 (Gold XAU Selectors)</span>
+                        <div class="flex flex-wrap gap-1.5 text-xs font-bold" id="xau-selectors-row">
+                            <!-- JS動態生成 XAU 各按鈕 -->
+                        </div>
+                    </div>
+
+                    <!-- 📊 500 Ticks 主趨勢圖表 -->
+                    <div class="w-full h-80 relative bg-white dark:bg-slate-950/20 p-2 rounded-xl border theme-border">
+                        <canvas id="ccyPowerChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 📊 恢復：相對強度多維對沖矩陣表 (下面的 TABLE) -->
+                <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                            <i class="fa-solid fa-table-cells theme-text animate-pulse"></i> 貨幣強度交叉對沖對比矩陣 (Relative Strength Matrix Table)
+                        </h3>
+                        <p class="text-[10px] theme-muted-text mt-1">
+                            通過 10x10 的百分比交叉矩陣，即時查找出目前走勢相差最大（最超買/超賣）的幣對實施高機率對沖馬丁。
+                        </p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center border-collapse text-[11px] font-mono">
+                            <thead>
+                                <tr class="border-b theme-border text-slate-400 text-[10px]" id="matrix-header-row">
+                                    <!-- 動態生成頭部 -->
+                                </tr>
+                            </thead>
+                            <tbody id="matrix-body-rows" class="divide-y theme-border">
+                                <!-- 動態生成行 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= PAGE 3: Portfolio 組合 ================= -->
+            <div id="page-portfolio" class="space-y-6 hidden">
+                <div class="border theme-border theme-card rounded-2xl p-5 shadow-sm space-y-4">
+                    <h2 class="text-md font-bold">我的實盤與模擬組合大腦</h2>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 4: Live Signals 實時監控 ================= -->
+            <div id="page-signals" class="space-y-6 hidden">
+                <div class="border theme-border theme-card rounded-2xl p-5 shadow-sm space-y-4">
+                    <h2 class="text-md font-bold mb-2">Live Signals 實時監控中心</h2>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 5: Trade History Analyzer (THA 歷史分析) ================= -->
+            <div id="page-analyzer" class="space-y-6 hidden">
+                
+                <!-- 📁 頂部多通道數據導入中心 -->
+                <div class="border theme-border theme-card p-6 rounded-3xl shadow-md space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b theme-border pb-4">
+                        <div>
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <i class="fa-solid fa-database theme-text animate-pulse"></i> THA 數據導入終端
+                            </h2>
+                            <p class="text-xs theme-muted-text mt-1">優化：支持文件拖入、手動導入與粘貼直接解析三渠道</p>
+                        </div>
+                        <button onclick="loadDemoData()" class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-90 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md">
+                            <i class="fa-solid fa-bolt animate-bounce"></i> 一鍵加載測試模擬數據 (Demo)
+                        </button>
+                    </div>
+
+                    <!-- 🎛️ 導入方法切換選單 -->
+                    <div class="flex bg-slate-100 dark:bg-purple-950/30 p-1.5 rounded-2xl border theme-border gap-2 w-full md:w-fit">
+                        <button onclick="switchUploadMethod('file')" id="method-btn-file" class="flex-1 md:flex-none px-5 py-2 rounded-xl text-xs font-black transition-all theme-btn-active">
+                            <i class="fa-solid fa-file-csv mr-1.5"></i> 方法一：拖曳/上傳 CSV 檔案
+                        </button>
+                        <button onclick="switchUploadMethod('paste')" id="method-btn-paste" class="flex-1 md:flex-none px-5 py-2 rounded-xl text-xs font-black transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700">
+                            <i class="fa-solid fa-paste mr-1.5"></i> 方法二：直接複製貼上交易紀錄 (100% 成功率)
+                        </button>
+                    </div>
+
+                    <!-- 📥 渠道 A：檔案上傳 -->
+                    <div id="upload-channel-file" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div id="dropZone" class="border-2 border-dashed theme-border rounded-2xl p-6 text-center bg-slate-50/50 dark:bg-purple-950/5 hover:bg-slate-100/50 dark:hover:bg-purple-950/15 transition-all cursor-pointer min-h-[140px] flex flex-col justify-center items-center relative">
+                            <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelected(this)">
+                            
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl theme-text mb-2 animate-bounce"></i>
+                            <p class="text-xs font-bold text-slate-700 dark:text-slate-300">將您的交易歷史 CSV / TXT 拖曳到此處</p>
+                            <p class="text-[10px] theme-muted-text mt-1">支持 MT4/MT5 Account History / HTML 報告導出格式</p>
+                            
+                            <button onclick="triggerPhysicalFileSelect(event)" class="mt-3 px-4 py-2 bg-[var(--bg-accent-soft)] text-[var(--text-primary)] hover:opacity-85 text-xs font-extrabold rounded-xl border theme-border shadow-sm z-30">
+                                <i class="fa-solid fa-folder-open mr-1.5"></i> 選擇本地交易報告檔案
+                            </button>
+                        </div>
+
+                        <!-- .SET 參數導入 -->
+                        <div class="border theme-border bg-slate-50/20 dark:bg-purple-950/5 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide"><i class="fa-solid fa-sliders mr-1.5 theme-text"></i> 關聯 .SET 參數文件 (選填)</label>
+                                <p class="text-[10px] theme-muted-text mb-3">導入網格加倉倍數與間距參數，系統將自動裝載並解算 SWOT 壓力。</p>
+                            </div>
+                            <input type="file" id="setFileInput" accept=".set" class="hidden" onchange="handleSetUpload(this)">
+                            <button onclick="document.getElementById('setFileInput').click()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-purple-950/30 text-xs font-bold rounded-xl border theme-border">
+                                <i class="fa-solid fa-cog mr-1.5"></i> 點此載入 .SET 配置文件
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 📥 渠道 B：貼上原始碼 -->
+                    <div id="upload-channel-paste" class="hidden space-y-4">
+                        <div class="bg-indigo-50 dark:bg-purple-950/10 border border-indigo-100 dark:border-purple-900/30 p-3.5 rounded-2xl">
+                            <p class="text-[11px] text-indigo-700 dark:text-purple-300 font-bold leading-relaxed">
+                                <i class="fa-solid fa-circle-info mr-1.5"></i> 
+                                <strong>提示：</strong> 如果點選選擇檔案沒反應，直接開啟交易 CSV 檔案或 MT4 歷史面板全選複製（Ctrl+A, Ctrl+C），並在下方粘貼（Ctrl+V），即可高精度解碼！
+                            </p>
+                        </div>
+                        <div class="relative">
+                            <textarea id="rawCsvTextArea" placeholder="在此貼上您複製的 CSV 行、Tab 鍵分割文本或 HTML 交易日誌..." class="w-full h-44 p-4 rounded-2xl border theme-border bg-white dark:bg-slate-950 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-slate-800 dark:text-slate-100"></textarea>
+                        </div>
+                        <div class="flex justify-between items-center gap-4">
+                            <span class="text-[10px] theme-muted-text">支援格式：MT4/MT5 導出的標準 CSV、分號/Tab 分割、或直接貼上 HTML Report 原始代碼</span>
+                            <button onclick="handleRawTextPasteParse()" class="px-6 py-2.5 theme-btn-active text-xs font-black rounded-xl shadow-md hover:opacity-90 flex items-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 立即解析貼上數據
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 🛠️ 數據欄位對應診斷與手動映射面板 -->
+                    <div id="mapping-panel" class="hidden border border-indigo-500/20 bg-indigo-500/5 p-4 rounded-2xl space-y-3">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <span class="text-xs font-black text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-gears"></i> 數據欄位對應診斷面板
+                            </span>
+                            <button onclick="applyManualMapping()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black transition-all">
+                                <i class="fa-solid fa-rotate mr-1"></i> 套用重繪與重解析
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-black mb-1">平倉時間欄位</label>
+                                <select id="map-time" class="w-full bg-white dark:bg-slate-900 border theme-border rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-black mb-1">商品名稱欄位</label>
+                                <select id="map-symbol" class="w-full bg-white dark:bg-slate-900 border theme-border rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-black mb-1">交易手數欄位</label>
+                                <select id="map-lots" class="w-full bg-white dark:bg-slate-900 border theme-border rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-black mb-1">平倉利潤欄位</label>
+                                <select id="map-profit" class="w-full bg-white dark:bg-slate-900 border theme-border rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-black mb-1">交易註釋 (Comment) 欄位</label>
+                                <select id="map-comment" class="w-full bg-white dark:bg-slate-900 border theme-border rounded p-1.5 text-xs text-slate-800 dark:text-slate-100"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔍 數據載入提示佔位 -->
+                <div id="analyzer-placeholder" class="border border-dashed theme-border p-16 rounded-3xl text-center bg-white/50 dark:bg-slate-900/10">
+                    <i class="fa-solid fa-chart-line text-5xl theme-text mb-4 opacity-40"></i>
+                    <h3 class="font-bold text-lg">等待導入交易歷史數據</h3>
+                    <p class="text-sm theme-muted-text mt-2 max-w-md mx-auto">請利用上方「拖曳上傳」或「直接複製貼上」數據，解鎖完整旗艦版分析主圖與自定義 EA 策略大腦。</p>
+                </div>
+
+
+                <!-- 📈 深度分析結果大面板 -->
+                <div id="analyzer-main-panel" class="hidden space-y-6">
+                    
+                    <!-- 🛠️ EA 策略大腦主切換標籤頁 -->
+                    <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b theme-border pb-3 gap-3">
+                            <div>
+                                <span class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <i class="fa-solid fa-brain theme-text"></i> 選擇運行的 EA 策略大腦進行深度隔離分析
+                                </span>
+                            </div>
+                            <button onclick="toggleCustomEAPanel(true)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md">
+                                <i class="fa-solid fa-folder-plus"></i> 自定義新建 EA 篩選
+                            </button>
+                        </div>
+                        
+                        <!-- 💜 自定義 EA 新建滑出面板 -->
+                        <div id="custom-ea-panel" class="hidden border-2 border-dashed border-purple-500/40 bg-purple-500/5 p-4 rounded-2xl space-y-3">
+                            <span class="text-xs font-black text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i> 創建您的專屬 EA 隔離篩選大腦
+                            </span>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-black mb-1">EA 策略名稱</label>
+                                    <input type="text" id="custom-ea-name" placeholder="例如: MyGrid_Gold" class="w-full bg-white dark:bg-slate-900 border theme-border rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-black mb-1">關聯商品品種 (多品種用半角逗號隔開)</label>
+                                    <input type="text" id="custom-ea-symbols" placeholder="例如: XAUUSD, XAGUSD" class="w-full bg-white dark:bg-slate-900 border theme-border rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-black mb-1">交易註釋關鍵字篩選 (Comment 篩選，留空不限)</label>
+                                    <input type="text" id="custom-ea-comment" placeholder="例如: s10_lite" class="w-full bg-white dark:bg-slate-900 border theme-border rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-100">
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2.5">
+                                <button onclick="toggleCustomEAPanel(false)" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-xs font-bold rounded-xl">
+                                    取消
+                                </button>
+                                <button onclick="saveCustomEAFilter()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black rounded-xl shadow">
+                                    確認創建並加載分析
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 🎛️ EA 切換按鈕容器 -->
+                        <div class="flex flex-wrap gap-2.5 pt-1" id="tha-ea-switcher-container"></div>
+                    </div>
+
+                    <!-- ⚠️ SWOT & EA 參數壓力測試診斷結果 -->
+                    <div id="swot-diagnostic-panel" class="hidden border border-amber-500/30 bg-amber-500/5 p-5 rounded-2xl shadow-sm space-y-3">
+                        <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i> .SET 策略風控 SWOT 診斷大腦
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div class="p-3 bg-white/50 dark:bg-black/20 rounded-xl border theme-border">
+                                <span class="font-bold block text-slate-400">當前策略定位</span>
+                                <span id="swot-strategy-type" class="text-sm font-bold theme-text mt-1 block">未識別</span>
+                            </div>
+                            <div class="p-3 bg-white/50 dark:bg-black/20 rounded-xl border theme-border">
+                                <span class="font-bold block text-slate-400">爆倉臨界壓力層數 (Layers)</span>
+                                <span id="swot-stress-layers" class="text-sm font-bold text-rose-500 mt-1 block">--</span>
+                            </div>
+                            <div class="p-3 bg-white/50 dark:bg-black/20 rounded-xl border theme-border">
+                                <span class="font-bold block text-slate-400">資金占用臨界點</span>
+                                <span id="swot-margin-stress" class="text-sm font-bold text-rose-400 mt-1 block">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. 核心 KPI 第一維度數據矩陣 (4 大核心數據卡片) -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="border theme-border theme-card p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">淨利潤 (Net Profit)</span>
+                            <span id="kpi-net-profit" class="text-2xl font-black font-mono mt-2">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-5 rounded-2xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">總交易筆數 (Total Trades)</span>
+                            <span id="kpi-total-trades" class="text-2xl font-black font-mono mt-2">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-5 rounded-2xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">勝率 (Win Rate)</span>
+                            <span id="kpi-win-rate" class="text-2xl font-black font-mono text-indigo-500 dark:text-indigo-400 mt-2">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-5 rounded-2xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">獲利因子 (Profit Factor)</span>
+                            <span id="kpi-profit-factor" class="text-2xl font-black font-mono mt-2">--</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. 進階指標第二維度數據矩陣 -->
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">Gross Profit</span>
+                            <span id="kpi-gross-profit" class="text-xs font-bold font-mono text-emerald-500 mt-1 block">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">Gross Loss</span>
+                            <span id="kpi-gross-loss" class="text-xs font-bold font-mono text-rose-500 mt-1 block">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">Average Win</span>
+                            <span id="kpi-avg-win" class="text-xs font-bold font-mono text-emerald-500 mt-1 block">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">Average Loss</span>
+                            <span id="kpi-avg-loss" class="text-xs font-bold font-mono text-rose-500 mt-1 block">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">最大回撤 %</span>
+                            <span id="kpi-max-dd" class="text-xs font-bold font-mono text-rose-500 mt-1 block">--</span>
+                        </div>
+                        <div class="border theme-border theme-card p-4 rounded-xl shadow-sm text-center">
+                            <span class="text-[9px] text-slate-400 font-bold block">極限扛單 Pips</span>
+                            <span id="kpi-max-pips" class="text-xs font-bold font-mono text-red-500 mt-1 block">--</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. 圖表大框架區 -->
+                    <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b theme-border pb-3">
+                            <h3 class="text-xs font-bold tracking-wide flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                <i class="fa-solid fa-chart-line theme-text"></i> 資金權益成長曲線與最大浮動回撤 (Equity vs Drawdown)
+                            </h3>
+                            <div class="flex bg-slate-100 dark:bg-purple-950/30 p-1 rounded-xl border theme-border gap-1 text-[11px] font-bold">
+                                <button onclick="toggleChartMode('combined')" id="mode-btn-combined" class="px-2.5 py-1 rounded-lg transition-all theme-btn-active">綜合資金曲線</button>
+                                <button onclick="toggleChartMode('split')" id="mode-btn-split" class="px-2.5 py-1 rounded-lg transition-all text-slate-400">分割顯示單一貨幣對 (CCY Split)</button>
+                            </div>
+                        </div>
+
+                        <!-- 📊 A. 綜合主圖表容器 -->
+                        <div id="combined-chart-container" class="w-full aspect-[16/9] md:aspect-[21/9] relative min-h-[300px]">
+                            <canvas id="equityChart"></canvas>
+                        </div>
+
+                        <!-- 📊 B. 多 CCY 自動拆解細圖展示區 -->
+                        <div id="split-charts-container" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    </div>
+
+                    <!-- 4. 📅 月度收益百分比熱力圖 -->
+                    <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-4">
+                        <div>
+                            <h3 class="text-sm font-bold">月份收益率矩陣熱力圖 (Monthly Return Heatmap %)</h3>
+                            <p class="text-[10px] theme-muted-text">以百分比動態歸類每年與每月的綜合收益表現</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-center border-collapse text-xs font-mono">
+                                <thead>
+                                    <tr class="border-b theme-border text-slate-400 text-[10px]">
+                                        <th class="py-2 text-left pl-2">年份</th>
+                                        <th>1月</th><th>2月</th><th>3月</th><th>4月</th><th>5月</th><th>6月</th>
+                                        <th>7月</th><th>8月</th><th>9月</th><th>10月</th><th>11月</th><th>12月</th>
+                                        <th class="font-bold text-slate-500">總計</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="heatmap-body" class="divide-y theme-border"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. 📊 週與時段分佈分析 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-3">
+                            <h3 class="text-xs font-bold">星期項目分佈 (Weekday Performance)</h3>
+                            <div class="w-full aspect-[2/1] relative">
+                                <canvas id="weekdayChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="border theme-border theme-card p-5 rounded-2xl shadow-sm space-y-3">
+                            <h3 class="text-xs font-bold">時段項目分佈 (Hourly Performance GMT)</h3>
+                            <div class="w-full aspect-[2/1] relative">
+                                <canvas id="hourlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. 📊 成交明細清冊 -->
+                    <div class="border theme-border theme-card rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 border-b theme-border flex justify-between items-center bg-slate-50/50 dark:bg-purple-950/5">
+                            <h3 class="text-xs font-bold">交易成交細明檔案</h3>
+                            <div class="flex gap-2 text-xs">
+                                <input type="text" id="tableSearch" placeholder="搜尋品種 (如 XAUUSD)" oninput="filterTable()" class="px-2.5 py-1 bg-white dark:bg-slate-900 border theme-border rounded-lg text-xs text-slate-800 dark:text-slate-100">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto max-h-80 overflow-y-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-slate-400 uppercase text-[10px] bg-slate-100/50 dark:bg-purple-950/10 border-b theme-border sticky top-0">
+                                    <tr>
+                                        <th class="p-3">訂單編號 (Ticket)</th>
+                                        <th class="p-3">平倉時間</th>
+                                        <th class="p-3">品種</th>
+                                        <th class="p-3">類型</th>
+                                        <th class="p-3 text-right">手數 (Lots)</th>
+                                        <th class="p-3 text-right">獲利 (USD)</th>
+                                        <th class="p-3 text-right">點數 (Pips)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tradeLogBody" class="divide-y theme-border"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 7. 📊 馬丁格爾策略分析 -->
+                    <div class="border theme-border theme-card p-5 rounded-3xl shadow-sm space-y-4 bg-slate-900/10 dark:bg-purple-950/5">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b theme-border pb-3 gap-3">
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <i class="fa-solid fa-layer-group text-orange-500"></i> 馬丁格爾策略分析 (Martingale Layer Analysis)
+                                </h3>
+                                <p class="text-[10px] theme-muted-text">依據品種隔離分析，嚴格區分 BUY 和 SELL 加倉層數、交易次數與階梯式勝率高亮</p>
+                            </div>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 shrink-0">
+                                最大加倉深度: <span id="m-max-depth">L0</span>
+                            </span>
+                        </div>
+
+                        <!-- 🎛️ 馬丁 CCY 切換器 Tab -->
+                        <div class="flex flex-wrap gap-1.5 p-1 bg-slate-100 dark:bg-black/35 rounded-xl border theme-border w-fit" id="martingale-ccy-tabs">
+                            <span class="text-xs theme-muted-text p-2 italic">載入數據後自動生成貨幣對標籤</span>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-center border-collapse text-xs font-semibold rounded-xl overflow-hidden border theme-border">
+                                <thead>
+                                    <tr class="bg-slate-100/50 dark:bg-purple-950/20 text-[10px] uppercase tracking-wider text-slate-500 border-b theme-border">
+                                        <th class="py-3">層級 (Level)</th>
+                                        <th class="py-3">方向 (Type)</th>
+                                        <th class="py-3">標準手數 (Lots)</th>
+                                        <th class="py-3">交易筆數 (Trades)</th>
+                                        <th class="py-3">累計利潤 (Sum Profit)</th>
+                                        <th class="py-3">累計點數 (Sum Pips)</th>
+                                        <th class="py-3">勝率 (Win Rate)</th>
+                                        <th class="py-3">風險狀態 (Status)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="martingale-table-body" class="divide-y theme-border">
+                                    <tr>
+                                        <td colspan="8" class="py-6 text-slate-400 italic">等待數據載入後，點擊上方貨幣對解構專屬馬丁層級...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 8. 🔮 策略 SWOT / TOWS 3x3 戰術矩陣 -->
+                    <div class="border theme-border theme-card p-6 rounded-3xl shadow-sm space-y-4">
+                        <div class="border-b theme-border pb-3">
+                            <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 uppercase tracking-wider">
+                                <i class="fa-solid fa-compass text-purple-500"></i> 策略 SWOT / TOWS 3x3 戰術交叉診斷矩陣
+                            </h3>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3.5 w-full text-xs" id="swot-grid-container"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 💡 全域控制與計算引擎 JS 邏輯 -->
+    <script>
+        const ccyList = ["EUR", "USD", "JPY", "GBP", "CHF", "AUD", "CAD", "NZD", "XAU"];
+        
+        // 實時相對力量 Power 起始值
+        let ccyStrengths = { "EUR": 5.24, "USD": 6.81, "JPY": 3.12, "GBP": 5.95, "CHF": 4.84, "AUD": 4.22, "CAD": 4.51, "NZD": 2.85, "XAU": 7.50 };
+        
+        // 支援時段 M1 / M5 / M15 / M30 / H1 / H4 / D1 / W1 / MN1
+        const timeframes = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'];
+        let ccyHistoryData = {};
+        let currentTF = 'H1';
+        let ccyHistory = {};
+        
+        // 預設 active 的繪圖線條
+        let activeChartCcys = ["EUR", "USD", "GBP", "XAU"];
+        let chartInstances = {};
+        
+        let parsedTrades = []; 
+        let activeEA = "ALL"; 
+        let activeMartingaleCCY = ""; 
+        let activeChartMode = 'combined'; 
+
+        // 交易歷史欄位索引映射器
+        let fileHeaders = [];
+        let mappedColumns = { time: -1, symbol: -1, type: -1, lots: -1, profit: -1, comment: -1 };
+
+        // 內置策略與動態生成的自定義 EA 策略庫
+        let strategyProfiles = [
+            { id: "ALL", name: "全部交易 (綜合分析)", type: "core", icon: "fa-database text-amber-500", desc: "展示 CSV 全盤交易明細" },
+            { id: "S10_LITE", name: "S10 LITE (趨勢網格)", type: "predefined", icon: "fa-brain text-purple-500", desc: "過濾 EURUSD / GBPUSD" },
+            { id: "S10_PRO", name: "S10 PRO (多幣網格)", type: "predefined", icon: "fa-cubes text-blue-500", desc: "過濾 EURUSD / USDJPY / AUDUSD" },
+            { id: "GOLD_HUNTER", name: "GOLD HUNTER (黃金專屬)", type: "predefined", icon: "fa-fire text-amber-500", desc: "過濾 XAUUSD" }
+        ];
+
+        const swotTemplates = {
+            "ALL": {
+                name: "全部綜合交易",
+                st: "跨平台及跨策略綜合分析，允許在大宗商品和外匯多渠道對沖平衡系統威脅。",
+                s: "數據全盤穿透：100% 完整解析當前上傳 CSV 或粘貼數據庫中的所有實盤利潤。",
+                sw: "綜合監管各品種回撤邊界，針對不相關、弱相關品種設置統一的淨值警戒。",
+                t: "缺乏特定策略專屬邊界時，混雜交易會導致綜合最大回撤曲線產生相互重疊。",
+                w: "無法精準劃分各子策略的物理帳戶佔用，容易在極端黑天鵝事件中產生相互干擾。",
+                to: "建議利用上方「自定義創建 EA 篩選」將各交易對/註釋進行精準隔離分類診斷。",
+                o: "大數據統計有利於優化整體多空平衡配比，從而極大提升整體帳戶夏普比率。",
+                wo: "通過分析各個品種的馬丁加倉階梯，剔除深層回撤高但獲利薄弱的不良資產。"
+            },
+            "S10_LITE": { name: "S10 LITE", st: "低回撤優勢允許在高關聯對沖上輕微加倉，但須嚴格設置相關性防線。", s: "MA趨勢強弱多維判定、極輕倉首單、安全墊厚實、保證金佔用小。", sw: "於早段網格實施局部減倉或保本退出，防止單邊趨勢將初期利潤蠶食。", t: "市場突發大單邊趨勢不回頭、流動性黑天鵝滑點與點差拉寬。", w: "網格無固定硬性止損、依賴震盪區間、單邊夾倉時間拉長占用資金。", to: "極端行情可加入防守性對沖頭寸，將單向夾倉轉為順勢追隨。", o: "長期寬幅震盪市場是獲利天堂，適合多幣對小網格反覆收割。", wo: "在深層加倉時（L5+）拉大加倉間距，從而降低網格中段的資金佔用率。" },
+            "S10_PRO": { name: "S10 PRO", st: "利用多幣種不相關性機制 neutralized 局部單向風險，多線程抗壓能力優異。", s: "多幣種動態對沖與鎖定算法、自適應多單/空單風險池、資金使用率極高。", sw: "多組交叉網格同時加倉時，引入組合淨值（Equity）移動止損，統一落袋為安。", t: "美元指數 (DXY) 爆發百年一遇極端單向行情，導致多幣種網格同步往一側夾倉。", w: "策略邏輯極為複雜，手動介入解倉難度大，各品種保證金共用造成一損俱損。", to: "在相關性矩陣中動態切斷異常同向的品種，釋放多餘保證金並轉換為套利鎖定。", o: "亞盤、歐美盤交叉盤劇烈波動可產生多重對沖網格交互獲利，盈利彈性強。", wo: "加入 ATR 波動率指標，根據當日即時波幅自動加寬加倉階梯，避免盲目加層。" },
+            "GOLD_HUNTER": { name: "GOLD HUNTER", st: "黃金高獲利因子特性可短時間內快速收回本金，使部分利潤成為零成本防禦資金。", s: "黃金專屬量能阻力進場、高波動高盈虧比、高頻突破追單能力優秀。", sw: "限制每週總交易時段，避開大非農、CPI等高危新聞發布期以控回撤。", t: "地緣政治極端黑天鵝導致黃金狂飆 $100+ 不回頭、交易所停市點差崩潰。", w: "黃金加倉乘數大、資金消耗極快、深度加倉（L8+）極易觸發保證金警報。", to: "黃金突破歷史高點時，EA 自動由震盪網格模式切換為順勢突破移動止損模式。", o: "黃金多空交織大波幅洗盤頻繁，高波動率下可迅速獲取超額網格利潤。", wo: "在帳戶內配置 100% 獨立黃金專屬子帳號，與外匯網格完全物理隔離，限制單一爆倉點。" }
+        };
+
+        const ccyColors = {
+            "EUR": "#3b82f6", "USD": "#10b981", "JPY": "#ec4899", "GBP": "#8b5cf6",
+            "CHF": "#f59e0b", "AUD": "#06b6d4", "CAD": "#f43f5e", "NZD": "#14b8a6", "XAU": "#eab308", "XAUUSD": "#eab308"
+        };
+
+        const newsDatabase = {
+            '1h': [
+                { id: 1, text: "預設木元素主題載入完畢，系統正通過交叉盤多维對沖規避單向美元爆倉尾部風險。", time: "剛剛", tag: "系統狀態", type: "success" },
+                { id: 2, text: "黃金亞歐盤突破高點，多組跨金交叉盤（XAUGBP, XAUJPY）呈現動態超買，觸發防守性馬丁平倉。", time: "15分鐘前", tag: "黃金交叉", type: "info" },
+                { id: 3, text: "500 Ticks 實時深度數據緩存流運行流暢，高頻數據引擎正以 60秒 週期解算強度矩陣。", time: "30分鐘前", tag: "大數據", type: "info" }
+            ],
+            'today': [
+                { id: 4, text: "美元指數盤中窄幅震盪盤整，現報 104.85，各主要網格大腦維持平穩水位。", time: "2小時前", tag: "美元", type: "info" }
+            ],
+            'week': [
+                { id: 7, text: "非農就業報告即將公佈，建議於週五開盤前對 S10 LITE 策略進行適度降倍或暫停加層。", time: "週五 20:30", tag: "數據衝擊", type: "alert" }
+            ],
+            'next': [
+                { id: 14, text: "下週重大央行會議即將登場，預估跨幣對波動率將拉大 150 Pips，網格間距建議預警性加寬。", time: "下週五 20:30", tag: "央行預警", type: "alert" }
+            ]
+        };
+
+        // 🌟 Toast 警示器
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let iconClass = 'fa-circle-info text-blue-500';
+            let bgClass = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800';
+
+            if (type === 'success') iconClass = 'fa-circle-check text-emerald-500';
+            else if (type === 'warning') iconClass = 'fa-triangle-exclamation text-amber-500';
+            else if (type === 'error') iconClass = 'fa-circle-xmark text-rose-500';
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-sm transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-base shrink-0"></i>
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${message}</div>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // 🌟 數據導入方式切換
+        function switchUploadMethod(method) {
+            const fileBtn = document.getElementById('method-btn-file');
+            const pasteBtn = document.getElementById('method-btn-paste');
+            const fileChannel = document.getElementById('upload-channel-file');
+            const pasteChannel = document.getElementById('upload-channel-paste');
+
+            if (method === 'file') {
+                fileBtn.className = "px-5 py-2 rounded-xl text-xs font-black transition-all theme-btn-active";
+                pasteBtn.className = "px-5 py-2 rounded-xl text-xs font-black transition-all text-slate-500 dark:text-slate-400";
+                fileChannel.classList.remove('hidden');
+                pasteChannel.classList.add('hidden');
+            } else {
+                fileBtn.className = "px-5 py-2 rounded-xl text-xs font-black transition-all text-slate-500 dark:text-slate-400";
+                pasteBtn.className = "px-5 py-2 rounded-xl text-xs font-black transition-all theme-btn-active";
+                fileChannel.classList.add('hidden');
+                pasteChannel.classList.remove('hidden');
+            }
+        }
+
+        function triggerPhysicalFileSelect(e) {
+            if(e) { e.preventDefault(); e.stopPropagation(); }
+            const input = document.getElementById('csvFileInput');
+            if (input) input.click(); 
+            else showToast("未找到文件上傳節點，請嘗試方法二直接粘貼數據！", "error");
+        }
+
+        function handleFileSelected(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            showToast(`正在讀取檔案: ${file.name}...`, 'info');
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    parseAndProcessRawText(evt.target.result);
+                    showToast(`成功從 [${file.name}] 解析交易明細！`, 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast(`檔案解析失敗: ${err.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleRawTextPasteParse() {
+            const text = document.getElementById('rawCsvTextArea').value.trim();
+            if (!text) {
+                showToast("請在粘貼框中貼入您的交易明細數據！", "warning");
+                return;
+            }
+            try {
+                parseAndProcessRawText(text);
+                showToast(`成功解析您貼上的交易明細數據！`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast(`貼上解析出錯: ${err.message}`, 'error');
+            }
+        }
+
+        let rawCacheText = "";
+        function parseAndProcessRawText(text) {
+            rawCacheText = text;
+            const trades = smartParseTradingData(text);
+            if (trades && trades.length > 0) {
+                parsedTrades = trades;
+                autoDetectEAsFromComments(trades);
+                renderEASwitcherButtons();
+                refreshTHAWithFilters();
+            } else {
+                showToast("未能在數據中解析出有效平倉交易，請確保包含利潤與商品欄位。", "error");
+            }
+        }
+
+        function toggleCustomEAPanel(show) {
+            const panel = document.getElementById('custom-ea-panel');
+            if (show) panel.classList.remove('hidden');
+            else panel.classList.add('hidden');
+        }
+
+        function saveCustomEAFilter() {
+            const name = document.getElementById('custom-ea-name').value.trim();
+            const symbolsRaw = document.getElementById('custom-ea-symbols').value.trim();
+            const commentKeyword = document.getElementById('custom-ea-comment').value.trim();
+
+            if (!name) {
+                showToast("請輸入 EA 策略名稱", "warning");
+                return;
+            }
+
+            const symbols = symbolsRaw ? symbolsRaw.split(',').map(s => s.trim().toUpperCase()).filter(s => s.length > 0) : [];
+            const newId = "custom_" + Date.now();
+
+            strategyProfiles.push({
+                id: newId,
+                name: `${name} (自定義)`,
+                type: "custom",
+                icon: "fa-filter text-purple-500",
+                desc: `過濾 [${symbols.length > 0 ? symbols.join(',') : '不限'}]${commentKeyword ? ' 註釋:'+commentKeyword : ''}`,
+                symbols: symbols,
+                commentKeyword: commentKeyword
+            });
+
+            swotTemplates[newId] = {
+                name: name,
+                st: `針對 ${name} 的自定義對沖組合，利用商品相關性規避尾部極端風險。`,
+                s: `過濾商品: [${symbols.join(', ')}]，首單開倉條件精準度高。`,
+                sw: `當前策略單邊走勢回撤控制依賴對沖安全墊。`,
+                t: `面臨多商品大單邊夾攻風險，保證金壓力將在深層拉滿。`,
+                w: `需要精確調整加倉倍數與點差，防止無效對沖。`,
+                to: `可在高回撤時期動態手動解鎖逆勢網格。`,
+                o: `對於高波動率商品具有絕佳利潤收割彈性。`,
+                wo: `若回撤超過邊界，可適當關閉部分低流動性交叉盤。`
+            };
+
+            activeEA = newId;
+            toggleCustomEAPanel(false);
+            renderEASwitcherButtons();
+            refreshTHAWithFilters();
+            showToast(`成功創建自定義 EA 策略：${name}！`, "success");
+        }
+
+        function autoDetectEAsFromComments(trades) {
+            strategyProfiles = strategyProfiles.filter(p => p.type === 'core' || p.type === 'predefined' || p.type === 'custom');
+            const commentSet = new Set();
+            trades.forEach(t => {
+                if (t.comment && t.comment.trim().length > 1) {
+                    const cleanComment = t.comment.replace(/[\[\]\d#]/g, '').trim();
+                    if (cleanComment.length >= 3 && cleanComment.length <= 15) {
+                        commentSet.add(cleanComment);
+                    }
+                }
+            });
+
+            if (commentSet.size > 0) {
+                commentSet.forEach(cleanComment => {
+                    strategyProfiles.push({
+                        id: `auto_comm_${cleanComment}`,
+                        name: `${cleanComment} (自偵測)`,
+                        type: "autodetect",
+                        icon: "fa-robot text-teal-500",
+                        desc: `掃描註釋包含 "${cleanComment}"`,
+                        symbols: [],
+                        commentKeyword: cleanComment
+                    });
+
+                    swotTemplates[`auto_comm_${cleanComment}`] = {
+                        name: cleanComment,
+                        st: `智能偵測所得之註釋 EA，針對 ${cleanComment} 實施深度資產防護。`,
+                        s: `自動精確對應 ${cleanComment} 註釋的所有平倉交易紀錄。`,
+                        sw: `分析其在深層加倉時的盈虧比，避免盲目扛單。`,
+                        t: `該 EA 運作的商品波動率如果大於歷史平均，須拉大加倉間隔。`,
+                        w: `尚無配對專屬 .SET 文件，風控邊界主要採用數據擬合算力得出。`,
+                        to: `在強大震盪週期內能以極佳頻率滾動利潤。`,
+                        o: `自動歸類該註釋所屬品種組合，提供精準馬丁解構。`,
+                        wo: `視當前勝率調控槓桿比率，降低該專屬 EA 賬戶在多頭單邊趨勢的佔用。`
+                    };
+                });
+                showToast(`動態偵測到 ${commentSet.size} 個潛在 EA 註釋標籤！`, "success");
+            }
+        }
+
+        function smartParseTradingData(rawText) {
+            rawText = rawText.trim();
+            if (!rawText) return [];
+
+            if (rawText.toLowerCase().includes('<table') || rawText.toLowerCase().includes('<tr') || rawText.toLowerCase().includes('<td')) {
+                return parseHtmlReport(rawText);
+            }
+
+            const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length < 1) return [];
+
+            let delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+
+            function splitCsvRow(line, sep) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"' || char === "'") inQuotes = !inQuotes;
+                    else if (char === sep && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
+            }
+
+            const headers = splitCsvRow(lines[0], delimiter).map(h => h.toLowerCase().replace(/["']/g, ''));
+            fileHeaders = headers;
+
+            let timeIdx = -1, symbolIdx = -1, typeIdx = -1, lotsIdx = -1, profitIdx = -1, commentIdx = -1;
+            headers.forEach((h, idx) => {
+                if (h.includes('time') || h.includes('date') || h.includes('時間') || h.includes('日期') || h.includes('close')) timeIdx = idx;
+                if (h.includes('symbol') || h.includes('item') || h.includes('品種') || h.includes('貨幣') || h.includes('商品')) symbolIdx = idx;
+                if (h.includes('type') || h.includes('action') || h.includes('類型') || h.includes('方向') || h.includes('cmd')) typeIdx = idx;
+                if (h.includes('lot') || h.includes('vol') || h.includes('size') || h.includes('手數')) lotsIdx = idx;
+                if (h.includes('profit') || h.includes('gain') || h.includes('利潤') || h.includes('盈虧') || h.includes('金額')) profitIdx = idx;
+                if (h.includes('comment') || h.includes('註釋') || h.includes('备注')) commentIdx = idx;
+            });
+
+            if (lines[1]) {
+                const sampleCols = splitCsvRow(lines[1], delimiter);
+                if (timeIdx === -1) timeIdx = sampleCols.findIndex(val => !isNaN(Date.parse(val)));
+                if (symbolIdx === -1) symbolIdx = sampleCols.findIndex(val => /^[A-Z0-9.#_]{3,12}$/i.test(val));
+                if (typeIdx === -1) typeIdx = sampleCols.findIndex(val => /buy|sell|買|賣/i.test(val));
+                if (lotsIdx === -1) lotsIdx = sampleCols.findIndex(val => {
+                    const parsed = parseFloat(val.replace(/[^0-9.-]/g, ''));
+                    return !isNaN(parsed) && parsed > 0 && parsed < 200;
+                });
+                if (profitIdx === -1) profitIdx = sampleCols.findIndex((val, i) => {
+                    if (i === lotsIdx || i === timeIdx) return false;
+                    const parsed = parseFloat(val.replace(/[^0-9.-]/g, ''));
+                    return !isNaN(parsed) && Math.abs(parsed) > 0.001;
+                });
+            }
+
+            mappedColumns = {
+                time: timeIdx === -1 ? 0 : timeIdx,
+                symbol: symbolIdx === -1 ? 1 : symbolIdx,
+                type: typeIdx === -1 ? 2 : typeIdx,
+                lots: lotsIdx === -1 ? 3 : lotsIdx,
+                profit: profitIdx === -1 ? 4 : profitIdx,
+                comment: commentIdx === -1 ? -1 : commentIdx
+            };
+
+            populateMappingSelects(headers);
+            return buildTradesFromMapping(lines, delimiter, 1);
+        }
+
+        function buildTradesFromMapping(lines, delimiter, startIndex) {
+            function splitCsvRow(line, sep) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"' || char === "'") inQuotes = !inQuotes;
+                    else if (char === sep && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
+            }
+
+            const cleanNumberStr = (str) => {
+                if (!str) return '0';
+                let s = str.replace(/\s/g, '');
+                if (s.includes(',') && s.includes('.')) s = s.replace(/,/g, '');
+                else if (s.includes(',') && !s.includes('.')) {
+                    if (s.indexOf(',') === s.lastIndexOf(',') && s.length - s.indexOf(',') <= 3) s = s.replace(',', '.');
+                    else s = s.replace(/,/g, '');
+                }
+                return s.replace(/[^0-9.-]/g, '');
+            };
+
+            const trades = [];
+            let mockTicket = 850100;
+
+            for (let i = startIndex; i < lines.length; i++) {
+                const cols = splitCsvRow(lines[i], delimiter).map(c => c.replace(/["']/g, ''));
+                if (cols.length <= Math.max(mappedColumns.time, mappedColumns.symbol, mappedColumns.profit)) continue;
+
+                const timeVal = cols[mappedColumns.time] || '2026-05-31 12:00:00';
+                const symVal = (cols[mappedColumns.symbol] || 'XAUUSD').toUpperCase();
+                const typeVal = (cols[mappedColumns.type] || 'BUY').toUpperCase();
+                const lotsVal = parseFloat(cleanNumberStr(cols[mappedColumns.lots])) || 0.01;
+                const profitVal = parseFloat(cleanNumberStr(cols[mappedColumns.profit])) || 0.0;
+                const commentVal = mappedColumns.comment !== -1 ? (cols[mappedColumns.comment] || '') : '';
+
+                let pipsVal = profitVal >= 0 ? (profitVal / (lotsVal * 10)) : (profitVal / (lotsVal * 8));
+
+                trades.push({
+                    ticket: mockTicket++,
+                    time: timeVal,
+                    symbol: symVal,
+                    type: typeVal.includes('SELL') || typeVal.includes('賣') || typeVal.includes('S') ? 'SELL' : 'BUY',
+                    lots: lotsVal,
+                    profit: parseFloat(profitVal.toFixed(2)),
+                    pips: parseFloat(pipsVal.toFixed(1)),
+                    comment: commentVal
+                });
+            }
+            return trades;
+        }
+
+        function populateMappingSelects(headers) {
+            const panel = document.getElementById('mapping-panel');
+            panel.classList.remove('hidden');
+
+            const selectKeys = ['time', 'symbol', 'lots', 'profit', 'comment'];
+            selectKeys.forEach(key => {
+                const select = document.getElementById(`map-${key}`);
+                if (!select) return;
+                select.innerHTML = '';
+                if (key === 'comment') select.appendChild(new Option('-- 無此欄位 --', -1));
+
+                headers.forEach((h, idx) => {
+                    const text = `[欄位 ${idx}] ${h}`;
+                    const opt = new Option(text, idx);
+                    if (idx === mappedColumns[key]) opt.selected = true;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        function applyManualMapping() {
+            if (!rawCacheText) {
+                showToast("無緩存原始數據，請先上傳 CSV！", "warning");
+                return;
+            }
+
+            mappedColumns.time = parseInt(document.getElementById('map-time').value);
+            mappedColumns.symbol = parseInt(document.getElementById('map-symbol').value);
+            mappedColumns.lots = parseInt(document.getElementById('map-lots').value);
+            mappedColumns.profit = parseInt(document.getElementById('map-profit').value);
+            mappedColumns.comment = parseInt(document.getElementById('map-comment').value);
+
+            const lines = rawCacheText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            let delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+
+            try {
+                const trades = buildTradesFromMapping(lines, delimiter, 1);
+                if (trades && trades.length > 0) {
+                    parsedTrades = trades;
+                    autoDetectEAsFromComments(trades);
+                    renderEASwitcherButtons();
+                    refreshTHAWithFilters();
+                    showToast("已成功套用自定義欄位映射！數據更新完畢。", "success");
+                }
+            } catch (err) {
+                showToast(`手動對應解析失敗: ${err.message}`, "error");
+            }
+        }
+
+        function parseHtmlReport(htmlText) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const rows = doc.querySelectorAll('tr');
+            const trades = [];
+            let mockTicket = 920100;
+
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                if (cells.length < 5) return;
+
+                const typeText = cells[2] || '';
+                const symText = cells[4] || '';
+                const sizeText = cells[3] || '0.01';
+                const profitText = cells[cells.length - 1] || '0';
+
+                const profitVal = parseFloat(profitText.replace(/[^0-9.-]/g, ''));
+                const lotVal = parseFloat(sizeText.replace(/[^0-9.-]/g, ''));
+
+                if (!isNaN(profitVal) && !isNaN(lotVal) && symText.length >= 3 && symText.length <= 12) {
+                    const isBuy = typeText.toLowerCase().includes('buy') || typeText.includes('買');
+                    const isSell = typeText.toLowerCase().includes('sell') || typeText.includes('賣');
+
+                    if (isBuy || isSell) {
+                        trades.push({
+                            ticket: parseInt(cells[0]) || mockTicket++,
+                            time: cells[1] || cells[8] || '2026-05-31 12:00:00',
+                            symbol: symText.toUpperCase().replace(/["']/g, ''),
+                            type: isBuy ? 'BUY' : 'SELL',
+                            lots: lotVal,
+                            profit: profitVal,
+                            pips: profitVal >= 0 ? (profitVal / (lotVal * 10)) : (profitVal / (lotVal * 8)),
+                            comment: cells[cells.length - 2] || ''
+                        });
+                    }
+                }
+            });
+            return trades;
+        }
+
+        // =======================================================
+        // 📊 THA 深度隔離與篩選 Pipeline
+        // =======================================================
+        function getFilteredTrades() {
+            if (parsedTrades.length === 0) return [];
+            
+            const activeProfile = strategyProfiles.find(p => p.id === activeEA);
+            if (!activeProfile || activeProfile.id === "ALL") return parsedTrades;
+
+            return parsedTrades.filter(t => {
+                let matchSymbol = true;
+                let matchComment = true;
+
+                if (activeProfile.id === "S10_LITE") {
+                    return t.symbol === "EURUSD" || t.symbol === "GBPUSD";
+                }
+                if (activeProfile.id === "S10_PRO") {
+                    return t.symbol === "EURUSD" || t.symbol === "USDJPY" || t.symbol === "AUDUSD";
+                }
+                if (activeProfile.id === "GOLD_HUNTER") {
+                    return t.symbol === "XAUUSD" || t.symbol.startsWith("XAU");
+                }
+
+                if (activeProfile.symbols && activeProfile.symbols.length > 0) {
+                    matchSymbol = activeProfile.symbols.some(s => t.symbol.toUpperCase().includes(s.toUpperCase()));
+                }
+                if (activeProfile.commentKeyword) {
+                    const kw = activeProfile.commentKeyword.toLowerCase();
+                    matchComment = t.comment && t.comment.toLowerCase().includes(kw);
+                }
+                return matchSymbol && matchComment;
+            });
+        }
+
+        function refreshTHAWithFilters() {
+            if (parsedTrades.length === 0) return;
+
+            document.getElementById('analyzer-placeholder').classList.add('hidden');
+            document.getElementById('analyzer-main-panel').classList.remove('hidden');
+
+            const filtered = getFilteredTrades();
+            if (filtered.length === 0) {
+                showToast(`選定的 EA 策略篩選結果為空！`, "warning");
+            }
+
+            let netProfit = 0;
+            let winTrades = 0;
+            let lossTrades = 0;
+            let totalWinAmount = 0;
+            let totalLossAmount = 0;
+            let maxPipsLoss = 0;
+            
+            const balanceCurve = [];
+            const drawdownCurve = [];
+            let peak = 0;
+            let currentBalance = 10000; 
+
+            const weekdayProfit = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0 };
+            const hourlyProfit = Array(24).fill(0);
+            const monthlyMatrix = {};
+
+            filtered.forEach(trade => {
+                netProfit += trade.profit;
+                currentBalance += trade.profit;
+                balanceCurve.push(currentBalance);
+
+                if (currentBalance > peak) peak = currentBalance;
+                const dd = peak === peak ? ((peak - currentBalance) / peak) * 100 : peak;
+                drawdownCurve.push(-dd);
+
+                if (trade.profit > 0) {
+                    winTrades++;
+                    totalWinAmount += trade.profit;
+                } else {
+                    lossTrades++;
+                    totalLossAmount += Math.abs(trade.profit);
+                }
+
+                if (trade.pips < maxPipsLoss) maxPipsLoss = trade.pips;
+
+                const dateObj = new Date(trade.time);
+                if (!isNaN(dateObj.getTime())) {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const dayName = days[dateObj.getDay()];
+                    if (weekdayProfit[dayName] !== undefined) weekdayProfit[dayName] += trade.profit;
+
+                    const hour = dateObj.getHours();
+                    hourlyProfit[hour] += trade.profit;
+
+                    const year = dateObj.getFullYear();
+                    const month = dateObj.getMonth();
+                    if (!monthlyMatrix[year]) monthlyMatrix[year] = Array(12).fill(0);
+                    monthlyMatrix[year][month] += trade.profit;
+                }
+            });
+
+            const totalTrades = filtered.length;
+            const winRate = totalTrades === 0 ? 0 : (winTrades / totalTrades) * 100;
+            const profitFactor = totalLossAmount === 0 ? totalWinAmount : (totalWinAmount / totalLossAmount);
+            const avgWin = winTrades === 0 ? 0 : totalWinAmount / winTrades;
+            const avgLoss = lossTrades === 0 ? 0 : totalLossAmount / lossTrades;
+            const maxDDValue = drawdownCurve.length === 0 ? 0 : Math.max(...drawdownCurve.map(v => Math.abs(v)));
+
+            document.getElementById('kpi-net-profit').innerText = `$${netProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('kpi-net-profit').className = `text-2xl font-black font-mono mt-2 ${netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`;
+            document.getElementById('kpi-total-trades').innerText = totalTrades;
+            document.getElementById('kpi-win-rate').innerText = `${winRate.toFixed(1)}%`;
+            document.getElementById('kpi-profit-factor').innerText = profitFactor.toFixed(2);
+            
+            document.getElementById('kpi-gross-profit').innerText = `+$${totalWinAmount.toFixed(0)}`;
+            document.getElementById('kpi-gross-loss').innerText = `-$${totalLossAmount.toFixed(0)}`;
+            document.getElementById('kpi-avg-win').innerText = `+$${avgWin.toFixed(0)}`;
+            document.getElementById('kpi-avg-loss').innerText = `-$${avgLoss.toFixed(0)}`;
+            document.getElementById('kpi-max-dd').innerText = `-${maxDDValue.toFixed(1)}%`;
+            document.getElementById('kpi-max-pips').innerText = `${maxPipsLoss.toFixed(1)} Pips`;
+
+            renderEquityChart(filtered.map((_, i) => `T-${i+1}`), balanceCurve, drawdownCurve);
+            renderDistributionCharts(weekdayProfit, hourlyProfit);
+            renderHeatmap(monthlyMatrix);
+            renderTradeTable(filtered);
+
+            if (activeChartMode === 'split') renderSplitChartsGrid(filtered);
+            renderMartingaleCCYTabs(filtered);
+            renderDynamicSWOTMatrix();
+        }
+
+        function renderSplitChartsGrid(filteredTradesForEA) {
+            const container = document.getElementById('split-charts-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const symbols = [...new Set(filteredTradesForEA.map(t => t.symbol))];
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+
+            if (symbols.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-6 text-slate-400 italic">當前無任何貨幣對。</div>`;
+                return;
+            }
+
+            symbols.forEach(sym => {
+                const symTrades = filteredTradesForEA.filter(t => t.symbol === sym);
+                let currentBal = 10000;
+                const symData = [];
+                const symLabels = [];
+
+                symTrades.forEach((t, i) => {
+                    currentBal += t.profit;
+                    symData.push(currentBal);
+                    symLabels.push(`T-${i+1}`);
+                });
+
+                const card = document.createElement('div');
+                card.className = "theme-card border theme-border p-4 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow transition-all";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-line" style="color: ${ccyColors[sym] || '#8b5cf6'}"></i> ${sym} 獨立資金走勢
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-purple-950/45 px-2 py-0.5 rounded-full font-black">筆數: ${symTrades.length}</span>
+                    </div>
+                    <div class="w-full h-44 relative">
+                        <canvas id="chart-split-${sym}"></canvas>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                setTimeout(() => {
+                    const canvasId = `chart-split-${sym}`;
+                    const canvasEl = document.getElementById(canvasId);
+                    if (!canvasEl) return;
+                    const ctx = canvasEl.getContext('2d');
+                    
+                    const instKey = `split-${sym}`;
+                    if (chartInstances[instKey]) chartInstances[instKey].destroy();
+
+                    chartInstances[instKey] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: symLabels,
+                            datasets: [{
+                                label: sym,
+                                data: symData,
+                                borderColor: ccyColors[sym] || '#8b5cf6',
+                                backgroundColor: "transparent",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                tension: 0.3,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { 
+                                    grid: { color: isDark ? '#1e1b4b' : '#f1f5f9' },
+                                    ticks: { color: isDark ? '#9c8fb8' : '#7c7568', font: { size: 9 } } 
+                                },
+                                x: { ticks: { display: false }, grid: { display: false } }
+                            },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }, 15);
+            });
+        }
+
+        function toggleChartMode(mode) {
+            activeChartMode = mode;
+            const btnCombined = document.getElementById('mode-btn-combined');
+            const btnSplit = document.getElementById('mode-btn-split');
+            const containerCombined = document.getElementById('combined-chart-container');
+            const containerSplit = document.getElementById('split-charts-container');
+
+            if (mode === 'combined') {
+                btnCombined.className = "px-2.5 py-1 rounded-lg transition-all theme-btn-active";
+                btnSplit.className = "px-2.5 py-1 rounded-lg transition-all text-slate-400";
+                containerCombined.classList.remove('hidden');
+                containerSplit.classList.add('hidden');
+            } else {
+                btnCombined.className = "px-2.5 py-1 rounded-lg transition-all text-slate-400";
+                btnSplit.className = "px-2.5 py-1 rounded-lg transition-all theme-btn-active";
+                containerCombined.classList.add('hidden');
+                containerSplit.classList.remove('hidden');
+                
+                const filtered = getFilteredTrades();
+                renderSplitChartsGrid(filtered);
+            }
+        }
+
+        function renderMartingaleCCYTabs(filteredTradesForEA) {
+            const tabsContainer = document.getElementById('martingale-ccy-tabs');
+            if (!tabsContainer) return;
+            tabsContainer.innerHTML = '';
+
+            const symbols = [...new Set(filteredTradesForEA.map(t => t.symbol))];
+
+            if (symbols.length === 0) {
+                tabsContainer.innerHTML = `<span class="text-xs theme-muted-text p-2 italic">無有效品種</span>`;
+                return;
+            }
+
+            if (!activeMartingaleCCY || !symbols.includes(activeMartingaleCCY)) {
+                activeMartingaleCCY = symbols[0];
+            }
+
+            symbols.forEach(sym => {
+                const isActive = (sym === activeMartingaleCCY);
+                const btn = document.createElement('button');
+                btn.onclick = () => {
+                    activeMartingaleCCY = sym;
+                    renderMartingaleCCYTabs(filteredTradesForEA); 
+                    calculateMartingaleForSelectedCCY(filteredTradesForEA);
+                };
+                btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isActive ? "theme-btn-active shadow-sm" : "text-slate-400 hover:text-slate-200"}`;
+                btn.innerHTML = `<i class="fa-solid fa-coins mr-1 text-[10px]" style="color: ${ccyColors[sym] || '#a855f7'}"></i>${sym}`;
+                tabsContainer.appendChild(btn);
+            });
+
+            calculateMartingaleForSelectedCCY(filteredTradesForEA);
+        }
+
+        function calculateMartingaleForSelectedCCY(filteredTradesForEA) {
+            const tableBody = document.getElementById('martingale-table-body');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+
+            if (filteredTradesForEA.length === 0 || !activeMartingaleCCY) {
+                tableBody.innerHTML = `<tr><td colspan="8" class="py-6 text-slate-400 italic">無有效品種。</td></tr>`;
+                return;
+            }
+
+            const ccyTrades = filteredTradesForEA.filter(t => t.symbol === activeMartingaleCCY);
+            const buyMap = {};
+            const sellMap = {};
+
+            ccyTrades.forEach(t => {
+                const map = t.type === 'BUY' ? buyMap : sellMap;
+                const lotKey = parseFloat(t.lots.toFixed(2));
+                if (!map[lotKey]) {
+                    map[lotKey] = { lots: lotKey, trades: 0, profit: 0, pips: 0, wins: 0 };
+                }
+                const cell = map[lotKey];
+                cell.trades++;
+                cell.profit += t.profit;
+                cell.pips += t.pips;
+                if (t.profit > 0) cell.wins++;
+            });
+
+            const convertToSortedArray = (map, type) => {
+                return Object.values(map).sort((a,b) => a.lots - b.lots).map((item, idx) => ({
+                    level: `L${idx + 1}`, type: type, lots: item.lots, trades: item.trades,
+                    profit: item.profit, pips: item.pips, winRate: (item.wins / item.trades) * 100, rawLevel: idx + 1
+                }));
+            };
+
+            const sortedBuy = convertToSortedArray(buyMap, 'BUY');
+            const sortedSell = convertToSortedArray(sellMap, 'SELL');
+
+            if (sortedBuy.length === 0 && sortedSell.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8" class="py-6 text-slate-400 italic">選中貨幣對 [${activeMartingaleCCY}] 暫無明細。</td></tr>`;
+                return;
+            }
+
+            const maxLVal = Math.max(sortedBuy.length, sortedSell.length);
+            document.getElementById('m-max-depth').innerText = `L${maxLVal} (${activeMartingaleCCY})`;
+
+            const appendRows = (layers, headerTitle, headerColorClass, typeThemeClass) => {
+                if (layers.length === 0) return;
+
+                const headerRow = document.createElement('tr');
+                headerRow.className = "bg-slate-200/50 dark:bg-purple-950/40 text-[11px] font-black tracking-wider text-slate-600 dark:text-purple-300";
+                headerRow.innerHTML = `
+                    <td colspan="8" class="py-2.5 text-left pl-4 border-y theme-border">
+                        <i class="fa-solid fa-arrow-down-short-wide mr-2 ${headerColorClass}"></i>[${activeMartingaleCCY}] ${headerTitle} (深度: ${layers.length} 階)
+                    </td>
+                `;
+                tableBody.appendChild(headerRow);
+
+                layers.forEach(layer => {
+                    const profitClass = layer.profit >= 0 ? "text-emerald-500" : "text-rose-500";
+                    let hlWinRateClass = "";
+                    const winRateVal = layer.winRate;
+
+                    if (winRateVal === 100) {
+                        hlWinRateClass = "animate-flash-blue rounded-lg font-black border border-blue-500/50 px-2 py-1 shadow-inner";
+                    } else if (winRateVal >= 80) {
+                        hlWinRateClass = "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-200 font-bold px-2 py-1 rounded shadow-sm border border-blue-400/20";
+                    } else if (winRateVal >= 50) {
+                        hlWinRateClass = "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 font-bold px-2 py-1 rounded shadow-sm border border-emerald-400/20";
+                    } else {
+                        hlWinRateClass = "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-bold px-2 py-1 rounded shadow-sm border border-rose-400/20";
+                    }
+
+                    let riskText = "STABLE";
+                    let riskClass = "bg-emerald-500/10 text-emerald-500";
+                    if (layer.rawLevel >= 5 && layer.rawLevel <= 8) {
+                        riskText = "WARNING";
+                        riskClass = "bg-amber-500/10 text-amber-500 border border-amber-500/20";
+                    } else if (layer.rawLevel > 8) {
+                        riskText = "CRITICAL";
+                        riskClass = "bg-red-500/15 text-red-500 animate-pulse border border-red-500/30";
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 dark:hover:bg-purple-950/10 transition-colors text-center";
+                    tr.innerHTML = `
+                        <td class="py-3 font-bold text-slate-700 dark:text-slate-300">L${layer.rawLevel}</td>
+                        <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${typeThemeClass}">${layer.type}</span></td>
+                        <td class="py-3 font-mono">${layer.lots.toFixed(2)}</td>
+                        <td class="py-3 font-mono">${layer.trades}</td>
+                        <td class="py-3 font-mono font-bold ${profitClass}">${layer.profit >= 0 ? '+' : ''}$${layer.profit.toFixed(2)}</td>
+                        <td class="py-3 font-mono ${profitClass}">${layer.pips >= 0 ? '+' : ''}${layer.pips.toFixed(1)}</td>
+                        <td class="py-3 font-mono"><span class="${hlWinRateClass}">${layer.winRate.toFixed(1)}%</span></td>
+                        <td class="py-3"><span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold ${riskClass}">${riskText}</span></td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            };
+
+            appendRows(sortedBuy, "多單 BUY 馬丁加倉解構", "text-emerald-500", "bg-emerald-500/10 text-emerald-500");
+            appendRows(sortedSell, "空單 SELL 馬丁加倉解構", "text-rose-500", "bg-rose-500/10 text-rose-500");
+        }
+
+        function renderEASwitcherButtons() {
+            const container = document.getElementById('tha-ea-switcher-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            strategyProfiles.forEach(ea => {
+                const isActive = (ea.id === activeEA);
+                const button = document.createElement('button');
+                button.onclick = () => {
+                    activeEA = ea.id;
+                    renderEASwitcherButtons();
+                    refreshTHAWithFilters();
+                    showToast(`已切換至【${ea.name}】`, 'success');
+                };
+
+                button.className = `flex-1 min-w-[210px] max-w-[320px] text-left p-3.5 rounded-2xl border transition-all ${
+                    isActive 
+                    ? "border-[var(--text-primary)] bg-[var(--bg-accent-soft)] shadow-md scale-[1.02] ring-2 ring-[var(--text-primary)]/20" 
+                    : "border-slate-200 dark:border-purple-900/40 hover:bg-slate-100/50 dark:hover:bg-purple-950/10"
+                }`;
+
+                let count = 0;
+                if (ea.id === "ALL") count = parsedTrades.length;
+                else if (ea.id === "S10_LITE") count = parsedTrades.filter(t => t.symbol === "EURUSD" || t.symbol === "GBPUSD").length;
+                else if (ea.id === "S10_PRO") count = parsedTrades.filter(t => t.symbol === "EURUSD" || t.symbol === "USDJPY" || t.symbol === "AUDUSD").length;
+                else if (ea.id === "GOLD_HUNTER") count = parsedTrades.filter(t => t.symbol === "XAUUSD" || t.symbol.startsWith("XAU")).length;
+                else {
+                    count = parsedTrades.filter(t => {
+                        let matchSymbol = true, matchComment = true;
+                        if (ea.symbols && ea.symbols.length > 0) matchSymbol = ea.symbols.some(s => t.symbol.toUpperCase().includes(s.toUpperCase()));
+                        if (ea.commentKeyword) matchComment = t.comment && t.comment.toLowerCase().includes(ea.commentKeyword.toLowerCase());
+                        return matchSymbol && matchComment;
+                    }).length;
+                }
+
+                button.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${ea.icon} text-lg shrink-0"></i>
+                        <div class="truncate">
+                            <div class="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 justify-between">
+                                <span class="truncate">${ea.name}</span>
+                                <span class="text-[9px] bg-slate-200 dark:bg-purple-950/50 px-1.5 py-0.5 rounded-full font-mono text-slate-500">${count}筆</span>
+                            </div>
+                            <div class="text-[9px] text-slate-400 font-bold mt-1 truncate">${ea.desc}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(button);
+            });
+        }
+
+        function renderDynamicSWOTMatrix() {
+            const container = document.getElementById('swot-grid-container');
+            if (!container) return;
+            const template = swotTemplates[activeEA] || swotTemplates["ALL"];
+
+            container.innerHTML = `
+                <div class="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-blue-500 text-[10px] block mb-1">ST STRATEGY (優勢-威脅)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.st}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-emerald-500 text-[10px] block mb-1">STRENGTHS (優勢)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.s}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-amber-500 text-[10px] block mb-1">SW STRATEGY (優勢-弱點)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.sw}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-rose-500 text-[10px] block mb-1">THREATS (威脅)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.t}</p>
+                </div>
+                <div class="p-4 rounded-2xl border-2 border-purple-500 bg-purple-500/10 flex flex-col justify-center items-center text-center shadow-[0_0_15px_rgba(168,85,247,0.35)] animate-pulse">
+                    <i class="fa-solid fa-brain text-2xl text-purple-500 mb-1"></i>
+                    <span class="font-black text-purple-400 text-xs block uppercase truncate max-w-full">${template.name}</span>
+                    <span class="text-[9px] text-slate-400 font-bold">CORE ENGINE</span>
+                </div>
+                <div class="p-4 rounded-2xl border border-orange-500/20 bg-orange-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-orange-500 text-[10px] block mb-1">WEAKNESSES (弱點)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.w}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-indigo-500 text-[10px] block mb-1">TO STRATEGY (威脅-機會)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.to}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-cyan-500 text-[10px] block mb-1">OPPORTUNITIES (機會)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.o}</p>
+                </div>
+                <div class="p-4 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/5 hover:scale-[1.01] transition-transform">
+                    <span class="font-black text-fuchsia-500 text-[10px] block mb-1">WO STRATEGY (弱點-機會)</span>
+                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-relaxed">${template.wo}</p>
+                </div>
+            `;
+        }
+
+        function renderEquityChart(labels, balanceData, drawdownData) {
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+            safeNewChart('equityChart', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '累計淨值 (Balance)', data: balanceData, borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
+                        { label: '回撤 (Drawdown %)', data: drawdownData, backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444', borderWidth: 1, pointRadius: 0, fill: true, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', grid: { color: isDark ? '#1e1b4b' : '#f1f5f9' }, ticks: { color: isDark ? '#9c8fb8' : '#7c7568' } },
+                        y1: { type: 'linear', position: 'right', min: -30, max: 5, grid: { drawOnChartArea: false }, ticks: { color: isDark ? '#9c8fb8' : '#7c7568', callback: v => `${v}%` } },
+                        x: { grid: { display: false }, ticks: { display: false } }
+                    },
+                    plugins: { legend: { labels: { color: isDark ? '#ede9f5' : '#2d2a24' } } }
+                }
+            });
+        }
+
+        function renderDistributionCharts(weekdayProfit, hourlyProfit) {
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+            safeNewChart('weekdayChart', {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(weekdayProfit),
+                    datasets: [{
+                        label: '單日淨利 (USD)',
+                        data: Object.values(weekdayProfit),
+                        backgroundColor: Object.values(weekdayProfit).map(v => v >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'),
+                        borderColor: Object.values(weekdayProfit).map(v => v >= 0 ? '#10b981' : '#ef4444'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: isDark ? '#9c8fb8' : '#7c7568' } },
+                        x: { ticks: { color: isDark ? '#9c8fb8' : '#7c7568' } }
+                    }
+                }
+            });
+
+            safeNewChart('hourlyChart', {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: '時段利潤總和 (USD)', data: hourlyProfit, borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)', fill: true, tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: isDark ? '#9c8fb8' : '#7c7568' } },
+                        x: { ticks: { color: isDark ? '#9c8fb8' : '#7c7568' } }
+                    }
+                }
+            });
+        }
+
+        function renderHeatmap(monthlyMatrix) {
+            const body = document.getElementById('heatmap-body');
+            if (!body) return;
+            body.innerHTML = '';
+            const years = Object.keys(monthlyMatrix).sort((a,b) => b-a);
+
+            years.forEach(year => {
+                const monthsData = monthlyMatrix[year];
+                let rowHtml = `<tr class="hover:bg-slate-50/50 dark:hover:bg-purple-950/5"><td class="py-2.5 text-left font-bold pl-2">${year}</td>`;
+                let yearlySum = 0;
+
+                for (let m = 0; m < 12; m++) {
+                    const profit = monthsData[m] || 0;
+                    yearlySum += profit;
+
+                    let bgStyle = 'background-color: transparent;';
+                    let textClass = 'text-slate-400';
+
+                    if (profit > 0) {
+                        const alpha = Math.min(0.1 + (profit / 3000), 0.85);
+                        bgStyle = `background-color: rgba(16, 185, 129, ${alpha});`;
+                        textClass = 'text-emerald-800 dark:text-emerald-300 font-bold';
+                    } else if (profit < 0) {
+                        const alpha = Math.min(0.1 + (Math.abs(profit) / 3000), 0.85);
+                        bgStyle = `background-color: rgba(239, 68, 68, ${alpha});`;
+                        textClass = 'text-rose-800 dark:text-rose-300 font-bold';
+                    }
+                    rowHtml += `<td style="${bgStyle}" class="py-2.5 ${textClass}">${profit !== 0 ? '$' + profit.toFixed(0) : '-'}</td>`;
+                }
+                const sumClass = yearlySum >= 0 ? 'text-emerald-600 font-extrabold' : 'text-rose-600 font-extrabold';
+                rowHtml += `<td class="py-2.5 border-l theme-border ${sumClass}">$${yearlySum.toFixed(0)}</td></tr>`;
+                body.innerHTML += rowHtml;
+            });
+        }
+
+        function renderTradeTable(trades) {
+            const body = document.getElementById('tradeLogBody');
+            if (!body) return;
+            body.innerHTML = '';
+
+            trades.slice().reverse().forEach(trade => {
+                const profitClass = trade.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500';
+                rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-purple-950/10 transition-colors">
+                    <td class="p-3 font-mono text-slate-400">#${trade.ticket}</td>
+                    <td class="p-3 font-mono">${trade.time}</td>
+                    <td class="p-3 font-bold">${trade.symbol}</td>
+                    <td class="p-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.type === 'BUY' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">${trade.type}</span></td>
+                    <td class="p-3 text-right font-mono">${trade.lots.toFixed(2)}</td>
+                    <td class="p-3 text-right font-mono ${profitClass}">${trade.profit >= 0 ? '+' : ''}$${trade.profit.toFixed(2)}</td>
+                    <td class="p-3 text-right font-mono ${profitClass}">${trade.pips >= 0 ? '+' : ''}${trade.pips.toFixed(1)}</td>
+                </tr>`;
+                body.innerHTML += rowHtml;
+            });
+        }
+
+        function filterTable() {
+            const input = document.getElementById('tableSearch').value.toUpperCase();
+            const rows = document.querySelectorAll('#tradeLogBody tr');
+            rows.forEach(row => {
+                const symbolCell = row.cells[2];
+                if (symbolCell) {
+                    const text = symbolCell.textContent || symbolCell.innerText;
+                    row.style.display = text.toUpperCase().indexOf(input) > -1 ? "" : "none";
+                }
+            });
+        }
+
+        function handleSetUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            processSetFile(file);
+        }
+
+        function processSetFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                
+                let lotMultiplier = 1.5;
+                let maxLayers = 10;
+                let pipStep = 20;
+                let eaName = "自定義網格參數";
+
+                lines.forEach(line => {
+                    const cleanLine = line.trim();
+                    if (!cleanLine || cleanLine.startsWith(';')) return;
+                    const parts = cleanLine.split('=');
+                    if (parts.length === 2) {
+                        const key = parts[0].trim().toLowerCase();
+                        const val = parseFloat(parts[1].trim());
+
+                        if (key.includes('multiplier')) lotMultiplier = val;
+                        if (key.includes('max') && key.includes('layer')) maxLayers = Math.floor(val);
+                        if (key.includes('pipstep') || key.includes('step')) pipStep = val;
+                        if (key.includes('name') || key.includes('title')) eaName = parts[1].trim();
+                    }
+                });
+
+                const initLot = 0.01;
+                let totalLots = 0;
+                for (let i = 0; i < maxLayers; i++) { totalLots += initLot * Math.pow(lotMultiplier, i); }
+
+                document.getElementById('swot-diagnostic-panel').classList.remove('hidden');
+                document.getElementById('swot-strategy-type').innerText = `${eaName}`;
+                document.getElementById('swot-stress-layers').innerText = `${maxLayers} 層 (累計 ${totalLots.toFixed(2)} Lots)`;
+                document.getElementById('swot-margin-stress').innerText = `單邊波幅 > ${maxLayers * pipStep} Pips 將觸發爆倉`;
+                showToast(`成功導入 .SET 參數配置文件！`, 'success');
+            };
+            reader.readAsText(file);
+        }
+
+        // =======================================================
+        // 🔮 載入測試模擬數據 (高頻 Demo)
+        // =======================================================
+        function loadDemoData() {
+            const demoTrades = [];
+            const symbols = ['XAUUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'];
+            const types = ['BUY', 'SELL'];
+            const startDate = new Date('2026-01-01T08:00:00');
+            const lotsSequence = [0.01, 0.02, 0.03, 0.05, 0.08, 0.13, 0.21, 0.34, 0.55, 0.89, 1.44, 2.33];
+
+            for (let i = 0; i < 350; i++) {
+                const sym = symbols[Math.floor(Math.random() * symbols.length)];
+                const type = types[Math.floor(Math.random() * types.length)];
+                const levelIndex = Math.floor(Math.random() * 12); 
+                const lot = lotsSequence[levelIndex];
+
+                let isWin = Math.random() < 0.74;
+
+                if (sym === 'XAUUSD') {
+                    if (levelIndex === 0) isWin = true; 
+                    else if (levelIndex === 1) isWin = Math.random() < 0.94; 
+                    else if (levelIndex >= 9) isWin = Math.random() < 0.28; 
+                } else if (sym === 'EURUSD' || sym === 'GBPUSD') {
+                    if (levelIndex === 0) isWin = true; 
+                    else if (levelIndex === 2) isWin = true; 
+                    else if (levelIndex >= 8) isWin = Math.random() < 0.38; 
+                } else {
+                    if (levelIndex === 1) isWin = true; 
+                    else if (levelIndex === 0) isWin = Math.random() < 0.88; 
+                    else if (levelIndex >= 7) isWin = Math.random() < 0.45; 
+                }
+
+                const profit = isWin ? (lot * 530 * (Math.random() * 0.4 + 0.8)) : -(lot * 850 * (Math.random() * 0.4 + 0.8));
+                const pips = profit >= 0 ? (profit / (lot * 10)) : (profit / (lot * 8));
+                
+                startDate.setHours(startDate.getHours() + Math.floor(Math.random() * 6) + 1);
+
+                demoTrades.push({
+                    ticket: 800400 + i,
+                    time: startDate.toISOString().replace('T', ' ').substring(0, 19),
+                    symbol: sym,
+                    type: type,
+                    lots: lot,
+                    profit: parseFloat(profit.toFixed(2)),
+                    pips: parseFloat(pips.toFixed(1)),
+                    comment: sym === 'XAUUSD' ? "GoldHunter_EA" : "S10_GRID"
+                });
+            }
+
+            parsedTrades = demoTrades;
+            autoDetectEAsFromComments(demoTrades);
+            renderEASwitcherButtons();
+            refreshTHAWithFilters();
+            showToast("成功導入模擬歷史數據 (Demo)！", 'success');
+        }
+
+        function safeNewChart(id, config) {
+            if (chartInstances[id]) chartInstances[id].destroy();
+            const el = document.getElementById(id);
+            if (el) {
+                const ctx = el.getContext('2d');
+                chartInstances[id] = new Chart(ctx, config);
+            }
+        }
+
+        // =======================================================
+        // 🔮 500 Ticks / 600 Bars 時段緩存數據初始化
+        // =======================================================
+        function initialize500TicksHistory() {
+            // 支持 9 大時段：'M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'
+            timeframes.forEach(tf => {
+                ccyHistoryData[tf] = {};
+                ccyList.forEach(ccy => {
+                    const baseStrength = ccyStrengths[ccy];
+                    const arr = [];
+                    let curr = baseStrength;
+                    
+                    // 緩存寫滿 500 Ticks/Bars 歷史點
+                    for (let i = 0; i < 500; i++) {
+                        let change = (Math.random() - 0.5) * 0.28;
+                        curr = Math.max(0.5, Math.min(9.5, curr + change));
+                        arr.push(parseFloat(curr.toFixed(2)));
+                    }
+                    ccyHistoryData[tf][ccy] = arr;
+                });
+            });
+            ccyHistory = ccyHistoryData[currentTF];
+        }
+
+        function changeTimeframe(tfName) {
+            currentTF = tfName;
+            ccyHistory = ccyHistoryData[currentTF];
+
+            timeframes.forEach(tf => {
+                const btn = document.getElementById(`tf-${tf}`);
+                if (btn) {
+                    btn.className = tf === tfName ? "px-2.5 py-1 rounded-lg transition-all theme-btn-active shadow-sm" : "px-2.5 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+
+            // 更新相對強度值
+            ccyList.forEach(ccy => {
+                const arr = ccyHistory[ccy];
+                ccyStrengths[ccy] = arr[arr.length - 1];
+            });
+
+            renderCcySelectorRow(); // 重新渲染包含新數值的按鈕
+            updateMatrixUI();       // 刷新下面表格
+            renderCcyPowerTrendChart(); // 重繪500圖表
+        }
+
+        function initCurrencyPowerMatrix() {
+            const headerRow = document.getElementById("matrix-header-row");
+            if (!headerRow) return;
+            let headerHtml = `<th class="py-2.5 text-slate-400 font-bold text-center pl-4 w-16">CCY</th>`;
+            ccyList.forEach(c => {
+                headerHtml += `<th class="py-2.5 font-bold text-slate-600 dark:text-slate-300 w-16 text-center">${c}</th>`;
+            });
+            headerRow.innerHTML = headerHtml;
+            updateMatrixUI();
+        }
+
+        function updateMatrixUI() {
+            const bodyContainer = document.getElementById("matrix-body-rows");
+            if (!bodyContainer) return;
+            let bodyHtml = "";
+
+            ccyList.forEach(rowCcy => {
+                bodyHtml += `<tr class="hover:bg-slate-50/50 dark:hover:bg-purple-950/5">`;
+                bodyHtml += `<td class="py-2.5 font-extrabold text-slate-700 dark:text-slate-200 border-r theme-border bg-slate-50/30 dark:bg-black/15 text-center">${rowCcy}</td>`;
+
+                ccyList.forEach(colCcy => {
+                    if (rowCcy === colCcy) {
+                        bodyHtml += `<td class="py-2.5 bg-slate-100/40 dark:bg-black/35 text-slate-400 italic">0%</td>`;
+                    } else {
+                        const diff = (ccyStrengths[rowCcy] - ccyStrengths[colCcy]);
+                        const percentDiff = diff * 1.5; 
+                        const sign = percentDiff >= 0 ? "+" : "";
+                        const valStr = `${sign}${percentDiff.toFixed(2)}%`;
+
+                        let cellClass = "";
+                        let styleStr = "";
+
+                        if (percentDiff > 0) {
+                            const alpha = Math.min(0.08 + (percentDiff / 12), 0.65);
+                            styleStr = `background-color: rgba(16, 185, 129, ${alpha});`;
+                            cellClass = "text-emerald-700 dark:text-emerald-300 font-bold";
+                        } else {
+                            const alpha = Math.min(0.08 + (Math.abs(percentDiff) / 12), 0.65);
+                            styleStr = `background-color: rgba(239, 68, 68, ${alpha});`;
+                            cellClass = "text-rose-600 dark:text-rose-300 font-bold";
+                        }
+                        bodyHtml += `<td style="${styleStr}" class="py-2.5 ${cellClass}">${valStr}</td>`;
+                    }
+                });
+                bodyHtml += `</tr>`;
+            });
+            bodyContainer.innerHTML = bodyHtml;
+        }
+
+        function renderCcyPowerTrendChart() {
+            const canvasEl = document.getElementById('ccyPowerChart');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+            
+            // X 軸渲染 500 個點的標籤 (支援500 Ticks)
+            const labels = Array.from({length: 500}, (_, i) => `${currentTF} T-${500-i}`);
+            
+            const datasets = activeChartCcys.map(ccy => ({
+                label: `${ccy} Relative Strength`,
+                data: ccyHistory[ccy],
+                borderColor: ccyColors[ccy] || '#9c8fb8',
+                backgroundColor: "transparent",
+                borderWidth: 1.8,
+                tension: 0.1,
+                pointRadius: 0, 
+                fill: false
+            }));
+
+            if (chartInstances['ccyPower']) chartInstances['ccyPower'].destroy();
+
+            chartInstances['ccyPower'] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0, max: 10,
+                            grid: { color: isDark ? '#1e1b4b' : '#f1f5f9' },
+                            ticks: { color: isDark ? '#9c8fb8' : '#7c7568' }
+                        },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, color: isDark ? '#9c8fb8' : '#7c7568' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: isDark ? '#ede9f5' : '#2d2a24', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // =======================================================
+        // 🔮 操控面板：貨幣隔離按鈕動態生成 (包含即時 Power 值)
+        // =======================================================
+        function renderCcySelectorRow() {
+            const container = document.getElementById('ccy-selectors-row');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // 1. "ALL" 按鈕
+            const allBtn = document.createElement('button');
+            allBtn.className = `px-3 py-1.5 rounded-lg border theme-border transition-all ${
+                activeChartCcys.length === ccyList.length ? "theme-btn-active shadow-sm" : "bg-white dark:bg-black/20 text-slate-500 hover:text-slate-200"
+            }`;
+            allBtn.innerText = "ALL";
+            allBtn.onclick = () => {
+                activeChartCcys = [...ccyList];
+                renderCcySelectorRow();
+                renderCcyPowerTrendChart();
+                showToast("已載入全幣強弱波形！", "success");
+            };
+            container.appendChild(allBtn);
+
+            // 2. 單一貨幣隔離按鈕 (帶即時 Power 值)
+            ccyList.forEach(ccy => {
+                const isSelected = activeChartCcys.includes(ccy);
+                const powerVal = ccyStrengths[ccy] ? ccyStrengths[ccy].toFixed(2) : "0.00";
+                
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 rounded-lg border theme-border flex items-center gap-1.5 transition-all hover:scale-105 ${
+                    isSelected 
+                    ? "theme-btn-active shadow-sm" 
+                    : "bg-white dark:bg-black/20 text-slate-500 hover:text-slate-200"
+                }`;
+                btn.style.borderLeftColor = ccyColors[ccy];
+                btn.style.borderLeftWidth = "4px";
+
+                btn.innerHTML = `
+                    <span>${ccy}</span>
+                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                        isSelected ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                    }">${powerVal}</span>
+                `;
+
+                btn.onclick = () => {
+                    if (isSelected) {
+                        activeChartCcys = activeChartCcys.filter(c => c !== ccy);
+                    } else {
+                        activeChartCcys.push(ccy);
+                    }
+                    renderCcySelectorRow();
+                    renderCcyPowerTrendChart();
+                };
+
+                container.appendChild(btn);
+            });
+        }
+
+        // =======================================================
+        // 🔮 操控面板：XAU 隔離篩選按鈕
+        // =======================================================
+        const xauFilterPairs = [
+            { id: "XAUUSD", name: "XAUUSD", components: ["XAU", "USD"] },
+            { id: "XAUJPY", name: "XAUJPY", components: ["XAU", "JPY"] },
+            { id: "XAUAUD", name: "XAUAUD", components: ["XAU", "AUD"] },
+            { id: "XAUGBP", name: "XAUGBP", components: ["XAU", "GBP"] }
+        ];
+
+        function renderXauSelectorRow() {
+            const container = document.getElementById('xau-selectors-row');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // ALL 按鈕
+            const allBtn = document.createElement('button');
+            allBtn.className = "px-3 py-1.5 rounded-lg border theme-border bg-white dark:bg-black/20 text-slate-500 hover:text-slate-200 transition-all";
+            allBtn.innerText = "重置為全黃金對沖";
+            allBtn.onclick = () => {
+                if (!activeChartCcys.includes("XAU")) activeChartCcys.push("XAU");
+                ["USD", "JPY", "AUD", "GBP"].forEach(c => {
+                    if (!activeChartCcys.includes(c)) activeChartCcys.push(c);
+                });
+                renderCcySelectorRow();
+                renderCcyPowerTrendChart();
+                showToast("已重置並同步激活黃金與所有對應交叉法規線條。", "success");
+            };
+            container.appendChild(allBtn);
+
+            // 黃金篩選
+            xauFilterPairs.forEach(pair => {
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 rounded-lg border theme-border bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 hover:bg-amber-500/10 hover:text-amber-500 transition-all font-mono";
+                btn.innerHTML = `<i class="fa-solid fa-gem text-amber-500 mr-1 text-[9px]"></i>${pair.name}`;
+                
+                btn.onclick = () => {
+                    // 只展示該黃金交叉對應的組件：XAU + 目標貨幣
+                    activeChartCcys = [...pair.components];
+                    renderCcySelectorRow();
+                    renderCcyPowerTrendChart();
+                    showToast(`已隔離分析黃金交叉對 【${pair.name}】！圖表已同步過濾。`, "warning");
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // =======================================================
+        // 🔮 行情與 500 Ticks 動態心跳跳動 (更新行情 cards 數值)
+        // =======================================================
+        const xauRatesBase = {
+            "XAUUSD": 2345.50, "XAUEUR": 2155.20, "XAUGBP": 1840.15, "XAUJPY": 366550,
+            "XAUAUD": 3510.40, "XAUCHF": 2118.80, "XAUCAD": 3202.60, "XAUNZD": 3812.30
+        };
+
+        function runLiveMarketTick() {
+            // 1. 更新 Power 數值
+            ccyList.forEach(ccy => {
+                let currentStr = ccyStrengths[ccy];
+                const delta = (Math.random() * 0.28 - 0.14);
+                currentStr = Math.max(0.5, Math.min(9.9, currentStr + delta));
+                ccyStrengths[ccy] = currentStr;
+
+                // 寫入 M1-MN1 500 點緩存歷史
+                timeframes.forEach(tf => {
+                    ccyHistoryData[tf][ccy].push(parseFloat(currentStr.toFixed(2)));
+                    if (ccyHistoryData[tf][ccy].length > 500) {
+                        ccyHistoryData[tf][ccy].shift(); 
+                    }
+                });
+            });
+
+            // 2. 更新黃金特殊交叉盤即時行情 Cards 數值
+            Object.keys(xauRatesBase).forEach(pair => {
+                const oldRate = xauRatesBase[pair];
+                const deltaPct = (Math.random() * 0.08 - 0.04); // 微幅擺動
+                const newRate = oldRate * (1 + deltaPct/100);
+                xauRatesBase[pair] = newRate;
+
+                const valEl = document.getElementById(`val-${pair}`);
+                const pctEl = document.getElementById(`pct-${pair}`);
+                const cardEl = document.getElementById(`card-${pair}`);
+
+                if (valEl && pctEl && cardEl) {
+                    valEl.innerText = newRate.toFixed(pair === 'XAUJPY' ? 0 : 2);
+                    const sign = deltaPct >= 0 ? "+" : "";
+                    pctEl.innerText = `${sign}${deltaPct.toFixed(2)}%`;
+                    pctEl.className = `text-[9px] font-bold ${deltaPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`;
+
+                    // 閃爍動態光影效果
+                    cardEl.classList.add(deltaPct >= 0 ? 'flash-up' : 'flash-down');
+                    setTimeout(() => {
+                        cardEl.classList.remove('flash-up', 'flash-down');
+                    }, 800);
+                }
+            });
+
+            // 更新 UI
+            renderCcySelectorRow();
+            updateMatrixUI();
+            renderCcyPowerTrendChart();
+        }
+
+        // =======================================================
+        // 🔮 系統控制與導航
+        // =======================================================
+        function switchMode(modeName) {
+            document.documentElement.setAttribute('data-mode', modeName);
+            const hLight = document.getElementById('header-wrapper-light');
+            const hDark = document.getElementById('header-wrapper-dark');
+
+            if (modeName === 'light') {
+                if (hLight) hLight.classList.add('active');
+                if (hDark) hDark.classList.remove('active');
+            } else {
+                if (hDark) hDark.classList.add('active');
+                if (hLight) hLight.classList.remove('active');
+            }
+            if (parsedTrades.length > 0) { refreshTHAWithFilters(); }
+            renderCcyPowerTrendChart();
+            renderTradingViewWidget();
+        }
+
+        function switchTheme(themeName, btn) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            if (btn) {
+                document.querySelectorAll('.orb-gold, .orb-wood, .orb-water, .orb-fire, .orb-earth').forEach(b => {
+                    b.closest('.orb-wrapper').classList.remove('active');
+                });
+                btn.closest('.orb-wrapper').classList.add('active');
+            }
+        }
+
+        function toggleProfileMenu(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        }
+
+        function switchPage(pageId) {
+            const pages = ['home', 'crosspower', 'signals', 'portfolio', 'analyzer'];
+            pages.forEach(p => {
+                const el = document.getElementById(`page-${p}`);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById(`nav-${p}`);
+                if (btn) btn.className = "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold";
+            });
+
+            const activeBtn = document.getElementById(`nav-${pageId}`);
+            if (activeBtn) activeBtn.className = "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-btn-active font-semibold shadow-sm transition-all";
+
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+            if (pageId === 'home') {
+                setTimeout(renderTradingViewWidget, 50);
+            } else if (pageId === 'crosspower') {
+                setTimeout(() => {
+                    renderCcyPowerTrendChart();
+                }, 50);
+            } else if (pageId === 'analyzer' && parsedTrades.length > 0) {
+                setTimeout(refreshTHAWithFilters, 50);
+            }
+        }
+
+        function switchNewsTab(tabId) {
+            const tabs = ['1h', 'today', 'week', 'next'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`news-tab-${t}`);
+                if (btn) btn.className = "px-2.5 py-0.5 rounded-lg transition-all text-slate-400";
+            });
+            document.getElementById(`news-tab-${tabId}`).className = "px-2.5 py-0.5 rounded-lg transition-all theme-btn-active";
+            renderNewsList(tabId);
+        }
+
+        function renderNewsList(tabId) {
+            const container = document.getElementById('news-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const list = newsDatabase[tabId] || [];
+            list.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "border-b theme-border pb-2 flex flex-col gap-0.5";
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-[10px] font-bold theme-text">${item.time}</span>
+                        <span class="bg-slate-100 dark:bg-purple-950/40 text-[9px] px-1.5 py-0.1 rounded font-bold">${item.tag}</span>
+                    </div>
+                    <p class="mt-0.5 text-slate-700 dark:text-slate-300 leading-relaxed font-semibold text-[11px]">${item.text}</p>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        let currentTVSymbol = "OANDA:XAUUSD";
+        function renderTradingViewWidget() {
+            const container = document.getElementById('tradingview_chart_container');
+            if (!container) return;
+            container.innerHTML = '';
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+            if (typeof TradingView !== 'undefined') {
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": currentTVSymbol,
+                    "interval": "60",
+                    "theme": isDark ? "dark" : "light",
+                    "style": "1",
+                    "locale": "zh_TW",
+                    "container_id": "tradingview_chart_container"
+                });
+            }
+        }
+
+        // =======================================================
+        // 🔮 生命週期載入 (預設 Wood Light 主題)
+        // =======================================================
+        window.onload = function() {
+            // 🌟 1. 設定預設：Wood (木元素) 與 Light (光之法球)
+            document.documentElement.setAttribute('data-theme', 'wood');
+            document.documentElement.setAttribute('data-mode', 'light');
+
+            // 🌟 2. 設置選單按鈕的 active 狀態
+            const wrapWood = document.getElementById('wrapper-wood');
+            if (wrapWood) wrapWood.classList.add('active');
+            const wrapLight = document.getElementById('header-wrapper-light');
+            if (wrapLight) wrapLight.classList.add('active');
+
+            // 🌟 3. 初始化 500 點高頻歷史數據
+            initialize500TicksHistory();
+
+            // 🌟 4. 加載頁面
+            switchPage('home');
+            initCurrencyPowerMatrix();
+            renderCcySelectorRow();
+            renderXauSelectorRow();
+            renderCcyPowerTrendChart();
+            switchNewsTab('1h');
+
+            // 🌟 5. Drag & Drop 檔案上傳
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone) {
+                ['dragenter', 'dragover'].forEach(name => {
+                    dropZone.addEventListener(name, (e) => {
+                        e.preventDefault();
+                        dropZone.classList.add('bg-slate-100', 'dark:bg-purple-950/25');
+                    });
+                });
+                ['dragleave', 'drop'].forEach(name => {
+                    dropZone.addEventListener(name, (e) => {
+                        e.preventDefault();
+                        dropZone.classList.remove('bg-slate-100', 'dark:bg-purple-950/25');
+                    });
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const fileInput = document.getElementById('csvFileInput');
+                        if (fileInput) {
+                            fileInput.files = files;
+                            handleFileSelected(fileInput);
+                        }
+                    }
+                });
+            }
+
+            // 🌟 6. 啟動高頻實時脈搏 (每60秒解算一次)
+            setInterval(runLiveMarketTick, 60000);
+        };
+    </script>
+</body>
+</html>
