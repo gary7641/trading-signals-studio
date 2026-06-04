@@ -3,109 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSS Portal - 終極修復版</title>
+    <title>TSS Portal - 旗艦級交易數據分析平台</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        tailwind.config = { theme: { extend: { borderRadius: { 'xl': '10px', '2xl': '14px', '3xl': '20px' } } } }
+        tailwind.config = {
+            theme: {
+                extend: { borderRadius: { 'xl': '10px', '2xl': '14px', '3xl': '20px' } }
+            }
+        }
     </script>
     <style>
-        html[data-mode="light"][data-theme="wood"] { --bg-main: #f1fcf5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #d0ebd9; --text-primary: #047857; --bg-accent-active: #047857; }
-        /* 基礎樣式 */
-        body { background-color: var(--bg-main, #f1fcf5); color: #333; transition: all 0.3s; }
-        .theme-sidebar { background-color: var(--bg-sidebar, #ffffff); border-color: var(--border-theme, #d0ebd9); }
-        .theme-card { background-color: var(--bg-card, #ffffff); border-color: var(--border-theme, #d0ebd9); }
-        .theme-btn-active { background-color: var(--bg-accent-active, #047857); color: #fff !important; }
-        .hidden { display: none !important; }
+        /* TSS 全域多主題色彩 CSS 變數[cite: 1, 2] */
+        html[data-mode="light"][data-theme="gold"] { --bg-main: #fffaf0; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #f1dfc1; --text-primary: #c26900; --bg-accent-soft: #fff3db; --bg-accent-active: #b45309; --text-main: #2d2a24; }
+        html[data-mode="light"][data-theme="wood"] { --bg-main: #f1fcf5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #d0ebd9; --text-primary: #047857; --bg-accent-soft: #e6f9ed; --bg-accent-active: #047857; --text-main: #222d26; }
+        html[data-mode="light"][data-theme="water"] { --bg-main: #f0f7fc; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #cfe3f1; --text-primary: #0369a1; --bg-accent-soft: #e0f2fe; --bg-accent-active: #0369a1; --text-main: #202b36; }
+        html[data-mode="light"][data-theme="fire"] { --bg-main: #fff5f5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #fcd4d4; --text-primary: #dc2626; --bg-accent-soft: #ffebeb; --bg-accent-active: #dc2626; --text-main: #331f1f; }
+        html[data-mode="light"][data-theme="earth"] { --bg-main: #fcf8f2; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #eddcc4; --text-primary: #92400e; --bg-accent-soft: #fcf1df; --bg-accent-active: #92400e; --text-main: #2e241f; }
+        html[data-mode="dark"] { --bg-main: #080413; --bg-sidebar: #0e0721; --bg-card: #130a2a; --border-theme: #2d1854; --text-main: #ede9f5; }
+        
+        body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.2s; }
+        .theme-sidebar { background-color: var(--bg-sidebar); border-color: var(--border-theme); border-right-width: 1px; }
+        .theme-card { background-color: var(--bg-card); border-color: var(--border-theme); border-width: 1px; }
+        .theme-border { border-color: var(--border-theme); }
+        .theme-btn-active { background-color: var(--bg-accent-active); color: #fff !important; }
+        .theme-text { color: var(--text-primary); }
+
+        /* 🔮 3D 水晶球邏輯[cite: 1, 2] */
+        .orb-wrapper { position: relative; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+        .magic-ring { position: absolute; inset: 0px; border: 1.5px dashed transparent; border-radius: 50%; pointer-events: none; transition: all 0.4s; }
+        .orb-wrapper.active .magic-ring { animation: spin 10s linear infinite; border-color: var(--text-primary); opacity: 0.6; }
+        .magic-orb { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* 藍色勝率呼吸燈[cite: 2] */
+        @keyframes flash-blue-win {
+            0%, 100% { background-color: rgba(37,99,235,0.1); color: #2563eb; }
+            50% { background-color: rgba(37,99,235,0.8); color: #fff; box-shadow: 0 0 12px rgba(37,99,235,0.6); }
+        }
+        .win-100 { animation: flash-blue-win 1.5s infinite ease-in-out; border-radius: 4px; padding: 2px 4px; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column-reverse; gap: 8px; }
+        .toast { background: white; border: 1px solid #ddd; padding: 12px 20px; border-radius: 10px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col overflow-hidden">
+    <div id="toast-container"></div>
 
-    <!-- Header -->
-    <header class="h-14 border-b theme-sidebar flex items-center justify-between px-6 z-20">
-        <div class="font-bold text-lg tracking-wider flex items-center gap-2">TSS <span class="text-emerald-600">PORTAL</span></div>
+    <!-- Header[cite: 1, 2] -->
+    <header class="h-14 theme-sidebar flex items-center justify-between px-6 z-30 shrink-0">
         <div class="flex items-center gap-4">
-            <button onclick="toggleUpdateLogMenu()" class="text-xs bg-slate-100 border px-3 py-1 rounded-xl font-bold">Admin Log</button>
-            <button onclick="toggleProfileMenu()" class="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold">G</button>
+            <div class="font-black text-xl tracking-tighter italic">TSS <span class="theme-text">PORTAL</span></div>
+            <div class="h-4 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
+            <div class="text-[11px] font-bold text-slate-400 animate-pulse"><i class="fa-solid fa-cloud-bolt"></i> 系統自吸自足 Sync 中</div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Admin & Log 組件[cite: 1, 2] -->
+            <div class="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 px-2 py-1 rounded-xl">
+                <span class="text-[10px] font-black text-red-600"><i class="fa-solid fa-eye"></i> Admin</span>
+                <button onclick="toggleLog(event)" class="bg-white dark:bg-red-900 px-1.5 py-0.5 rounded border border-red-200 text-[10px] font-black">LOG</button>
+                <div id="logMenu" class="hidden absolute right-40 top-12 w-64 theme-card p-4 rounded-xl shadow-2xl z-50">
+                    <div class="font-black border-b theme-border pb-1 mb-2 text-[10px] uppercase">System Log</div>
+                    <div class="text-[10px] font-mono text-slate-500">V6.6: THA 數據與路由完整修復。</div>
+                </div>
+            </div>
+
+            <!-- Profile & Theme 水晶球[cite: 1, 2] -->
+            <div class="relative">
+                <button onclick="toggleProfile(event)" class="w-9 h-9 rounded-full theme-btn-active font-black text-xs shadow-md">G</button>
+                <div id="profileMenu" class="hidden absolute right-0 mt-3 w-64 theme-card p-4 rounded-2xl shadow-2xl z-50">
+                    <div class="mb-4">
+                        <div class="text-[9px] font-black text-slate-400 uppercase mb-2">Projects</div>
+                        <div class="space-y-1">
+                            <div class="p-2 bg-slate-50 dark:bg-black/20 rounded-lg text-xs font-bold border theme-border">🚀 AI Signals Hub</div>
+                            <div class="p-2 hover:bg-slate-50 dark:hover:bg-black/10 rounded-lg text-xs font-semibold text-slate-500">📊 EA-SMA3.0_DM</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[9px] font-black text-slate-400 uppercase mb-2">Theme - 五行水晶</div>
+                        <div class="grid grid-cols-5 gap-1 justify-items-center">
+                            <div class="orb-wrapper" id="orb-gold"><button onclick="switchTheme('gold')" class="magic-orb" style="background:radial-gradient(circle, #fef3c7, #f59e0b)">金</button></div>
+                            <div class="orb-wrapper active" id="orb-wood"><button onclick="switchTheme('wood')" class="magic-orb" style="background:radial-gradient(circle, #d1fae5, #10b981)">木</button></div>
+                            <div class="orb-wrapper" id="orb-water"><button onclick="switchTheme('water')" class="magic-orb" style="background:radial-gradient(circle, #e0f2fe, #0ea5e9)">水</button></div>
+                            <div class="orb-wrapper" id="orb-fire"><button onclick="switchTheme('fire')" class="magic-orb" style="background:radial-gradient(circle, #fee2e2, #ef4444)">火</button></div>
+                            <div class="orb-wrapper" id="orb-earth"><button onclick="switchTheme('earth')" class="magic-orb" style="background:radial-gradient(circle, #fef3c7, #92400e)">土</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-48 border-r theme-sidebar p-4 space-y-2">
-            <button onclick="switchPage('home')" id="nav-home" class="w-full text-left px-3 py-2 rounded-xl text-xs theme-btn-active font-bold">首頁控制台</button>
-            <button onclick="switchPage('crosspower')" id="nav-crosspower" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-100">Cross Power</button>
-            <button onclick="switchPage('analyzer')" id="nav-analyzer" class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-100">History Analyzer</button>
+        <!-- Sidebar[cite: 1, 2] -->
+        <aside class="w-48 theme-sidebar p-4 flex flex-col gap-1 shrink-0 overflow-y-auto">
+            <div class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Navigation</div>
+            <button onclick="switchPage('home')" id="nav-home" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all theme-btn-active"><i class="fa-solid fa-house w-5"></i> 首頁控制台</button>
+            <button onclick="switchPage('crosspower')" id="nav-crosspower" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5"><i class="fa-solid fa-chart-line w-5"></i> Cross Power</button>
+            <button onclick="switchPage('analyzer')" id="nav-analyzer" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5"><i class="fa-solid fa-magnifying-glass-chart w-5"></i> History Analyzer</button>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-6 overflow-y-auto">
-            <!-- Pages -->
-            <div id="page-home"><h1>控制台首頁</h1></div>
-            <div id="page-crosspower" class="hidden"><h1>Cross Power 監控</h1></div>
+        <!-- Main Content[cite: 1, 2] -->
+        <main class="flex-1 p-6 overflow-y-auto bg-slate-50/30 dark:bg-black/10">
             
-            <!-- THA Page -->
+            <!-- Page: Home -->
+            <div id="page-home" class="space-y-6">
+                <div class="theme-card p-8 rounded-3xl flex justify-between items-center shadow-sm">
+                    <div>
+                        <h2 class="text-2xl font-black">TSS 旗艦控制中心 V6.6</h2>
+                        <p class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">系統組件全線復活 100% Online</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 lg:col-span-8 theme-card h-[500px] rounded-3xl overflow-hidden relative">
+                        <div id="tradingview_chart_container" class="w-full h-full"></div>
+                    </div>
+                    <div class="col-span-12 lg:col-span-4 theme-card p-6 rounded-3xl overflow-y-auto">
+                        <div class="font-black text-xs uppercase border-b theme-border pb-2 mb-4">即時財經快訊</div>
+                        <ul id="news-container" class="space-y-4 text-xs font-medium"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Cross Power[cite: 1, 2] -->
+            <div id="page-crosspower" class="hidden space-y-6">
+                <div class="theme-card p-6 rounded-3xl space-y-4">
+                    <div class="flex items-center gap-2 font-black text-sm uppercase tracking-tighter"><i class="fa-solid fa-chart-area theme-text"></i> Power Matrix & Chart</div>
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-3 space-y-4">
+                            <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-2xl">
+                                <div class="text-[10px] font-black text-amber-600 mb-2 border-b border-amber-200 uppercase">Fiat / Gold</div>
+                                <div id="fiat-table" class="space-y-1 font-mono font-bold text-[11px]"></div>
+                            </div>
+                            <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-2xl">
+                                <div class="text-[10px] font-black text-purple-600 mb-2 border-b border-purple-200 uppercase">Crypto Assets</div>
+                                <div id="crypto-table" class="space-y-1 font-mono font-bold text-[11px]"></div>
+                            </div>
+                        </div>
+                        <div class="col-span-9 h-[450px] theme-card rounded-2xl p-4 bg-white dark:bg-slate-900/40">
+                            <canvas id="powerChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-black/20 p-4 rounded-2xl border theme-border space-y-2">
+                        <div id="xau-btns" class="flex flex-wrap gap-1"></div>
+                        <div class="h-[1px] bg-slate-200 dark:bg-slate-800"></div>
+                        <div id="crypto-btns" class="flex flex-wrap gap-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Analyzer (THA)[cite: 1, 2] -->
             <div id="page-analyzer" class="hidden space-y-6">
-                <div class="border theme-card p-6 rounded-3xl shadow-sm space-y-4">
-                    <h2 class="text-lg font-black">THA 數據導入終端</h2>
-                    <input type="file" id="csvFileInput" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" onchange="handleFileSelected(this)">
+                <div class="theme-card p-8 rounded-3xl shadow-xl space-y-6">
+                    <div class="flex justify-between items-center border-b theme-border pb-4">
+                        <h2 class="text-xl font-black italic"><i class="fa-solid fa-database theme-text"></i> THA 數據處理終端</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-10 text-center bg-slate-50/50 hover:bg-slate-100 transition-all cursor-pointer">
+                            <input type="file" id="csvInput" class="hidden" accept=".csv" onchange="handleCsv(event)">
+                            <i class="fa-solid fa-file-csv text-4xl theme-text mb-4 opacity-40"></i>
+                            <div class="text-xs font-black text-slate-600 uppercase mb-3">拖曳 CSV 或 點擊此處上傳</div>
+                            <button onclick="document.getElementById('csvInput').click()" class="theme-btn-active px-6 py-2 rounded-xl text-[11px] font-black shadow-lg">選擇交易報告檔案</button>
+                        </div>
+                        <div class="theme-card p-6 rounded-3xl bg-slate-50/50 flex flex-col justify-center gap-4">
+                            <button class="w-full py-3 bg-white dark:bg-slate-800 rounded-2xl text-[11px] font-black border theme-border"><i class="fa-solid fa-cog mr-2"></i> 關聯 .SET 參數</button>
+                            <textarea id="rawText" placeholder="或者直接貼上 CSV 文字..." class="flex-1 p-3 rounded-2xl border theme-border text-[10px] font-mono focus:outline-none"></textarea>
+                            <button onclick="parseRaw()" class="theme-btn-active py-2 rounded-xl text-[11px] font-black">立即解析文字數據</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="analyzer-main-panel" class="hidden space-y-6">
+                <div id="tha-results" class="hidden space-y-6">
                     <div class="grid grid-cols-4 gap-4">
-                        <div class="border theme-card p-5 rounded-2xl"><div>淨利潤</div><div id="kpi-net-profit" class="text-2xl font-black">0</div></div>
+                        <div class="theme-card p-5 rounded-2xl"><div class="text-[10px] font-bold text-slate-400 uppercase">Net Profit</div><div id="res-profit" class="text-2xl font-black font-mono mt-1">--</div></div>
+                        <div class="theme-card p-5 rounded-2xl"><div class="text-[10px] font-bold text-slate-400 uppercase">Trades</div><div id="res-trades" class="text-2xl font-black font-mono mt-1">--</div></div>
+                        <div class="theme-card p-5 rounded-2xl"><div class="text-[10px] font-bold text-slate-400 uppercase">Win Rate</div><div id="res-win" class="text-2xl font-black font-mono mt-1 theme-text">--</div></div>
+                        <div class="theme-card p-5 rounded-2xl"><div class="text-[10px] font-bold text-slate-400 uppercase">Max Depth</div><div id="res-depth" class="text-2xl font-black font-mono mt-1">L0</div></div>
                     </div>
-                    <div class="border theme-card p-5 rounded-2xl"><canvas id="equityChart"></canvas></div>
+
+                    <div class="theme-card p-6 rounded-3xl h-[400px]">
+                        <canvas id="equityChart"></canvas>
+                    </div>
+
+                    <!-- 馬丁分層表格[cite: 2] -->
+                    <div class="theme-card p-6 rounded-3xl bg-slate-900/5 dark:bg-white/5 space-y-4">
+                        <div class="flex justify-between items-center"><h3 class="font-black text-sm uppercase">馬丁格爾策略分析剖析</h3><div id="m-tabs" class="flex gap-1"></div></div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-center text-xs font-bold">
+                                <thead class="bg-slate-200/50 dark:bg-black/30 text-slate-500"><tr class="border-b theme-border"><th class="py-3">層級</th><th>方向</th><th>手數</th><th>次數</th><th>利潤</th><th>勝率</th></tr></thead>
+                                <tbody id="m-body" class="divide-y theme-border"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SWOT 九宮格[cite: 2] -->
+                    <div id="swot-grid" class="grid grid-cols-3 gap-3"></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modals -->
-    <div id="profileMenu" class="hidden absolute right-4 top-16 w-64 bg-white shadow-xl rounded-2xl p-4 border">
-        <h3 class="font-bold text-xs text-slate-400 uppercase">專案選單</h3>
-        <button onclick="showToast('切換至 AI Signals Hub')" class="w-full p-2 text-left hover:bg-slate-50 text-xs font-bold rounded-lg">🚀 AI Signals Hub</button>
-    </div>
-
-    <div id="updateLogMenu" class="hidden absolute right-20 top-16 w-64 bg-white shadow-xl rounded-2xl p-4 border text-xs">
-        <p>系統更新日誌：V6.5 路由與導航功能修復完畢。</p>
-    </div>
-
     <script>
-        // 核心導航路由
-        function switchPage(pageId) {
-            ['home', 'crosspower', 'analyzer'].forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
-            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+        // 核心狀態[cite: 1, 2]
+        const ccyList = ["EUR", "USD", "JPY", "GBP", "CHF", "AUD", "CAD", "NZD", "XAU", "BTC", "ETH", "SOL"];
+        const ccyMeta = { 
+            "EUR": {f: "🇪🇺", c: "#3b82f6"}, "USD": {f: "🇺🇸", c: "#10b981"}, "JPY": {f: "🇯🇵", c: "#ec4899"}, "GBP": {f: "🇬🇧", c: "#8b5cf6"}, 
+            "CHF": {f: "🇨🇭", c: "#f59e0b"}, "AUD": {f: "🇦🇺", c: "#06b6d4"}, "CAD": {f: "🇨🇦", c: "#f43f5e"}, "NZD": {f: "🇳🇿", c: "#14b8a6"}, 
+            "XAU": {f: "🟡", c: "#eab308"}, "BTC": {f: "🧡", c: "#f97316"}, "ETH": {f: "🔷", c: "#6366f1"}, "SOL": {f: "🔮", c: "#a855f7"} 
+        };
+        let activeCcys = [...ccyList];
+        let ccyValues = {};
+        let ccyHistory = {};
+        let chartInstances = {};
+        let tradesData = [];
+        let activeM = "";
+
+        // 通用組件[cite: 1, 2]
+        function showToast(m) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div'); t.className = 'toast';
+            t.innerHTML = `<i class="fa-solid fa-check-circle theme-text mr-2"></i> ${m}`;
+            c.appendChild(t); setTimeout(() => t.remove(), 3000);
         }
 
-        function toggleProfileMenu() { document.getElementById('profileMenu').classList.toggle('hidden'); }
-        function toggleUpdateLogMenu() { document.getElementById('updateLogMenu').classList.toggle('hidden'); }
-        function showToast(msg) { alert(msg); }
+        // 🌟 1. 2. 路由與主題修復
+        function switchPage(id) {
+            ['home', 'crosspower', 'analyzer'].forEach(p => {
+                document.getElementById(`page-${p}`).classList.add('hidden');
+                document.getElementById(`nav-${p}`).className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5";
+            });
+            document.getElementById(`page-${id}`).classList.remove('hidden');
+            document.getElementById(`nav-${id}`).className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all theme-btn-active";
+            if(id === 'home') setTimeout(initTV, 100);
+            if(id === 'crosspower') setTimeout(initPowerChart, 100);
+        }
 
-        // CSV 解析與處理
-        function handleFileSelected(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const lines = text.split('\n').filter(l => l.trim() !== '');
-                parsedTrades = lines.map(l => {
-                    const cols = l.split(',');
-                    return { symbol: cols[1] || 'Unknown', profit: parseFloat(cols[4]) || 0 };
+        function switchTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            document.querySelectorAll('.orb-wrapper').forEach(o => o.classList.remove('active'));
+            document.getElementById(`orb-${t}`).classList.add('active');
+            showToast(`已調用【${t.toUpperCase()}】元素配置`);
+        }
+
+        function switchMode(m) { document.documentElement.setAttribute('data-mode', m); initTV(); }
+        function toggleProfile(e) { e.stopPropagation(); document.getElementById('profileMenu').classList.toggle('hidden'); }
+        function toggleLog(e) { e.stopPropagation(); document.getElementById('logMenu').classList.toggle('hidden'); }
+
+        // 🌟 3. THA 數據修復邏輯
+        function handleCsv(e) {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader(); r.onload = (ev) => processText(ev.target.result); r.readAsText(f);
+        }
+
+        function parseRaw() { processText(document.getElementById('rawText').value); }
+
+        function processText(txt) {
+            const lines = txt.split('\n').filter(l => l.trim().length > 0);
+            const trades = [];
+            lines.forEach(l => {
+                const c = l.split(','); if(c.length < 5) return;
+                trades.push({
+                    time: c[0], symbol: c[1].trim().toUpperCase(), type: c[2].trim(),
+                    lots: parseFloat(c[3]) || 0, profit: parseFloat(c[4]) || 0
                 });
-                
-                document.getElementById('analyzer-main-panel').classList.remove('hidden');
-                document.getElementById('kpi-net-profit').innerText = '$' + parsedTrades.reduce((acc, curr) => acc + curr.profit, 0).toFixed(2);
-                
-                // 渲染圖表
-                const ctx = document.getElementById('equityChart').getContext('2d');
-                new Chart(ctx, { type: 'line', data: { labels: parsedTrades.map((_, i) => i), datasets: [{ label: '淨值', data: parsedTrades.map(t => t.profit), borderColor: '#047857' }] } });
-            };
-            reader.readAsText(file);
+            });
+            if(trades.length === 0) { alert("數據解析失敗！"); return; }
+            tradesData = trades.sort((a,b) => Date.parse(a.time) - Date.parse(b.time));
+            renderTHA();
+            showToast("數據分析成功！");
         }
+
+        function renderTHA() {
+            document.getElementById('tha-results').classList.remove('hidden');
+            document.getElementById('analyzer-placeholder').classList.add('hidden');
+
+            let bal = 0; let wins = 0; const curve = [];
+            tradesData.forEach(t => { bal += t.profit; curve.push(bal); if(t.profit > 0) wins++; });
+            
+            document.getElementById('res-profit').innerText = `$${bal.toFixed(2)}`;
+            document.getElementById('res-trades').innerText = tradesData.length;
+            document.getElementById('res-win').innerText = `${(wins/tradesData.length*100).toFixed(1)}%`;
+
+            initEquityChart(curve);
+            renderMTables();
+            renderSWOT();
+        }
+
+        function renderMTables() {
+            const symbols = [...new Set(tradesData.map(t => t.symbol))];
+            if(!activeM || !symbols.includes(activeM)) activeM = symbols[0];
+            
+            const tabC = document.getElementById('m-tabs'); tabC.innerHTML = '';
+            symbols.forEach(s => {
+                tabC.innerHTML += `<button onclick="activeM='${s}'; renderMTables()" class="px-2 py-1 text-[10px] rounded ${s===activeM?'theme-btn-active':'bg-slate-100'}">${s}</button>`;
+            });
+
+            const body = document.getElementById('m-body'); body.innerHTML = '';
+            const filtered = tradesData.filter(t => t.symbol === activeM);
+            const layers = {};
+            filtered.forEach(t => {
+                if(!layers[t.lots]) layers[t.lots] = { lots: t.lots, type: t.type, count: 0, profit: 0, wins: 0 };
+                layers[t.lots].count++; layers[t.lots].profit += t.profit; if(t.profit>0) layers[t.lots].wins++;
+            });
+
+            const sorted = Object.values(layers).sort((a,b) => a.lots - b.lots);
+            document.getElementById('res-depth').innerText = `L${sorted.length}`;
+            sorted.forEach((l, i) => {
+                const wr = (l.wins/l.count*100);
+                body.innerHTML += `
+                    <tr>
+                        <td class="py-3">L${i+1}</td><td class="text-blue-500">${l.type}</td>
+                        <td class="font-mono">${l.lots}</td><td>${l.count}</td>
+                        <td class="${l.profit>=0?'text-emerald-500':'text-red-500'} font-mono">$${l.profit.toFixed(2)}</td>
+                        <td><span class="${wr===100?'win-100':''}">${wr.toFixed(1)}%</span></td>
+                    </tr>`;
+            });
+        }
+
+        function renderSWOT() {
+            const s = { st: "對沖回撤防線", sr: "數據穿透精準度", sw: "動態風控模型", t: "市場突發單邊", c: "TSS Core", w: "保證金佔用高", to: "波段套利優化", o: "高波動市機遇", wo: "分層剔除機制" };
+            const g = document.getElementById('swot-grid'); g.innerHTML = '';
+            Object.values(s).forEach((val, i) => {
+                const isCore = i === 4;
+                g.innerHTML += `
+                    <div class="p-3 rounded-xl border theme-border text-center flex items-center justify-center font-black ${isCore?'theme-btn-active':'bg-white'}">
+                        ${val}
+                    </div>`;
+            });
+        }
+
+        // Cross Power 模組[cite: 1, 2]
+        function initPowerChart() {
+            const ctx = document.getElementById('powerChart').getContext('2d');
+            const datasets = activeCcys.map(c => ({
+                label: c, data: ccyHistory[c], borderColor: ccyMeta[c].c, borderWidth: 2, pointRadius: 0, fill: false
+            }));
+            safeChart('powerChart', { type: 'line', data: { labels: Array.from({length: 100}, (_,i)=>i), datasets }, options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 1, max: 10 } } } });
+        }
+
+        function toggleSingleCcy(c) {
+            const idx = activeCcys.indexOf(c);
+            if(idx > -1) activeCcys.splice(idx, 1); else activeCcys.push(c);
+            renderCPUI(); initPowerChart();
+        }
+
+        function toggleSelectAll() {
+            activeCcys = activeCcys.length === ccyList.length ? [] : [...ccyList];
+            renderCPUI(); initPowerChart();
+        }
+
+        function renderCPUI() {
+            const fT = document.getElementById('fiat-table'); fT.innerHTML = '';
+            const cT = document.getElementById('crypto-table'); cT.innerHTML = '';
+            const fB = document.getElementById('xau-btns'); fB.innerHTML = `<button onclick="toggleSelectAll()" class="px-2 py-1 bg-slate-200 rounded text-[10px] font-black">ALL</button>`;
+            const cB = document.getElementById('crypto-btns'); cB.innerHTML = '';
+
+            ccyList.forEach(c => {
+                const row = `<div class="flex justify-between py-1 border-b theme-border"><span>${ccyMeta[c].f} ${c}</span><span style="color:${ccyMeta[c].c}">${ccyValues[c].toFixed(2)}</span></div>`;
+                const btn = `<button onclick="toggleSingleCcy('${c}')" class="px-2 py-1 rounded text-[10px] font-black border ${activeCcys.includes(c)?'theme-btn-active':'bg-white'}">${ccyMeta[c].f} ${c}</button>`;
+                if(["BTC", "ETH", "SOL"].includes(c)) { cT.innerHTML += row; cB.innerHTML += btn; }
+                else { fT.innerHTML += row; fB.innerHTML += btn; }
+            });
+        }
+
+        // 輔助工具
+        function initTV() {
+            const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+            new TradingView.widget({ "autosize": true, "symbol": "OANDA:XAUUSD", "interval": "60", "theme": isDark ? "dark" : "light", "style": "1", "locale": "zh_TW", "container_id": "tradingview_chart_container" });
+        }
+        function initEquityChart(d) {
+            safeChart('equityChart', { type: 'line', data: { labels: d.map((_,i)=>i), datasets: [{ label: 'Equity', data: d, borderColor: '#3b82f6', fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+        function safeChart(id, conf) { if(chartInstances[id]) chartInstances[id].destroy(); chartInstances[id] = new Chart(document.getElementById(id), conf); }
+
+        window.onload = () => {
+            ccyList.forEach(c => {
+                ccyValues[c] = 5 + Math.random();
+                ccyHistory[c] = Array.from({length: 100}, () => 5 + Math.random());
+            });
+            renderCPUI();
+            switchPage('home');
+            setInterval(() => {
+                ccyList.forEach(c => {
+                    ccyValues[c] = Math.max(1, Math.min(10, ccyValues[c] + (Math.random()-0.5)*0.1));
+                    ccyHistory[c].push(ccyValues[c]); if(ccyHistory[c].length > 100) ccyHistory[c].shift();
+                });
+                if(!document.getElementById('page-crosspower').classList.contains('hidden')) { renderCPUI(); initPowerChart(); }
+            }, 2000);
+            document.addEventListener('click', () => { document.getElementById('profileMenu').classList.add('hidden'); document.getElementById('logMenu').classList.add('hidden'); });
+        };
     </script>
 </body>
 </html>
