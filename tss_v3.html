@@ -66,7 +66,7 @@
             
             <div class="hidden md:block w-96 overflow-hidden bg-gray-50 dark:bg-[#0d0921] px-3 py-1 rounded-[6px] border border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-purple-300/80">
                 <marquee scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();">
-                    📡 核心狀態：[EA-SMA3.0_DM] 正常連線 ｜ 📈 跨幣差值與 ATR 矩陣已同步活化 ｜ ⚠️ 風控重申：底倉嚴格遵守配置比例
+                    📡 核心狀態：[EA-SMA3.0_DM] 正常連線 ｜ 📊 100 TF 歷史動能矩陣已活化 ｜ ⚠️ 風控重申：嚴格遵守配置比例
                 </marquee>
             </div>
         </div>
@@ -91,10 +91,7 @@
                             <i class="fa-solid fa-house w-4"></i> 首頁控制台
                         </button>
                         <button onclick="switchPage('crosspower')" id="nav-crosspower" class="w-full flex items-center gap-3 px-3 py-2 rounded-[6px] text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold">
-                            <i class="fa-solid fa-chart-line w-4"></i> Cross Power
-                        </button>
-                        <button onclick="switchPage('crosskline')" id="nav-crosskline" class="w-full flex items-center gap-3 px-3 py-2 rounded-[6px] text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold">
-                            <i class="fa-solid fa-chart-candlestick w-4 text-indigo-500"></i> 跨幣交叉 K 線
+                            <i class="fa-solid fa-bolt w-4"></i> Cross Power
                         </button>
                         <button onclick="switchPage('signals')" id="nav-signals" class="w-full flex items-center justify-between px-3 py-2 rounded-[6px] text-xs theme-muted-text hover:bg-slate-100 dark:hover:bg-purple-950/20 transition-all font-semibold">
                             <span class="flex items-center gap-3"><i class="fa-solid fa-tower-broadcast w-4"></i> AI 訊號中心</span>
@@ -129,28 +126,12 @@
                         </button>
                     </div>
                 </div>
-
-                <div>
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1.5">系統工具</div>
-                    <div class="space-y-1">
-                        <button onclick="showToast('終端緩存已成功清理乾淨！', 'success')" class="w-full flex items-center gap-3 px-3 py-1.5 rounded-[6px] text-[11px] text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all">
-                            <i class="fa-solid fa-arrow-rotate-left w-4"></i> 清除終端緩存
-                        </button>
-                        <button onclick="window.print()" class="w-full flex items-center gap-3 px-3 py-1.5 rounded-[6px] text-[11px] text-slate-500 dark:text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all">
-                            <i class="fa-solid fa-file-export w-4"></i> 導出當前報表
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1.5 bg-slate-50/50 dark:bg-purple-950/10 p-2 rounded-[6px] mt-4">
                 <div class="flex items-center justify-between text-[10px]">
                     <span class="text-slate-400">核心引擎:</span>
-                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block"></span><b>EA-SMA3.0_DM</b></span>
-                </div>
-                <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-slate-400">解算延遲:</span>
-                    <span class="text-slate-600 dark:text-slate-300 font-mono" id="sidebar-latency">9 ms</span>
+                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold"><span></span><b>EA-SMA3.0_DM</b></span>
                 </div>
                 <div class="text-[9px] text-slate-400 dark:text-purple-500 text-center pt-1">TSS Master v3.2</div>
             </div>
@@ -171,8 +152,7 @@
                             <button onclick="switchNewsTab('4h')" id="tab-4h" class="px-2 py-1 text-gray-500">4h核心</button>
                             <button onclick="switchNewsTab('24h')" id="tab-24h" class="px-2 py-1 text-gray-500">24h重磅</button>
                         </div>
-                        <ul class="flex-1 overflow-y-auto text-xs space-y-2.5 pr-1" id="news-container">
-                            </ul>
+                        <ul class="flex-1 overflow-y-auto text-xs space-y-2.5 pr-1" id="news-container"></ul>
                     </div>
                 </div>
             </div>
@@ -182,7 +162,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b dark:border-gray-800 pb-4 gap-3">
                         <div>
                             <h2 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-500"></i> CrossPower 貨幣強弱動能解算矩陣</h2>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">實時解算全球 8 大核心貨幣相對強弱，切換時區即時載入對應算法波幅。</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">實時解算全球核心品種相對強弱，切換時區即時連動下方 100 條 TF 歷史走勢。</p>
                         </div>
                         <div class="flex flex-wrap bg-gray-100 dark:bg-purple-950/40 p-1 rounded-[6px] text-[10px] font-bold gap-1">
                             <button id="tf-M1" class="px-2 py-1 text-gray-500" onclick="switchCrossPowerTF('M1')">M1</button>
@@ -195,30 +175,41 @@
                             <button id="tf-D1" class="px-2 py-1 text-gray-500" onclick="switchCrossPowerTF('D1')">D1</button>
                         </div>
                     </div>
+                    
                     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                         <div class="xl:col-span-2 space-y-3" id="crosspower-bars-container"></div>
                         <div class="p-4 bg-slate-50/60 dark:bg-purple-950/5 border theme-border rounded-xl flex flex-col justify-between">
                             <div class="space-y-2 text-xs" id="crosspower-matrix-list"></div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div id="page-crosskline" class="space-y-6 hidden">
-                <div class="border theme-border theme-card p-6 rounded-3xl shadow-md bg-white dark:bg-[#110c26] space-y-4">
-                    <div>
-                        <h2 class="text-base font-bold text-gray-900 dark:text-white">📈 CCY / XAU 跨品種交叉走勢 (100 TF BARS)</h2>
-                        <p class="text-xs text-gray-500">預設加載 100 條歷史K線，精準觀測主要外匯品種對比黃金(XAU)的強弱背離。</p>
-                    </div>
-                    <div class="h-[480px] rounded-xl overflow-hidden border dark:border-gray-800" id="crosskline-container">
+                    <div class="pt-6 border-t dark:border-gray-800 space-y-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-50 dark:bg-purple-950/10 p-4 rounded-xl border theme-border">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-line text-indigo-500"></i> CCY / XAU 歷史動能走勢矩陣 (100 TF BARS)
+                                </h4>
+                                <p class="text-[11px] text-gray-500 mt-0.5">點選下方標籤即時將貨幣與黃金品种投影至歷史波幅曲線中進行多維交叉觀測。</p>
+                            </div>
+                            <button onclick="toggleAllTrackers()" id="btn-toggle-all-ccy" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-[6px] transition-colors shadow-sm">
+                                <i class="fa-solid fa-check-double mr-1"></i> 一鍵反選 (Toggle All)
+                            </button>
                         </div>
+
+                        <div class="flex flex-wrap gap-2 text-[11px] font-mono" id="ccy-filter-tags-box">
+                            </div>
+
+                        <div class="h-64 w-full relative bg-white dark:bg-[#0d0921] p-2 rounded-xl border dark:border-gray-800 shadow-inner">
+                            <canvas id="crosspowerHistoryCanvas"></canvas>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <div id="page-signals" class="space-y-6 hidden">
                 <div class="bg-white dark:bg-[#110c26] p-6 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm">
                     <h2 class="text-base font-bold mb-4">AI Signals Hub</h2>
-                    <p class="text-xs text-gray-500">EA - SMA 3.0 實時信號卡片監控區。</p>
                 </div>
             </div>
 
@@ -232,41 +223,31 @@
                 <div class="border theme-border theme-card p-6 rounded-3xl shadow-md bg-white dark:bg-[#110c26] space-y-6">
                     <div>
                         <h2 class="text-base font-bold">歷史數據解算終端 (引導式多步工作流)</h2>
-                        <p class="text-xs text-gray-500">請嚴格按照流程導入學生的 CSV / TXT 報告，系統將自動提取馬丁加倉與曲線線段。</p>
                     </div>
 
                     <div class="bg-slate-50 dark:bg-purple-950/10 p-4 rounded-xl border theme-border space-y-4">
                         <div class="flex items-center justify-between text-xs font-bold text-gray-500">
-                            <span id="step-1-lbl" class="text-blue-600">1. 上傳交易 CSV / SET 參數</span>
-                            <span>➡️</span>
-                            <span id="step-2-lbl">2. 下拉選擇配對 EA 策略</span>
-                            <span>➡️</span>
+                            <span id="step-1-lbl" class="text-blue-600">1. 上傳交易 CSV / SET 參數</span><span>➡️</span>
+                            <span id="step-2-lbl">2. 下拉選擇配對 EA 策略</span><span>➡️</span>
                             <span id="step-3-lbl">3. 活化 SWOT 矩陣與馬丁解算</span>
                         </div>
-                        
-                        <div id="dropZone" class="border-2 border-dashed theme-border rounded-xl p-6 text-center bg-white dark:bg-[#0d0921] flex flex-col justify-center items-center relative min-h-[130px] cursor-pointer">
+                        <div id="dropZone" class="border-2 border-dashed theme-border rounded-xl p-6 text-center bg-white dark:bg-[#0d0921] flex flex-col justify-center items-center relative min-h-[120px] cursor-pointer">
                             <input type="file" id="csvFileInput" accept=".csv,.txt,.set" class="hidden" multiple onchange="handleFileWorkflow(this)">
                             <i class="fa-solid fa-cloud-arrow-up text-2xl text-blue-500 mb-2"></i>
                             <p class="text-xs font-bold text-slate-600 dark:text-slate-300">拖曳或點擊選擇真實交易 CSV / SET 配置文件</p>
-                            <span class="text-[10px] text-gray-400 mt-1">支持：[預設] 單獨上傳 CSV ➡️ 簡EA ｜ [進階] 同時選取 CSV 與 .set ➡️ 簡EA</span>
                         </div>
-
                         <div id="ea-selector-workflow-box" class="hidden p-3 bg-white dark:bg-[#110c26] border rounded-lg flex items-center justify-between">
                             <span class="text-xs font-bold text-gray-700 dark:text-gray-300">📄 文件已就緒！請為該報告指定交易策略 (EA)：</span>
                             <select id="workflow-ea-select" class="text-xs p-1.5 border rounded-[6px] dark:bg-gray-800" onchange="executeFinalWorkflowAnalysis()">
                                 <option value="">-- 請選擇策略 --</option>
                                 <option value="sma3">EA - SMA 3.0 核心對齊版</option>
-                                <option value="martingale_gold">EA - Gold Martingale 經典版</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="p-4 bg-slate-50/40 dark:bg-purple-950/5 border theme-border rounded-xl space-y-3">
                         <div class="flex items-center justify-between">
-                            <div>
-                                <h4 class="text-xs font-bold uppercase tracking-wider">📉 帳戶淨值增長曲線與最大浮動回撤</h4>
-                                <p class="text-[11px] text-gray-400">使用 Chart.js 引擎實時解算帳戶資金曲線。</p>
-                            </div>
+                            <div><h4 class="text-xs font-bold uppercase tracking-wider">📉 帳戶淨值增長曲線與最大浮動回撤</h4></div>
                             <div class="flex items-center space-x-2 text-xs font-semibold">
                                 <span class="text-gray-500" id="switch-lbl-consolidated">綜合模式</span>
                                 <label class="switch">
@@ -276,57 +257,41 @@
                                 <span class="text-blue-500" id="switch-lbl-separate">分開貨幣</span>
                             </div>
                         </div>
-                        <div class="h-48 w-full relative">
-                            <canvas id="equityChartCanvas"></canvas>
-                        </div>
+                        <div class="h-44 w-full relative"><canvas id="equityChartCanvas"></canvas></div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
                         <div class="p-3 bg-red-50/40 dark:bg-red-950/10 border border-red-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-red-600 block mb-1">TS</b><span class="text-[11px] text-gray-400" id="swot-ts">等待真實數據導入...</span></div>
                         <div class="p-3 bg-green-50/40 dark:bg-green-950/10 border border-green-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-green-600 block mb-1">S</b><span class="text-[11px] text-gray-400" id="swot-s">等待真實數據導入...</span></div>
                         <div class="p-3 bg-blue-50/40 dark:bg-blue-950/10 border border-blue-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-blue-600 block mb-1">SW</b><span class="text-[11px] text-gray-400" id="swot-sw">等待真實數據導入...</span></div>
-                        
                         <div class="p-3 bg-red-50/40 dark:bg-red-950/10 border border-red-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-red-600 block mb-1">T</b><span class="text-[11px] text-gray-400" id="swot-t">等待真實數據導入...</span></div>
                         <div class="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-purple-950/40 border-2 border-blue-500/60 rounded-[6px] min-h-[85px] flex flex-col justify-between items-center text-center animate-flash-blue">
-                            <b class="text-xs text-blue-700 dark:text-purple-400 block font-bold">EA</b>
-                            <span class="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded">ACTIVE</span>
+                            <b class="text-xs text-blue-700 dark:text-purple-400 block font-bold">EA</b><span class="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded">ACTIVE</span>
                         </div>
                         <div class="p-3 bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-amber-600 block mb-1">W</b><span class="text-[11px] text-gray-400" id="swot-w">等待真實數據導入...</span></div>
-                        
                         <div class="p-3 bg-purple-50/40 dark:bg-purple-950/10 border border-purple-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-purple-600 block mb-1">OT</b><span class="text-[11px] text-gray-400" id="swot-ot">等待真實數據導入...</span></div>
                         <div class="p-3 bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-emerald-600 block mb-1">O</b><span class="text-[11px] text-gray-400" id="swot-o">等待真實數據導入...</span></div>
                         <div class="p-3 bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100 rounded-[6px] min-h-[85px]"><b class="text-xs text-amber-600 block mb-1">WO</b><span class="text-[11px] text-gray-400" id="swot-wo">等待真實數據導入...</span></div>
                     </div>
 
-                    <div class="p-4 bg-orange-50/30 dark:bg-amber-950/10 border border-amber-200/60 dark:border-amber-900/40 rounded-xl space-y-3">
-                        <h4 class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-layer-group"></i> 馬丁持倉極限解算面板 (Martingale Layer Matrix)
-                        </h4>
+                    <div class="p-4 bg-orange-50/30 dark:bg-amber-950/10 border border-amber-200/60 rounded-xl space-y-3">
+                        <h4 class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> 馬丁持倉極限解算面板 (Martingale Layer Matrix)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
                             <div class="p-2.5 bg-white dark:bg-[#0d0921] border rounded-lg">
-                                <span class="text-gray-400 block text-[10px]">最大連環加倉層數</span>
-                                <span class="text-base font-bold" id="martingale-max-layer">-- 層</span>
-                                <span class="text-[9px] block text-green-500" id="martingale-status-light">● 正常持倉範疇</span>
+                                <span class="text-gray-400 block text-[10px]">最大連環加倉層數</span><span class="text-base font-bold text-red-500" id="martingale-max-layer">-- 層</span>
+                                <span class="text-[9px] block text-red-500 font-bold animate-pulse" id="martingale-status-light">● 等待真實報告解析...</span>
                             </div>
-                            <div class="p-2.5 bg-white dark:bg-[#0d0921] border rounded-lg">
-                                <span class="text-gray-400 block text-[10px]">加倉手數實際乘數</span>
-                                <span class="text-base font-bold" id="martingale-multiplier">-- 倍</span>
-                            </div>
-                            <div class="p-2.5 bg-white dark:bg-[#0d0921] border rounded-lg">
-                                <span class="text-gray-400 block text-[10px]">加倉平均點距間距</span>
-                                <span class="text-base font-bold" id="martingale-atr-space">-- pips</span>
-                            </div>
+                            <div class="p-2.5 bg-white dark:bg-[#0d0921] border rounded-lg"><span class="text-gray-400 block text-[10px]">加倉手數實際乘數</span><span class="text-base font-bold" id="martingale-multiplier">-- 倍</span></div>
+                            <div class="p-2.5 bg-white dark:bg-[#0d0921] border rounded-lg"><span class="text-gray-400 block text-[10px]">加倉平均點距間距</span><span class="text-base font-bold" id="martingale-atr-space">-- pips</span></div>
                         </div>
                     </div>
 
                     <div class="pt-4 border-t dark:border-gray-800 space-y-2">
                         <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">🧾 真實交易成交歷史明細流水帳 (Transaction Ledger)</h4>
-                        <div class="border dark:border-gray-800 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
+                        <div class="border dark:border-gray-800 rounded-xl overflow-hidden max-h-40 overflow-y-auto">
                             <table class="w-full text-[11px] text-left text-gray-500 font-mono">
                                 <thead class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    <tr>
-                                        <th class="p-2">訂單編號</th><th class="p-2">商品</th><th class="p-2">方向</th><th class="p-2">成交手數</th><th class="p-2">獲利(USD)</th>
-                                    </tr>
+                                    <tr><th class="p-2">訂單編號</th><th class="p-2">商品</th><th class="p-2">方向</th><th class="p-2">成交手數</th><th class="p-2">獲利(USD)</th></tr>
                                 </thead>
                                 <tbody id="ledger-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
                                     <tr><td colspan="5" class="p-4 text-center text-gray-400">等待學生交易報告導入解算...</td></tr>
@@ -334,14 +299,12 @@
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <div id="page-forest" class="space-y-6 hidden">
                 <div class="glass-panel p-6 bg-white dark:bg-[#110c26] border rounded-3xl shadow-sm">
                     <h2 class="font-bold text-base mb-2">豐盛森林基地 (Affluence Forest)</h2>
-                    <p class="text-xs text-gray-500">學員核心交易生態圈、心態修煉與核心參數基地。</p>
                 </div>
             </div>
 
@@ -361,29 +324,36 @@
     </div>
 
     <script>
-        // 全局資料緩存
         let activeTimeframe = 'H1';
-        let chartInstance = null;
-        let cachedTrades = [];
+        let equityChart = null;
+        let historyChart = null; // 歷史動能走勢圖實例
 
-        // 1. 真實新聞數據庫注入
+        // 貨幣與黃金配置矩陣
+        const allTrackers = ['AUD', 'CHF', 'CAD', 'EUR', 'JPY', 'NZD', 'GBP', 'USD', 'XAUUSD', 'XAUUSDT'];
+        let activeTrackers = ['USD', 'EUR', 'GBP', 'XAUUSD']; // 預設選中四個
+        
+        // 顏色分配字典
+        const trackerColors = {
+            'AUD': '#10b981', 'CHF': '#ec4899', 'CAD': '#f59e0b', 'EUR': '#3b82f6',
+            'JPY': '#ef4444', 'NZD': '#6366f1', 'GBP': '#8b5cf6', 'USD': '#06b6d4',
+            'XAUUSD': '#eab308', 'XAUUSDT': '#f97316'
+        };
+
         const newsDatabase = {
             '1h': [
-                { time: '00:15', text: '🔥 [黃金警報] 美國非農就業報告(NFP)即將公佈，市場預期波幅擴大至 250 點，EA-SMA 3.0 全網學員注意風控。' },
-                { time: '00:32', text: '📡 核心聯儲局官員暗示維持利率不變，現貨黃金高位拉升至 4550 阻力關口。' }
+                { time: '00:15', text: '🔥 [黃金警報] 美國非農就業報告(NFP)即將公佈，市場預期波幅擴大，EA-SMA 3.0 學員注意風控。' },
+                { time: '00:32', text: '📡 聯儲局暗示維持利率不變，現貨黃金高位拉升至 4550 阻力關口。' }
             ],
             '4h': [
-                { time: '昨日', text: '🚨 美國核心 CPI 通脹數據超預期回升，引發黃金生產環境高頻對沖盤瘋狂洗盤。' },
-                { time: '昨日', text: '💼 Portfolio 提示：跟隨學生總管理資金(AUM)今日平穩度過高波動爆發波段。' }
+                { time: '昨日', text: '🚨 美國核心 CPI 通脹數據超預期回升，引發黃金高頻對沖盤洗盤。' }
             ],
             '24h': [
-                { time: '本週', text: '地緣政治局勢緊張，引發全網避險買盤資金流入現貨黃金。' },
                 { time: '本週', text: '標準數據模型 [EA-SMA3.0_DM] 已完成 100 條歷史 Timeframe Bars 趨勢壓力回測校對。' }
             ]
         };
 
         function switchPage(pageId) {
-            const tabs = ['home', 'crosspower', 'crosskline', 'signals', 'portfolio', 'analyzer', 'forest', 'fxtools', 'earules'];
+            const tabs = ['home', 'crosspower', 'signals', 'portfolio', 'analyzer', 'forest', 'fxtools', 'earules'];
             tabs.forEach(p => {
                 const el = document.getElementById(`page-${p}`);
                 if (el) el.classList.add('hidden');
@@ -397,19 +367,15 @@
             if (activeBtn) activeBtn.className = "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs theme-btn-active font-semibold shadow-sm transition-all";
             
             if(pageId==='home') setTimeout(renderTradingViewWidget, 50);
-            if(pageId==='crosspower') setTimeout(renderCrossPowerEngine, 50);
-            if(pageId==='crosskline') setTimeout(renderCrossKlineTVWidget, 50);
+            if(pageId==='crosspower') setTimeout(() => { renderCrossPowerEngine(); renderHistoryChart(); }, 50);
         }
 
-        function showToast(text, type) { console.log(`[Toast ${type}]: ${text}`); }
-
-        // 2. Cross Power 8大時區算力乘數切換
-        const tfMultipliers = { 'M1': 2.5, 'M5': 1.8, 'M15': 1.4, 'M30': 1.1, 'H1': 0.8, 'H2': 0.6, 'H4': 0.4, 'D1': 0.1 };
-        let baseStrengths = { USD: 0.5, EUR: 2.1, GBP: -1.2, AUD: 0.2, XAU: 4.5, CAD: -0.3, CHF: -0.9, JPY: -3.1 };
+        // Cross Power 8大時區算力切換
+        const tfMultipliers = { 'M1': 2.3, 'M5': 1.8, 'M15': 1.4, 'M30': 1.1, 'H1': 0.8, 'H2': 0.6, 'H4': 0.4, 'D1': 0.15 };
+        let baseStrengths = { USD: 0.8, EUR: 2.5, GBP: -1.5, AUD: 0.3, CAD: -0.4, CHF: -0.8, JPY: -3.5, NZD: 1.1, XAUUSD: 5.2, XAUUSDT: 5.1 };
 
         function switchCrossPowerTF(tf) {
-            const tfs = ['M1', 'M5', 'M15', 'M30', 'H1', 'H2', 'H4', 'D1'];
-            tfs.forEach(t => {
+            ['M1', 'M5', 'M15', 'M30', 'H1', 'H2', 'H4', 'D1'].forEach(t => {
                 const btn = document.getElementById(`tf-${t}`);
                 if(btn) btn.className = "px-2 py-1 text-gray-500";
             });
@@ -418,6 +384,7 @@
             
             activeTimeframe = tf;
             renderCrossPowerEngine();
+            renderHistoryChart(); // 時區切換，走勢圖同步刷新重繪
         }
 
         function renderCrossPowerEngine() {
@@ -426,10 +393,10 @@
             if (!barContainer || !matrixList) return;
 
             const mult = tfMultipliers[activeTimeframe] || 1.0;
-            const currencies = ['USD', 'EUR', 'GBP', 'AUD', 'XAU', 'CAD', 'CHF', 'JPY'];
+            const items = ['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'CHF', 'JPY', 'NZD'];
             
             barContainer.innerHTML = '';
-            const sorted = [...currencies].sort((a,b) => (baseStrengths[b] * mult) - (baseStrengths[a] * mult));
+            const sorted = [...items].sort((a,b) => (baseStrengths[b] * mult) - (baseStrengths[a] * mult));
 
             sorted.forEach(ccy => {
                 const rawVal = baseStrengths[ccy] * mult + (Math.random() * 0.4 - 0.2);
@@ -453,97 +420,153 @@
             });
 
             matrixList.innerHTML = `
-                <div class="flex justify-between p-2 bg-white dark:bg-purple-950/20 rounded-[6px] border dark:border-gray-800"><span>🔥 XAU / JPY (${activeTimeframe} 撕裂)</span><span class="text-emerald-500 font-bold">+${(baseStrengths['XAU']*mult - baseStrengths['JPY']*mult).toFixed(2)}</span></div>
+                <div class="flex justify-between p-2 bg-white dark:bg-purple-950/20 rounded-[6px] border dark:border-gray-800"><span>🔥 XAUUSD / JPY (${activeTimeframe})</span><span class="text-emerald-500 font-bold">+${(baseStrengths['XAUUSD']*mult - baseStrengths['JPY']*mult).toFixed(2)}</span></div>
                 <div class="flex justify-between p-2 bg-white dark:bg-purple-950/20 rounded-[6px] border dark:border-gray-800"><span>⚡ EUR / JPY (突破動能)</span><span class="text-emerald-500 font-bold">+${(baseStrengths['EUR']*mult - baseStrengths['JPY']*mult).toFixed(2)}</span></div>`;
         }
 
-        // 3. 新增 100 條 TF BAR 走勢圖 TradingView Widget
-        function renderCrossKlineTVWidget() {
-            const container = document.getElementById('crosskline-container');
-            if(!container) return;
-            container.innerHTML = '';
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "OANDA:EURUSD/OANDA:XAUUSD",
-                "interval": "D",
-                "theme": "dark",
-                "style": "1",
-                "locale": "zh_TW",
-                "container_id": "crosskline-container"
+        // 🌟 核心：渲染 100 條 TF Bars 歷史動能走勢圖 (Chart.js)
+        function renderHistoryChart() {
+            const ctx = document.getElementById('crosspowerHistoryCanvas').getContext('2d');
+            if (historyChart) historyChart.destroy();
+
+            const mult = tfMultipliers[activeTimeframe] || 1.0;
+            // 生成 100 條歷史 Bar 標籤
+            let labels = [];
+            for (let i = 100; i >= 1; i--) { labels.push(`Bar -${i}`); }
+
+            // 根據選中的篩選標籤生成數據線段
+            let datasets = [];
+            activeTrackers.forEach(item => {
+                let data = [];
+                let currentSeed = baseStrengths[item] * mult;
+                // 模擬 100 條歷史隨機漫步動能波幅數值
+                for (let i = 0; i < 100; i++) {
+                    currentSeed += (Math.random() * 0.6 - 0.3);
+                    currentSeed = Math.max(-10, Math.min(10, currentSeed));
+                    data.push(parseFloat(currentSeed.toFixed(2)));
+                }
+
+                datasets.push({
+                    label: item,
+                    data: data,
+                    borderColor: trackerColors[item] || '#94a3b8',
+                    borderWidth: 1.8,
+                    pointRadius: 0, // 隱藏圓點使曲線流暢
+                    tension: 0.15,
+                    fill: false
+                });
+            });
+
+            historyChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: -10, max: 10, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                        x: { grid: { display: false }, ticks: { display: false } } // 隱藏密集的Bar標籤
+                    },
+                    plugins: { legend: { labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
             });
         }
 
-        // 4. THA 引導式工作流函數
+        // 渲染一鍵點選篩選標籤 UI
+        function renderFilterTags() {
+            const box = document.getElementById('ccy-filter-tags-box');
+            if (!box) return;
+            box.innerHTML = '';
+
+            allTrackers.forEach(item => {
+                const isActive = activeTrackers.includes(item);
+                const color = trackerColors[item];
+                
+                box.innerHTML += `
+                    <button onclick="toggleSingleTracker('${item}')" 
+                        class="px-2.5 py-1 rounded-[6px] border font-semibold transition-all flex items-center gap-1.5 shadow-sm
+                        ${isActive ? 'bg-white dark:bg-purple-950/40 font-bold' : 'bg-gray-100/70 text-gray-400 border-gray-200 dark:bg-transparent dark:border-gray-800'}"
+                        style="${isActive ? `border-color: ${color}; color: ${color}; box-shadow: inset 0 0 4px ${color}1A` : ''}">
+                        <i class="fa-solid ${isActive ? 'fa-square-check' : 'fa-square'}"></i>
+                        <span>${item}</span>
+                    </button>
+                `;
+            });
+        }
+
+        function toggleSingleTracker(item) {
+            if (activeTrackers.includes(item)) {
+                activeTrackers = activeTrackers.filter(i => i !== item);
+            } else {
+                activeTrackers.push(item);
+            }
+            renderFilterTags();
+            renderHistoryChart();
+        }
+
+        // 一鍵全選 / 全反選邏輯
+        function toggleAllTrackers() {
+            if (activeTrackers.length === allTrackers.length) {
+                activeTrackers = []; // 全不選
+            } else {
+                activeTrackers = [...allTrackers]; // 全選
+            }
+            renderFilterTags();
+            renderHistoryChart();
+        }
+
+        // THA 多步工作流
         function handleFileWorkflow(input) {
             if (input.files.length === 0) return;
             document.getElementById('step-1-lbl').className = "text-green-600 font-extrabold";
             document.getElementById('step-2-lbl').className = "text-blue-600 font-extrabold animate-pulse";
-            
-            // 彈出下拉式配對 EA 選單
             document.getElementById('ea-selector-workflow-box').classList.remove('hidden');
         }
 
         function executeFinalWorkflowAnalysis() {
-            const sel = document.getElementById('workflow-ea-select').value;
-            if(!sel) return;
-            
+            document.getElementById('workflow-ea-select').value;
             document.getElementById('step-2-lbl').className = "text-green-600 font-extrabold";
             document.getElementById('step-3-lbl').className = "text-green-600 font-extrabold";
             
-            // 活化九宮格與解算
-            document.getElementById("swot-ts").innerHTML = "<b>風險威脅:</b> 實盤倉位在重磅財經發佈時有反向對沖持倉，注意層數防護。";
-            document.getElementById("swot-s").innerHTML = "<b>實盤優勢:</b> 數據線段與 EA-SMA 3.0 的大數法則概率100%對齊。";
-            document.getElementById("swot-sw").innerHTML = "<b>浮動回測:</b> 總體最大浮動回撤控制在帳戶權益 15% 內，表現穩健。";
+            document.getElementById("swot-ts").innerHTML = "<b>威脅:</b> 偵測到歷史持倉有反向對沖，需注意馬丁極限層數。";
+            document.getElementById("swot-s").innerHTML = "<b>優勢:</b> 真實數據線段符合 EA-SMA 3.0 大數法則概率。";
             
-            // 6. 馬丁極限層數解算與對齊 EA 風控紅線 (警示紅燈展示)
             document.getElementById("martingale-max-layer").innerText = "8 層";
-            document.getElementById("martingale-max-layer").className = "text-base font-bold text-red-500";
-            document.getElementById("martingale-status-light").innerText = "🚨 警告：已突破 6 層硬性紅線守則！";
-            document.getElementById("martingale-status-light").className = "text-[9px] block text-red-500 font-bold animate-pulse";
-            document.getElementById("martingale-multiplier").innerText = "1.5 倍";
-            document.getElementById("martingale-atr-space").innerText = "22.5 pips";
+            document.getElementById("martingale-status-light").innerText = "🚨 警告：已突破 6 層硬性紅線！";
 
-            // 7. 交易成交明細數據填充並置底
             const ledgerBody = document.getElementById('ledger-table-body');
             ledgerBody.innerHTML = `
                 <tr class="hover:bg-slate-50 dark:hover:bg-purple-950/20"><td class="p-2">#8849201</td><td class="p-2">XAUUSD</td><td class="p-2 text-green-500">BUY</td><td class="p-2">0.01 手</td><td class="p-2 text-green-500">+$45.50</td></tr>
-                <tr class="hover:bg-slate-50 dark:hover:bg-purple-950/20"><td class="p-2">#8849254</td><td class="p-2">EURUSD</td><td class="p-2 text-green-500">BUY</td><td class="p-2">0.10 手</td><td class="p-2 text-green-500">+$12.00</td></tr>
-                <tr class="hover:bg-slate-50 dark:hover:bg-purple-950/20"><td class="p-2">#8849311</td><td class="p-2">XAUUSD</td><td class="p-2 text-red-500">SELL</td><td class="p-2">0.02 手</td><td class="p-2 text-red-500">-$15.00</td></tr>`;
+                <tr class="hover:bg-slate-50 dark:hover:bg-purple-950/20"><td class="p-2">#8849254</td><td class="p-2">EURUSD</td><td class="p-2 text-green-500">BUY</td><td class="p-2">0.10 手</td><td class="p-2 text-green-500">+$12.00</td></tr>`;
                 
-            // 活化 Chart.js 資金曲線圖表
             renderEquityChart();
         }
 
-        // 5. Chart.js 資金曲線生成（支持綜合 / 分開貨幣 Switch）
         function renderEquityChart() {
             const ctx = document.getElementById('equityChartCanvas').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-
+            if(equityChart) equityChart.destroy();
             const isSeparate = document.getElementById('currency-route-switch').checked;
 
             if (!isSeparate) {
-                // 綜合模式
-                chartInstance = new Chart(ctx, {
+                equityChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: ['1單', '10單', '20單', '30單', '40單', '50單'],
                         datasets: [
-                            { label: '綜合總權益成長 (Equity)', data: [10000, 10200, 10150, 10550, 10400, 10890], borderColor: '#2563eb', tension: 0.1, fill: false },
-                            { label: '最大浮動回撤 (Drawdown)', data: [0, -50, -200, -100, -350, -80], backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'transparent', fill: true }
+                            { label: '綜合總權益成長', data: [10000, 10200, 10150, 10550, 10400, 10890], borderColor: '#2563eb', tension: 0.1 },
+                            { label: '最大浮動回撤', data: [0, -50, -200, -100, -350, -80], backgroundColor: 'rgba(239, 68, 68, 0.12)', fill: true, borderColor: 'transparent' }
                         ]
                     },
                     options: { responsive: true, maintainAspectRatio: false }
                 });
             } else {
-                // 分開貨幣模式
-                chartInstance = new Chart(ctx, {
+                equityChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: ['1單', '10單', '20單', '30單', '40單', '50單'],
                         datasets: [
-                            { label: 'XAUUSD 獨立線', data: [10000, 10300, 10450, 10700, 10600, 10950], borderColor: '#f59e0b', tension: 0.1 },
-                            { label: 'EURUSD 獨立線', data: [10000, 9950, 9800, 9900, 9850, 9920], borderColor: '#10b981', tension: 0.1 },
-                            { label: 'GBPUSD 獨立線', data: [10000, 10050, 10100, 9950, 10020, 10040], borderColor: '#8b5cf6', tension: 0.1 }
+                            { label: 'XAUUSD 線', data: [10000, 10300, 10450, 10700, 10950], borderColor: '#eab308', tension: 0.1 },
+                            { label: 'EURUSD 線', data: [10000, 9950, 9800, 9900, 9920], borderColor: '#10b981', tension: 0.1 }
                         ]
                     },
                     options: { responsive: true, maintainAspectRatio: false }
@@ -555,49 +578,33 @@
             const isSeparate = document.getElementById('currency-route-switch').checked;
             document.getElementById('switch-lbl-consolidated').className = isSeparate ? "text-gray-400" : "text-blue-500 font-bold";
             document.getElementById('switch-lbl-separate').className = isSeparate ? "text-blue-500 font-bold" : "text-gray-400";
-            if(document.getElementById('martingale-max-layer').innerText !== '-- 層') {
-                renderEquityChart();
-            }
+            if(document.getElementById('martingale-max-layer').innerText !== '-- 層') renderEquityChart();
         }
 
         function switchNewsTab(tabId) {
-            ['1h', '4h', '24h'].forEach(t => {
-                document.getElementById(`tab-${t}`).className = "px-2 py-1 text-gray-500";
-            });
+            ['1h', '4h', '24h'].forEach(t => document.getElementById(`tab-${t}`).className = "px-2 py-1 text-gray-500");
             document.getElementById(`tab-${tabId}`).className = "px-2 py-1 bg-blue-50 text-blue-600 rounded font-bold";
-            
             const container = document.getElementById('news-container');
-            if(!container) return;
-            container.innerHTML = '';
+            if(!container) return; container.innerHTML = '';
             (newsDatabase[tabId] || []).forEach(n => {
-                container.innerHTML += `<li class="border-b dark:border-gray-800/40 pb-2"><b>[${n.time}]</b> <span class="dark:text-purple-200">${n.text}</span></li>`;
+                container.innerHTML += `<li class="border-b dark:border-gray-800/40 pb-2"><b>[${n.time}]</b> <span>${n.text}</span></li>`;
             });
         }
 
         function renderTradingViewWidget() {
-            const container = document.getElementById('tradingview_chart_container');
-            if (!container) return;
-            container.innerHTML = '';
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "OANDA:XAUUSD",
-                "interval": "60",
-                "theme": document.documentElement.classList.contains('dark') ? "dark" : "light",
-                "style": "1",
-                "locale": "zh_TW",
-                "container_id": "tradingview_chart_container"
-            });
+            const container = document.getElementById('tradingview_chart_container'); if (!container) return; container.innerHTML = '';
+            new TradingView.widget({ "autosize": true, "symbol": "OANDA:XAUUSD", "interval": "60", "theme": document.documentElement.classList.contains('dark')?"dark":"light", "style": "1", "locale": "zh_TW", "container_id": "tradingview_chart_container" });
         }
 
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
             if (!document.getElementById('page-home').classList.contains('hidden')) renderTradingViewWidget();
-            if (!document.getElementById('page-crosskline').classList.contains('hidden')) renderCrossKlineTVWidget();
         }
 
         window.onload = function() {
             switchPage('home');
             switchNewsTab('1h');
+            renderFilterTags(); // 初始化走勢標籤
             
             // 完美綁定原生 HTML5 Drag & Drop 監聽
             const dz = document.getElementById('dropZone');
@@ -606,8 +613,7 @@
                 dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('bg-slate-100'); });
                 dz.addEventListener('dragleave', () => dz.classList.remove('bg-slate-100'));
                 dz.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dz.classList.remove('bg-slate-100');
+                    e.preventDefault(); dz.classList.remove('bg-slate-100');
                     if (e.dataTransfer.files.length > 0) {
                         document.getElementById('csvFileInput').files = e.dataTransfer.files;
                         handleFileWorkflow(document.getElementById('csvFileInput'));
@@ -615,16 +621,18 @@
                 });
             }
 
-            // 狀態欄延時跳動
             setInterval(() => {
                 const el = document.getElementById('sidebar-latency');
-                if(el) el.innerText = (Math.floor(Math.random() * 5) + 6) + " ms";
+                if(el) el.innerText = (Math.floor(Math.random() * 4) + 7) + " ms";
             }, 3000);
 
-            // Cross Power 實時高頻算力刷新
+            // Cross Power 高頻動態刷新聯動
             setInterval(() => {
                 const cpPage = document.getElementById('page-crosspower');
-                if (cpPage && !cpPage.classList.contains('hidden')) renderCrossPowerEngine();
+                if (cpPage && !cpPage.classList.contains('hidden')) {
+                    renderCrossPowerEngine();
+                    renderHistoryChart(); // 走勢圖高頻實時動態跳動
+                }
             }, 2000);
         };
     </script>
