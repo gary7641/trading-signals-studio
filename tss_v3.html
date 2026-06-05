@@ -3,433 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSS Portal - THA 旗艦級全解鎖展示控制台</title>
-    <!-- Tailwind CSS -->
+    <title>TSS Portal - 旗艦級交易數據分析平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- TradingView Script -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     borderRadius: {
-                        'xl': '10px',
-                        '2xl': '14px',
-                        '3xl': '20px'
+                        'DEFAULT': '6px',
+                        'md': '6px',
+                        'lg': '6px',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* ======================================================= */
-        /* TSS PORTAL 全域多主題色彩 CSS 變數                      */
-        /* ======================================================= */
-        html[data-mode="light"][data-theme="gold"] {
-            --bg-main: #fffaf0; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #f1dfc1;
-            --text-primary: #c26900; --text-primary-hover: #a15300; --bg-accent-soft: #fff3db; --text-main: #2d2a24; --text-muted: #7c7568; --bg-accent-active: #b45309;
+        /* 全域核心視覺與 6px 微圓角規範 */
+        * { border-radius: 6px !important; }
+        html, body { border-radius: 0px !important; height: 100%; overflow: hidden; }
+        aside, header, main, .no-radius { border-radius: 0px !important; }
+        
+        /* 100% 勝率特殊霓虹藍光閃爍動畫 */
+        @keyframes flashBlue {
+            0%, 100% { box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.6), 0 0 10px rgba(59, 130, 246, 0.4); border-color: #3b82f6; }
+            50% { box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.2), 0 0 2px rgba(59, 130, 246, 0.1); border-color: #60a5fa; }
         }
-        html[data-mode="light"][data-theme="wood"] {
-            --bg-main: #f1fcf5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #d0ebd9;
-            --text-primary: #047857; --text-primary-hover: #065f46; --bg-accent-soft: #e6f9ed; --text-main: #222d26; --text-muted: #6f7d74; --bg-accent-active: #047857;
+        .animate-flash-blue { animation: flashBlue 2.5s infinite ease-in-out; }
+        
+        /* 側邊欄與按鈕選中高亮樣式 (Active UI) */
+        .theme-btn-active {
+            background-color: rgb(239 246 255) !important; /* bg-blue-50 */
+            color: rgb(37 99 235) !important;      /* text-blue-600 */
+            font-weight: 600 !important;
         }
-        html[data-mode="light"][data-theme="water"] {
-            --bg-main: #f0f7fc; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #cfe3f1;
-            --text-primary: #0369a1; --text-primary-hover: #075985; --bg-accent-soft: #e0f2fe; --text-main: #202b36; --text-muted: #697785; --bg-accent-active: #0369a1;
+        .dark .theme-btn-active {
+            background-color: rgba(30, 27, 75, 0.5) !important; /* bg-indigo-950/50 */
+            color: rgb(96 165 250) !important;          /* text-blue-400 */
         }
-        html[data-mode="light"][data-theme="fire"] {
-            --bg-main: #fff5f5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #fcd4d4;
-            --text-primary: #dc2626; --text-primary-hover: #b91c1c; --bg-accent-soft: #ffebeb; --text-main: #331f1f; --text-muted: #8a6d6d; --bg-accent-active: #dc2626;
-        }
-        html[data-mode="light"][data-theme="earth"] {
-            --bg-main: #fcf8f2; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #eddcc4;
-            --text-primary: #92400e; --text-primary-hover: #78350f; --bg-accent-soft: #fcf1df; --text-main: #2e241f; --text-muted: #7d6b60; --bg-accent-active: #92400e;
-        }
-        html[data-mode="dark"] {
-            --bg-main: #080413; --bg-sidebar: #0e0721; --bg-card: #130a2a; --border-theme: #2d1854; --text-main: #ede9f5; --text-muted: #9c8fb8;
-        }
-        html[data-mode="dark"][data-theme="gold"] { --text-primary: #f59e0b; --text-primary-hover: #d97706; --bg-accent-soft: #2e1c05; --bg-accent-active: #f59e0b; }
-        html[data-mode="dark"][data-theme="wood"] { --text-primary: #10b981; --text-primary-hover: #059669; --bg-accent-soft: #062f20; --bg-accent-active: #10b981; }
-        html[data-mode="dark"][data-theme="water"] { --text-primary: #0ea5e9; --text-primary-hover: #0284c7; --bg-accent-soft: #082d47; --bg-accent-active: #0ea5e9; }
-        html[data-mode="dark"][data-theme="fire"] { --text-primary: #ef4444; --text-primary-hover: #dc2626; --bg-accent-soft: #380b0b; --bg-accent-active: #ef4444; }
-        html[data-mode="dark"][data-theme="earth"] { --text-primary: #f97316; --text-primary-hover: #ea580c; --bg-accent-soft: #351505; --bg-accent-active: #f97316; }
-
-        body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.25s ease; margin: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-        .theme-sidebar { background-color: var(--bg-sidebar); border-color: var(--border-theme); }
-        .theme-card { background-color: var(--bg-card); border-color: var(--border-theme); }
-        .theme-border { border-color: var(--border-theme); }
-        .theme-text { color: var(--text-primary); }
-        .theme-btn-active { background-color: var(--bg-accent-active); color: #ffffff !important; }
-        .theme-bg-soft { background-color: var(--bg-accent-soft); }
-        .theme-muted-text { color: var(--text-muted); }
-
-        /* 🔮 3D 水晶半透明元素魔法球及能量環 */
-        .orb-wrapper { position: relative; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; }
-        .magic-ring { position: absolute; inset: 0px; border: 1.5px dashed transparent; border-radius: 50%; pointer-events: none; transition: all 0.4s ease; transform: rotate(0deg); }
-        .orb-wrapper:hover .magic-ring { border-width: 1.5px; transform: rotate(180deg); }
-        .magic-orb { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25); box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.4), inset 0 3px 6px rgba(255, 255, 255, 0.5), 0 4px 8px rgba(0, 0, 0, 0.2); }
-        .magic-orb::before { content: ''; position: absolute; top: 1.5px; left: 2.5px; right: 2.5px; height: 40%; background: linear-gradient(to bottom, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 100%); border-radius: 50% 50% 25% 25%; pointer-events: none; }
-        .magic-orb:hover { transform: translateY(-2px) scale(1.12); box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.3), inset 0 4px 6px rgba(255, 255, 255, 0.7), 0 8px 16px rgba(0, 0, 0, 0.35); }
-        @keyframes spin-clockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .orb-wrapper.active .magic-ring { animation: spin-clockwise 10s linear infinite; }
-
-        /* 🔮 100% 勝率藍色霓虹呼吸高亮線 */
-        @keyframes flash-blue-win {
-            0%, 100% { background-color: rgba(29, 78, 216, 0.15); color: #2563eb; border-color: rgba(37, 99, 235, 0.3); }
-            50% { background-color: rgba(37, 99, 235, 0.85); color: #ffffff; border-color: #2563eb; box-shadow: 0 0 15px rgba(37, 99, 235, 0.8); }
-        }
-        .win-100-neon { animation: flash-blue-win 1.4s infinite ease-in-out; display: inline-block; padding: 2px 6px; border-radius: 4px; }
-
-        /* 🧱 原裝 CSS 馬丁風險度安全度配色[cite: 8] */
-        .level-safe { background: rgba(34, 197, 94, 0.08) !important; }
-        .level-risk { background: rgba(248, 113, 113, 0.08) !important; }
-
-        /* Summary progress bar */
-        .bar-track { border-radius: 999px; background: #e5e7eb; height: 6px; overflow: hidden; width: 100%; }
-        .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #a3e635); transition: width 0.3s ease-out; }
-        .bar-profit { background: linear-gradient(90deg, #22c55e, #ef4444); }
-
-        /* Collapsible max-height transitions[cite: 7] */
-        .collapsible-body { overflow: hidden; transition: max-height 0.24s ease-in-out; max-height: 2000px; }
-        .collapsible-body.collapsed { max-height: 0px !important; }
-
-        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column-reverse; gap: 8px; }
     </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col overflow-x-hidden">
+<body class="bg-gray-50 dark:bg-[#080413] text-gray-900 dark:text-gray-100 transition-colors duration-300 flex flex-col font-sans">
 
-    <div id="toast-container"></div>
-
-    <!-- 📢 Header -->
-    <header class="h-14 border-b border-slate-200 dark:border-slate-200/10 theme-sidebar flex items-center justify-between px-6 z-20 shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-crown theme-text"></i> <span class="tracking-tight">TSS</span> <span class="theme-text">PORTAL</span>
+    <header class="h-14 bg-white dark:bg-[#110c26] border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 shrink-0 select-none z-20">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 font-bold text-lg tracking-wider text-gray-900 dark:text-white">
+                <i class="fa-solid fa-crown text-amber-500"></i>
+                <span>TSS PORTAL</span>
             </div>
-            <div class="h-4 w-[1px] bg-slate-300 dark:bg-purple-900/40 mx-2"></div>
-            <div class="text-xs font-bold text-emerald-600"><i class="fa-solid fa-eye mr-1"></i> THA FULL LAYOUT 旗艦級參考模型（數據已全部模擬解鎖）</div>
+            
+            <div class="hidden md:block w-96 overflow-hidden bg-gray-50 dark:bg-[#0d0921] px-3 py-1 rounded-[6px] border border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-purple-300/80">
+                <marquee scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();">
+                    📡 核心狀態：[EA-SMA3.0_DM] 正常運行 ｜ 📈 黃金交叉匯率解算已就緒 ｜ ⚠️ 風控提醒：實盤操作嚴格遵守進場手數限制
+                </marquee>
+            </div>
         </div>
 
-        <!-- 主題魔法球 -->
-        <div class="flex items-center gap-4">
-            <div class="grid grid-cols-5 gap-1 py-1 px-2 bg-slate-50 dark:bg-black/30 rounded-xl border theme-border justify-items-center">
-                <div class="orb-wrapper" id="wrapper-gold"><button onclick="switchTheme('gold')" class="magic-orb orb-gold"><span class="text-[9px] font-bold text-yellow-100">金</span></button></div>
-                <div class="orb-wrapper active" id="wrapper-wood"><button onclick="switchTheme('wood')" class="magic-orb orb-wood"><span class="text-[9px] font-bold text-green-100">木</span></button></div>
-                <div class="orb-wrapper" id="wrapper-water"><button onclick="switchTheme('water')" class="magic-orb orb-water"><span class="text-[9px] font-bold text-blue-100">水</span></button></div>
-                <div class="orb-wrapper" id="wrapper-fire"><button onclick="switchTheme('fire')" class="magic-orb orb-fire"><span class="text-[9px] font-bold text-red-100">火</span></button></div>
-                <div class="orb-wrapper" id="wrapper-earth"><button onclick="switchTheme('earth')" class="magic-orb orb-earth"><span class="text-[9px] font-bold text-amber-100">土</span></button></div>
-            </div>
-            <button onclick="switchMode()" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-xl border theme-border"><i class="fa-solid fa-moon"></i> 切換深淺</button>
+        <div class="flex items-center space-x-3">
+            <span class="px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400 rounded">Admin Mode</span>
+            
+            <button onclick="toggleDarkMode()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-[6px] text-gray-500 dark:text-gray-400 flex items-center space-x-1" title="切換明暗法球">
+                <i class="fa-solid fa-circle-nodes animate-spin-slow text-blue-500 dark:text-purple-400"></i>
+                <span class="text-xs font-medium hidden sm:inline">明暗法球</span>
+            </button>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
-        <!-- ◀ 左側 Sidebar 導航列 -->
-        <aside class="w-48 border-r border-slate-200 dark:border-slate-800 theme-sidebar p-4 flex flex-col justify-between shadow-sm shrink-0 overflow-y-auto">
-            <div class="space-y-1">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">主要功能</div>
-                <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-500 font-semibold transition-all"><i class="fa-solid fa-house w-4"></i> 首頁控制台</button>
-                <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-slate-500 transition-all font-semibold"><i class="fa-solid fa-chart-line w-4"></i> Cross Power</button>
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 pt-3 pb-1">交易分析與歸檔</div>
-                <button class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all theme-btn-active"><i class="fa-solid fa-magnifying-glass-chart w-4"></i> History Analyzer</button>
+        
+        <aside class="w-48 bg-white dark:bg-[#0e0721] border-r border-slate-200 dark:border-slate-800 p-3 flex flex-col justify-between transition-colors duration-300 shrink-0 select-none z-10">
+            <div class="space-y-4 overflow-y-auto pr-1" style="max-height: calc(100vh - 120px);">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 dark:text-purple-400/60 uppercase tracking-wider pl-2 mb-1.5">主控終端</p>
+                    <div class="space-y-1">
+                        <button id="btn-nav-home" onclick="switchPage('home')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 theme-btn-active">
+                            <i class="fa-solid fa-chart-line w-5 text-center text-base"></i>
+                            <span>黃金實時終端</span>
+                        </button>
+                        <button id="btn-nav-crosspower" onclick="switchPage('crosspower')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-bolt w-5 text-center text-base"></i>
+                            <span>貨幣強弱動能</span>
+                        </button>
+                        <button id="btn-nav-signals" onclick="switchPage('signals')" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-satellite-dish w-5 text-center text-base"></i>
+                                <span>AI 訊號中心</span>
+                            </div>
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-0.5"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 dark:text-purple-400/60 uppercase tracking-wider pl-2 mb-1.5">教學與數據解算</p>
+                    <div class="space-y-1">
+                        <button id="btn-nav-portfolio" onclick="switchPage('portfolio')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-users-rectangle w-5 text-center text-base"></i>
+                            <span>學生資產組合</span>
+                        </button>
+                        <button id="btn-nav-analyzer" onclick="switchPage('analyzer')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-calculator w-5 text-center text-base"></i>
+                            <span>歷史數據解算</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 dark:text-purple-400/60 uppercase tracking-wider pl-2 mb-1.5">專屬策略與工具</p>
+                    <div class="space-y-1">
+                        <button id="btn-nav-forest" onclick="switchPage('forest')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-tree w-5 text-center text-base text-emerald-500"></i>
+                            <span>豐盛森林基地</span>
+                        </button>
+                        <button id="btn-nav-fxtools" onclick="switchPage('fxtools')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-screwdriver-wrench w-5 text-center text-base text-amber-500"></i>
+                            <span>FX Tools 箱</span>
+                        </button>
+                        <button id="btn-nav-earules" onclick="switchPage('earules')" class="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30">
+                            <i class="fa-solid fa-scale-balanced w-5 text-center text-base text-red-400"></i>
+                            <span>EA 核心風控守則</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 dark:text-purple-400/60 uppercase tracking-wider pl-2 mb-1.5">系統工具</p>
+                    <div class="space-y-1">
+                        <button onclick="alert('本地數據快取已成功清理乾淨！')" class="w-full flex items-center space-x-3 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-[6px] transition-colors hover:bg-red-50 dark:hover:bg-red-950/20">
+                            <i class="fa-solid fa-arrow-rotate-left w-5 text-center"></i>
+                            <span>清除終端緩存</span>
+                        </button>
+                        <button onclick="window.print()" class="w-full flex items-center space-x-3 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-[6px] transition-colors hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                            <i class="fa-solid fa-file-export w-5 text-center"></i>
+                            <span>導出當前報表</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1.5 bg-slate-50/50 dark:bg-purple-950/10 p-2 rounded-[6px]">
+                <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-slate-400 dark:text-purple-400/60">核心引擎:</span>
+                    <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block"></span>
+                        <span>EA-SMA3.0_DM</span>
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-slate-400 dark:text-purple-400/60">解算延遲:</span>
+                    <span class="text-slate-600 dark:text-slate-300 font-mono" id="sidebar-latency">12 ms</span>
+                </div>
+                <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-slate-400 dark:text-purple-400/60">環境模式:</span>
+                    <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded font-bold uppercase scale-90 origin-right">PROD</span>
+                </div>
+                <div class="text-[9px] text-slate-400 dark:text-purple-500 text-center pt-1">
+                    TSS Terminal v3.2
+                </div>
             </div>
         </aside>
 
-        <!-- 💻 主工作區 (THA Full Layout 平鋪展開) -->
-        <main class="flex-1 p-6 space-y-6 overflow-y-auto max-w-full bg-slate-50/40 dark:bg-[#080413]">
+        <main class="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-[#080413]">
             
-            <!-- 📁 1. 匯入控制核心面版[cite: 6] -->
-            <div class="border theme-border theme-card p-6 rounded-3xl shadow-md space-y-5 bg-white">
-                <h2 class="text-md font-black flex items-center gap-2"><i class="fa-solid fa-database theme-text"></i> 1. 匯入 MT4/MT5 報表 CSV & .SET 文件</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- CSV 導入區域 -->
-                    <div class="border-2 border-dashed theme-border rounded-2xl p-6 text-center bg-slate-50/50 min-h-[140px] flex flex-col justify-center items-center relative">
-                        <i class="fa-solid fa-file-csv text-3xl theme-text mb-2 opacity-60"></i>
-                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">拖曳交易歷史 CSV 或 點擊本地上傳[cite: 5, 6]</p>
-                        <button class="mt-3 px-4 py-2 bg-[var(--bg-accent-soft)] text-[var(--text-primary)] text-xs font-extrabold rounded-xl border theme-border shadow-sm"><i class="fa-solid fa-folder-open mr-1.5"></i> 選擇交易報告檔案[cite: 6]</button>
-                        <div class="mt-2 text-[11px] font-mono text-purple-600 font-bold block">📄 已載入參考模型：demo_trading_history.csv</div>
+            <div id="page-home" class="space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 bg-white dark:bg-[#110c26] p-4 rounded-[6px] border border-gray-200 dark:border-gray-800 h-[500px] flex flex-col">
+                        <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-chart-candlestick text-blue-500"></i> OANDA:XAUUSD 實時盯盤</h3>
+                        <div id="tradingview_chart_container" class="w-full flex-1 rounded-[6px] overflow-hidden"></div>
                     </div>
-
-                    <!-- 正統 12 款策略清單下拉選單[cite: 9] -->
-                    <div class="border theme-border bg-slate-50/20 rounded-2xl p-5 flex flex-col gap-3 justify-between">
-                        <div>
-                            <label for="eaSelect" class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide"><i class="fa-solid fa-robot mr-1 theme-text"></i> 專案策略模型選擇 (eaSelect)[cite: 6]</label>
-                            <select id="eaSelect" onchange="switchEASwotDemo()" class="w-full bg-white dark:bg-slate-900 border theme-border rounded-xl p-2 text-xs font-semibold focus:outline-none">
-                                <option value="ALL">全部交易 (綜合分析)</option>
-                                <optgroup label="Standard Version 3.0 系列[cite: 9]">
-                                    <option value="SMA_3.0" selected>SMA 3.0[cite: 9]</option>
-                                    <option value="MKD_3.0">MKD 3.0[cite: 9]</option>
-                                    <option value="S10_3.0">S10 3.0[cite: 9]</option>
-                                    <option value="Flash_3.0">Flash 3.0[cite: 9]</option>
-                                    <option value="Dragon_Wave_2.0">Dragon Wave 2.0[cite: 9]</option>
-                                    <option value="Dragon_Wave_2.1">Dragon Wave 2.1[cite: 9]</option>
-                                    <option value="Quant_Poseidon_1.0">Quant Poseidon 1.0[cite: 9]</option>
-                                    <option value="Quant_Poseidon_2.0">Quant Poseidon 2.0[cite: 9]</option>
-                                </optgroup>
-                                <optgroup label="Pro Version 5.0 系列[cite: 9]">
-                                    <option value="SMA_Pro_5.0">SMA Pro 5.0[cite: 9]</option>
-                                    <option value="MKD_Pro_5.0">MKD Pro 5.0[cite: 9]</option>
-                                    <option value="S10_Pro_5.0">S10 Pro 5.0[cite: 9]</option>
-                                    <option value="Flash_Pro_5.0">Flash Pro 5.0[cite: 9]</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-400 mb-1 uppercase"><i class="fa-solid fa-sliders mr-1"></i> 關聯 .SET 參數文件 (選填)</label>
-                            <button class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-xs font-bold rounded-xl border theme-border"><i class="fa-solid fa-cog mr-1.5"></i> 點此載入 .SET 配置文件</button>
-                            <div class="mt-1 text-[10px] font-mono text-emerald-600 font-bold block">🔧 已自動關聯：EA-SMA3.0_DM_Set1.set</div>
-                        </div>
+                    <div class="bg-white dark:bg-[#110c26] p-4 rounded-[6px] border border-gray-200 dark:border-gray-800 flex flex-col h-[500px]">
+                        <h3 class="text-sm font-semibold mb-3 flex items-center justify-between">
+                            <span>Live Tick Stream</span>
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        </h3>
+                        <div class="flex-1 overflow-y-auto font-mono text-xs space-y-1.5 pr-1 bg-gray-50 dark:bg-[#0d0921] p-3 rounded-[6px] border dark:border-gray-800" id="tick-stream-box">
+                            </div>
                     </div>
-                </div>
-
-                <!-- 按鈕列[cite: 6] -->
-                <div class="flex flex-wrap gap-2 pt-1">
-                    <button class="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-black rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-rocket"></i> 開始分析[cite: 6]</button>
-                    <button class="px-4 py-2.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border theme-border">Reset[cite: 6]</button>
-                    <button class="px-4 py-2.5 bg-indigo-600 text-white text-xs font-black rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-floppy-disk"></i> Save 存入歷史庫</button>
                 </div>
             </div>
 
-            <!-- 📋 2. 帳戶總覽 Summary[cite: 6] -->
-            <div class="border theme-border theme-card rounded-2xl shadow-sm p-4 bg-white">
-                <div class="flex justify-between items-center border-b theme-border pb-2 mb-3 cursor-pointer" onclick="toggleSection('summaryCardsBody', 'toggle-span-2')">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-address-card theme-text"></i> 2. 帳戶總覽 Summary[cite: 6]</h2>
-                    <span id="toggle-span-2" class="text-sm font-bold text-slate-400">－[cite: 6]</span>
+            <div id="page-crosspower" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <h2 class="text-base font-bold mb-2">CrossPower 貨幣強弱動能引擎</h2>
+                    <p class="text-xs text-gray-500 mb-4">實時解算全網 8 大主要貨幣的相對強弱動能波幅，輔助判斷黃金交叉趨勢。</p>
+                    <div class="h-64 bg-gray-50 dark:bg-[#0d0921] rounded-[6px] border border-gray-100 dark:border-gray-800 flex items-center justify-center text-xs text-gray-400">
+                        [ 貨幣強弱動能引擎已就緒，K線與能量環數據同步計算中 ]
+                    </div>
                 </div>
-                
-                <div id="summaryCardsBody" class="collapsible-body grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- 成長卡[cite: 6] -->
-                    <div class="bg-slate-50 dark:bg-black/20 p-4 rounded-xl border theme-border space-y-1">
-                        <span class="text-[10px] text-slate-400 font-bold block">成長 ＆ 期間[cite: 6]</span>
-                        <div class="text-xl font-mono font-black text-cyan-500">+145.2 %[cite: 6]</div>
-                        <div class="text-[11px] theme-muted-text font-medium">2026-01-02 至 2026-06-05[cite: 6]</div>
-                        <div class="h-[1px] bg-slate-200 dark:bg-slate-800 my-1.5"></div>
-                        <div class="flex justify-between text-[11px] font-medium text-slate-400"><span>Algo[cite: 6]</span><span class="text-slate-700 dark:text-slate-200 font-bold">EA Radar[cite: 6]</span></div>
-                    </div>
-                    
-                    <!-- Equity / Profit 卡[cite: 6] -->
-                    <div class="bg-slate-50 dark:bg-black/20 p-4 rounded-xl border theme-border space-y-2">
-                        <div class="flex justify-between text-[11px] font-bold"><span>Initial Deposit[cite: 6]</span><span class="font-mono">10000.00[cite: 6]</span></div>
-                        <div class="space-y-1">
-                            <div class="text-[10px] text-slate-400 font-bold">Equity[cite: 6]</div>
-                            <div class="bar-track"><div class="bar-fill" style="width: 85%;"></div></div>
-                        </div>
-                        <div class="space-y-1">
-                            <div class="text-[10px] text-slate-400 font-bold">Profit[cite: 6]</div>
-                            <div class="bar-track"><div class="bar-fill bar-profit" style="width: 74%;"></div></div>
-                        </div>
-                        <div class="flex justify-between text-[11px] font-mono pt-1 text-slate-500">
-                            <span>Equity: 24520.00[cite: 6]</span>
-                            <span>Profit: +14520.00[cite: 6]</span>
-                        </div>
-                    </div>
+            </div>
 
-                    <!-- Minimum Area[cite: 6] -->
-                    <div class="bg-slate-50 dark:bg-black/20 p-4 rounded-xl border theme-border space-y-1">
-                        <span class="text-[10px] text-slate-400 font-bold block">Minimum Area (Key Stats)[cite: 6]</span>
-                        <div class="text-[11px] text-slate-500 space-y-1 font-mono">
-                            <div>勝率 (Win Rate): <b class="text-emerald-500">74.2%</b></div>
-                            <div>獲利因子 (PF): <b class="theme-text">1.85</b></div>
-                            <div>最大回撤 (Max DD): <b class="text-rose-500">12.4%</b></div>
-                            <div>總交易筆數: <b>240 筆</b></div>
+            <div id="page-signals" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <h2 class="text-base font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-satellite-dish text-red-500 animate-pulse"></i>
+                        AI Signals Hub & EA 核心策略即時訊號
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-[6px] border border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/10 space-y-2">
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-blue-600 dark:text-blue-400">策略: EA - SMA 3.0</span><span class="px-2 py-0.5 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 rounded text-[10px] font-bold">ACTIVE</span></div>
+                            <p class="text-xs font-mono">XAUUSD | BUY LIMIT @ 2345.50</p>
+                            <p class="text-[11px] text-gray-400">觸發時間: 2026-06-05 20:15:00</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 📉 3. 帳戶總體分析圖表[cite: 6] -->
-            <div class="border theme-border theme-card rounded-2xl shadow-sm p-4 bg-white">
-                <div class="flex justify-between items-center border-b theme-border pb-2 mb-3 cursor-pointer" onclick="toggleSection('accountBody', 'toggle-span-3')">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-chart-pie theme-text"></i> 3. 帳戶總體分析[cite: 6]</h2>
-                    <span id="toggle-span-3" class="text-sm font-bold text-slate-400">－[cite: 6]</span>
-                </div>
-                
-                <div id="accountBody" class="collapsible-body grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div class="lg:col-span-3 bg-slate-50 dark:bg-black/20 p-3 rounded-xl border theme-border font-mono text-[11px] space-y-1.5">
-                        <div class="text-[11px] font-black border-b theme-border pb-1.5 mb-2 text-slate-400">帳戶統計[cite: 6]</div>
-                        <div class="flex justify-between py-1 border-b theme-border/40"><span>初始資金:</span><span>$10,000.00</span></div>
-                        <div class="flex justify-between py-1 border-b theme-border/40"><span>淨結餘:</span><span>$24,520.00</span></div>
-                        <div class="flex justify-between py-1 border-b theme-border/40"><span>總利潤:</span><span>$14,520.00</span></div>
-                        <div class="flex justify-between py-1 border-b theme-border/40"><span>當前選用模型:</span><span id="curEANameDisplay" class="text-purple-500 font-bold">SMA 3.0</span></div>
-                    </div>
-                    <div class="lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div class="border theme-border bg-slate-50/30 p-3 rounded-xl h-[220px] flex flex-col justify-between"><span class="text-[10px] text-slate-400 font-bold uppercase block">Equity Curve[cite: 6]</span><div class="flex-1 flex items-end justify-center text-[10px] text-slate-400 pb-4 font-mono"><i class="fa-solid fa-chart-line mr-1"></i> [Chart.js 淨值曲線多維渲染陣列]</div></div>
-                        <div class="border theme-border bg-slate-50/30 p-3 rounded-xl h-[220px] flex flex-col justify-between"><span class="text-[10px] text-slate-400 font-bold uppercase block">Weekday Trades[cite: 6]</span><div class="flex-1 flex items-end justify-center text-[10px] text-slate-400 pb-4 font-mono"><i class="fa-solid fa-chart-bar mr-1"></i> [Chart.js 週間活動熱度直方圖]</div></div>
-                        <div class="border theme-border bg-slate-50/30 p-3 rounded-xl h-[220px] flex flex-col justify-between"><span class="text-[10px] text-slate-400 font-bold uppercase block">Symbol Profit 排名[cite: 6]</span><div class="flex-1 flex items-end justify-center text-[10px] text-slate-400 pb-4 font-mono"><i class="fa-solid fa-align-left mr-1"></i> [Chart.js 商品貢獻橫向排行榜]</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🧱 6. 馬丁層數分析 (安全綠/風險紅雙色 Presentation 核心解鎖)[cite: 6, 8] -->
-            <div class="border theme-border theme-card rounded-2xl shadow-sm p-4 bg-slate-900/5 bg-white">
-                <div class="flex justify-between items-center border-b theme-border pb-2 mb-3 cursor-pointer" onclick="toggleSection('martinBody', 'toggle-span-6')">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group text-orange-500"></i> 6. 馬丁層數分析[cite: 6]</h2>
-                    <span id="toggle-span-6" class="text-sm font-bold text-slate-400">－[cite: 6]</span>
-                </div>
-                
-                <div id="martinBody" class="collapsible-body space-y-4">
-                    <!-- 商品切換頁籤 -->
-                    <div class="flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl border theme-border w-fit">
-                        <button id="tab-xau" onclick="switchMartinTableCcy('XAUUSD')" class="px-3 py-1 text-xs font-bold rounded theme-btn-active">🟡 XAUUSD</button>
-                        <button id="tab-eur" onclick="switchMartinTableCcy('EURUSD')" class="px-3 py-1 text-xs font-bold rounded text-slate-400 bg-white border">🇪🇺 EURUSD</button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-center border-collapse text-xs font-semibold border theme-border bg-white">
-                            <thead>
-                                <tr class="bg-slate-100/80 text-[10px] text-slate-500">
-                                    <th class="py-3 border theme-border">層級[cite: 8]</th>
-                                    <th class="py-3 border theme-border">方向[cite: 8]</th>
-                                    <th class="py-3 border theme-border">標準手數[cite: 8]</th>
-                                    <th class="py-3 border theme-border">交易筆數[cite: 8]</th>
-                                    <th class="py-3 border theme-border">累計利潤[cite: 8]</th>
-                                    <th class="py-3 border theme-border">勝率[cite: 8]</th>
-                                </tr>
+            <div id="page-portfolio" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <h2 class="text-base font-bold mb-2">學生資產組合群組跟隨面板</h2>
+                    <p class="text-xs text-gray-500 mb-4">專門用於管理及統計跟隨學生的總體資產帳戶、平均勝率表現以及回撤控制曲線。</p>
+                    <div class="border dark:border-gray-800 rounded-[6px] overflow-hidden">
+                        <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
+                            <thead class="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-[11px] uppercase tracking-wider">
+                                <tr><th class="p-3">學生 ID</th><th class="p-3">跟隨帳戶類型</th><th class="p-3">當前權益 (USD)</th><th class="p-3">風控狀態</th></tr>
                             </thead>
-                            <tbody id="martingale-demo-rows" class="divide-y theme-border">
-                                <!-- 預設渲染 XAUUSD 模擬層級 -->
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                <tr><td class="p-3 font-medium text-gray-900 dark:text-white">Student_#01A</td><td class="p-3">Alpari MT4 實盤</td><td class="p-3 font-mono">$4,550.00</td><td class="p-3 text-green-500 font-bold">🟢 安全運作</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 🎯 7. EA SWOT 分析九宮格[cite: 6] -->
-            <div class="border theme-border theme-card rounded-2xl shadow-sm p-4 bg-white">
-                <div class="flex justify-between items-center border-b theme-border pb-2 mb-3 cursor-pointer" onclick="toggleSection('swotBody', 'toggle-span-7')">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-square-poll-vertical text-purple-500"></i> 7. EA SWOT 分析[cite: 6]</h2>
-                    <span id="toggle-span-7" class="text-sm font-bold text-slate-400">－[cite: 6]</span>
-                </div>
-                <div id="swotBody" class="collapsible-body">
-                    <div class="grid grid-cols-3 gap-3.5 w-full text-xs" id="swot-grid-container">
-                        <!-- 九宮格內部代碼 -->
+            <div id="page-analyzer" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-gray-900 dark:text-white">歷史數據解算終端 (Pure Production)</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">本模組無任何 Demo 測試數據按鈕，100% 依賴導入學生真實交易紀錄。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-[6px] p-6 text-center hover:border-blue-500 dark:hover:border-purple-500 transition-colors cursor-pointer" id="drop-zone">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-xs font-medium">拖拽學生的真實 CSV 交易報告至此，或點擊選擇本地檔案</p>
+                        <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="text-sm font-semibold mb-4 text-gray-800 dark:text-purple-300">核心 SWOT 戰略九宮格矩陣 (9-Grid SWOT Matrix)</h3>
+                        <div class="grid grid-cols-3 gap-3" id="swot-matrix-grid">
+                            <div class="p-3 bg-red-50/40 dark:bg-red-950/10 border border-red-100 dark:border-red-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-red-600 block mb-1">TS (威脅-優勢)</b><span class="text-[11px] text-gray-500" id="swot-ts">等待真實數據導入...</span></div>
+                            <div class="p-3 bg-green-50/40 dark:bg-green-950/10 border border-green-100 dark:border-green-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-green-600 block mb-1">S (優勢)</b><span class="text-[11px] text-gray-500" id="swot-s">等待真實數據導入...</span></div>
+                            <div class="p-3 bg-blue-50/40 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-blue-600 block mb-1">SW (優勢-劣勢)</b><span class="text-[11px] text-gray-500" id="swot-sw">等待真實數據導入...</span></div>
+                            
+                            <div class="p-3 bg-red-50/40 dark:bg-red-950/10 border border-red-100 dark:border-red-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-red-600 block mb-1">T (威脅)</b><span class="text-[11px] text-gray-500" id="swot-t">等待真實數據導入...</span></div>
+                            <div class="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-purple-950/40 border-2 border-blue-500/60 dark:border-purple-500/60 rounded-[6px] min-h-[90px] flex flex-col justify-between items-center text-center animate-flash-blue">
+                                <b class="text-xs text-blue-700 dark:text-purple-400 block font-bold">EA (核心演算法中心)</b>
+                                <span class="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">ACTIVE</span>
+                            </div>
+                            <div class="p-3 bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-amber-600 block mb-1">W (劣勢)</b><span class="text-[11px] text-gray-500" id="swot-w">等待真實數據導入...</span></div>
+                            
+                            <div class="p-3 bg-purple-50/40 dark:bg-purple-950/10 border border-purple-100 dark:border-purple-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-purple-600 block mb-1">OT (機會-威脅)</b><span class="text-[11px] text-gray-500" id="swot-ot">等待真實數據導入...</span></div>
+                            <div class="p-3 bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-emerald-600 block mb-1">O (機會)</b><span class="text-[11px] text-gray-500" id="swot-o">等待真實數據導入...</span></div>
+                            <div class="p-3 bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-900/40 rounded-[6px] min-h-[90px]"><b class="text-xs text-amber-600 block mb-1">WO (劣勢-機會)</b><span class="text-[11px] text-gray-500" id="swot-wo">等待真實數據導入...</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Library 快照庫 -->
-            <div class="border theme-border theme-card p-5 rounded-3xl bg-slate-50/5 shadow-inner space-y-3">
-                <div class="font-black text-xs uppercase text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-boxes-stacked theme-text"></i> Trading History Library (歷史分析存庫快照)</div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs font-semibold border-collapse">
-                        <thead>
-                            <tr class="border-b theme-border text-[10px] text-slate-400">
-                                <th class="py-2">內嵌 SIGNALS ID</th><th class="py-2">對應模型</th><th class="py-2">封存檔案名稱</th><th class="py-2">淨利潤</th><th class="py-2">總筆數</th><th class="py-2">勝率</th><th class="py-2">存入時間</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y theme-border font-mono text-[11px]">
-                            <tr class="hover:bg-slate-50/50">
-                                <td class="py-2.5 font-bold text-purple-600">AI Signals Hub</td>
-                                <td class="text-slate-700 font-bold">SMA 3.0</td>
-                                <td class="text-slate-400">demo_backtest_xau.csv</td>
-                                <td class="text-emerald-500 font-bold">+$14,520.00</td>
-                                <td>240 筆</td>
-                                <td class="text-indigo-500 font-bold">74.2%</td>
-                                <td class="text-slate-400 text-[10px]">2026/06/05 00:14</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div id="page-forest" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-[6px]"><i class="fa-solid fa-tree text-2xl text-emerald-500"></i></div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">豐盛森林基地 (Affluence Forest)</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">學員核心交易生態圈、心態建設與進階交易策略修煉中心</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-[6px] border border-gray-100 dark:border-gray-800">
+                            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">🌴 森林最新廣播廣播</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">近期黃金高位震盪，EA - SMA 3.0 模型參數已完全適應最新的趨勢解算。請全體學員下載最新版標準設定，並在本地或雲端 VPS 上嚴格遵守風控矩陣。</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-[6px] border border-gray-100 dark:border-gray-800">
+                            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">🧠 交易員心態建設守則</h3>
+                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1.5 list-disc pl-4">
+                                <li>不因單次盈虧而動搖預設嘅交易計畫。</li>
+                                <li>實盤生產環境下嘅每一手單均有嚴格嘅數學概率依據。</li>
+                                <li>完全尊重市場隨機性，交給系統完成大數法則概率。</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div id="page-fxtools" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-2 bg-amber-50 dark:bg-amber-950/40 rounded-[6px]"><i class="fa-solid fa-screwdriver-wrench text-2xl text-amber-500"></i></div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">FX Tools 箱 (外匯與黃金輔助工具)</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">輔助點值換算、手數風險控制及優質高精度 Tick 歷史數據源下載引導</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-[6px] border border-slate-100 dark:border-slate-800">
+                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">💰 黃金手數風控計算</h4>
+                            <div class="space-y-2">
+                                <label class="block text-[11px] text-gray-500">帳戶權益 (USD):</label>
+                                <input type="number" value="10000" class="w-full text-xs p-1.5 border rounded-[6px] dark:bg-gray-800 dark:border-gray-700" readonly>
+                                <label class="block text-[11px] text-gray-500">單筆最高風控上限:</label>
+                                <span class="text-xs font-bold text-amber-600 dark:text-amber-400">2.00% ($200)</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-[6px] border border-slate-100 dark:border-slate-800">
+                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">📊 標準點值速查</h4>
+                            <ul class="text-xs space-y-1.5 text-gray-600 dark:text-gray-400">
+                                <li class="flex justify-between"><span>XAUUSD (1標準手):</span> <b>$1.00 / 點</b></li>
+                                <li class="flex justify-between"><span>EURUSD (1標準手):</span> <b>$10.00 / 點</b></li>
+                                <li class="flex justify-between"><span>GBPUSD (1標準手):</span> <b>$10.00 / 點</b></li>
+                            </ul>
+                        </div>
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-[6px] border border-slate-100 dark:border-slate-800">
+                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">📥 歷史 Tick 數據下載</h4>
+                            <p class="text-[11px] text-gray-500 mb-3">支持 Tick Data Suite 及 Alpari 歷史數據套件的高精度清洗與回測數據導入。</p>
+                            <button onclick="alert('正在對接高精度 Tick Data Suite 下載接口...')" class="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-[6px] transition-colors">引導歷史數據傳輸</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-earules" class="space-y-6 hidden">
+                <div class="bg-white dark:bg-[#110c26] p-6 rounded-[6px] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-2 bg-red-50 dark:bg-red-950/40 rounded-[6px]"><i class="fa-solid fa-scale-balanced text-2xl text-red-400"></i></div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">EA 核心風控守則 (EA Rules Matrix)</h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">EA - SMA 3.0 策略核心參數與 Martingale 倉位乘數硬性遵守規範</p>
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-red-500 bg-red-50/50 dark:bg-red-950/20 p-3 rounded-r-[6px] text-xs text-red-700 dark:text-red-400 mb-4">
+                        ⚠️ <b>實盤警示：</b> 生產環境下的任何非規範手動干預，均會導致統計學概率失效！請全體學員嚴格遵守。
+                    </div>
+                    <div class="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+                        <div class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-[6px] border border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-gray-900 dark:text-white">【守則一】起始底倉配置限制</span>
+                                <p class="text-[11px] text-gray-500 mt-0.5">每 $3,000 USD 的基準權益，初始首單進場規模嚴格限制為 0.01 手。</p>
+                            </div>
+                            <span class="px-2 py-0.5 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 rounded text-[10px] font-bold">硬性限制</span>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-[6px] border border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-gray-900 dark:text-white">【守則二】Martingale 加倉間距矩陣</span>
+                                <p class="text-[11px] text-gray-500 mt-0.5">反向加倉間距需嚴格對齊當前 ATR 波動係數，全盤加倉上限強制設定為 6 層。</p>
+                            </div>
+                            <span class="px-2 py-0.5 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 rounded text-[10px] font-bold">自動執行</span>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-[6px] border border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-gray-900 dark:text-white">【守則三】重磅財經數據避險機制</span>
+                                <p class="text-[11px] text-gray-500 mt-0.5">美國非農就業報告 (NFP) 及核心 CPI 公布前後 30 分鐘內，系統必須切換為半自動避險模式。</p>
+                            </div>
+                            <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 rounded text-[10px] font-bold">風控介入</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <script>
-        // 馬丁格爾分層靜態解算模擬數據[cite: 8]
-        const martinMockData = {
-            "XAUUSD": [
-                { layer: "L1", type: "BUY/SELL", lots: "0.01", count: 142, profit: 320.10, wr: 68.5 },
-                { layer: "L2", type: "BUY/SELL", lots: "0.02", count: 85, profit: 450.20, wr: 74.2 },
-                { layer: "L3", type: "BUY/SELL", lots: "0.04", count: 42, profit: 120.50, wr: 81.0 },
-                { layer: "L4", type: "BUY", lots: "0.08", count: 12, profit: -210.00, wr: 50.0 },
-                { layer: "L5", type: "BUY", lots: "0.16", count: 5, profit: 650.00, wr: 90.0 },
-                { layer: "L6", type: "BUY", lots: "0.32", count: 4, profit: 820.00, wr: 100.0 }
-            ],
-            "EURUSD": [
-                { layer: "L1", type: "BUY/SELL", lots: "0.01", count: 98, profit: 110.40, wr: 71.2 },
-                { layer: "L2", type: "BUY/SELL", lots: "0.02", count: 40, profit: 220.10, wr: 78.5 },
-                { layer: "L3", type: "BUY", lots: "0.04", count: 15, profit: -90.00, wr: 60.0 },
-                { layer: "L4", type: "SELL", lots: "0.08", count: 3, profit: 340.00, wr: 100.0 }
-            ]
-        };
-
-        function toggleSection(bodyId, spanId) {
-            const body = document.getElementById(bodyId); const span = document.getElementById(spanId);
-            if(!body) return;
-            const isColl = body.classList.toggle('collapsed');[cite: 7]
-            if(span) span.innerText = isColl ? "＋" : "－";[cite: 7]
-        }
-
-        function switchTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            document.querySelectorAll('.orb-wrapper').forEach(w => w.classList.remove('active'));
-            document.getElementById(`wrapper-${theme}`)?.classList.add('active');
-        }
-
-        function switchMode() {
-            const cur = document.documentElement.getAttribute('data-mode');
-            document.documentElement.setAttribute('data-mode', cur === 'light' ? 'dark' : 'light');
-        }
-
-        function switchMartinTableCcy(ccy) {
-            // 切換頁籤高亮
-            if(ccy === 'XAUUSD') {
-                document.getElementById('tab-xau').className = "px-3 py-1 text-xs font-bold rounded theme-btn-active";
-                document.getElementById('tab-eur').className = "px-3 py-1 text-xs font-bold rounded text-slate-400 bg-white border";
-            } else {
-                document.getElementById('tab-eur').className = "px-3 py-1 text-xs font-bold rounded theme-btn-active";
-                document.getElementById('tab-xau').className = "px-3 py-1 text-xs font-bold rounded text-slate-400 bg-white border";
+        // 1. 升級版多頁面無刷新切換引擎 (對齊補齊 8 個分頁)
+        function switchPage(pageId) {
+            const allPages = ['home', 'crosspower', 'signals', 'portfolio', 'analyzer', 'forest', 'fxtools', 'earules'];
+            
+            // 隱藏所有視窗
+            allPages.forEach(p => {
+                const el = document.getElementById(`page-${p}`);
+                if (el) el.classList.add('hidden');
+            });
+            // 顯示目標視窗
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) targetPage.classList.remove('hidden');
+            
+            // 還原所有側邊欄按鈕視覺外觀
+            allPages.forEach(p => {
+                const btn = document.getElementById(`btn-nav-${p}`);
+                if (btn) {
+                    if(p === 'signals') {
+                        btn.className = "w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30";
+                    } else {
+                        btn.className = "w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-purple-950/30";
+                    }
+                }
+            });
+            
+            // 為當前觸發的按鈕動態加上 Active 經典科技藍高亮
+            const activeBtn = document.getElementById(`btn-nav-${pageId}`);
+            if (activeBtn) {
+                if(pageId === 'signals') {
+                    activeBtn.className = "w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 theme-btn-active";
+                } else {
+                    activeBtn.className = "w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-[6px] transition-all duration-200 theme-btn-active";
+                }
             }
 
-            const body = document.getElementById('martingale-demo-rows'); body.innerHTML = '';
-            const rows = martinMockData[ccy];
-            rows.forEach((l, i) => {
-                const wrNeon = l.wr === 100 ? "class='win-100-neon font-mono font-black'" : "";
-                // 完美模擬原裝 level-safe 與 level-risk 色層[cite: 8]
-                const colorClass = (i >= 3) ? "level-risk" : "level-safe";[cite: 8]
-                body.innerHTML += `
-                    <tr class="${colorClass} hover:bg-slate-100/30">
-                        <td class="py-3 font-bold border theme-border">${l.layer}</td>
-                        <td class="text-blue-500 font-bold border theme-border">${l.type}</td>
-                        <td class="font-mono border theme-border">${l.lots}</td>
-                        <td class="border theme-border">${l.count}</td>
-                        <td class="${l.profit>=0?'text-emerald-500':'text-rose-500'} font-mono border theme-border">$${l.profit.toFixed(2)}</td>
-                        <td class="border theme-border"><span ${wrNeon}>${l.wr.toFixed(1)}%</span></td>
-                    </tr>
-                `;
-            });
+            // 圖表延遲加載相容性處理
+            if (pageId === 'home') setTimeout(renderTradingViewWidget, 50);
         }
 
-        function switchEASwotDemo() {
-            const val = document.getElementById('eaSelect').value;
-            document.getElementById('curEANameDisplay').innerText = val.replace('_', ' ');
-            renderSWOTMatrix(val.replace('_', ' '));
+        // 2. TradingView 實時 K 線渲染
+        function renderTradingViewWidget() {
+            const container = document.getElementById('tradingview_chart_container');
+            if (!container) return;
+            container.innerHTML = '';
+            if (typeof TradingView !== 'undefined') {
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": "OANDA:XAUUSD",
+                    "interval": "60",
+                    "theme": document.documentElement.classList.contains('dark') ? "dark" : "light",
+                    "style": "1",
+                    "locale": "zh_TW",
+                    "container_id": "tradingview_chart_container"
+                });
+            }
         }
 
-        function renderSWOTMatrix(eaName) {
-            const container = document.getElementById('swot-grid-container');
-            container.innerHTML = `
-                <div class="p-4 border rounded-xl bg-blue-500/5"><b class="text-blue-600 block mb-1">ST戰略 (TOWS)[cite: 6]</b><p>精準對沖多維交叉匯率風險。</p></div>
-                <div class="p-4 border rounded-xl bg-emerald-500/5"><b class="text-emerald-600 block mb-1">STRENGTHS (優勢)[cite: 6]</b><p>100%真實歷史持倉穿透，無假數據雜質。</p></div>
-                <div class="p-4 border rounded-xl bg-amber-500/5"><b class="text-amber-600 block mb-1">SW戰略[cite: 6]</b><p>實時監配各品種與階梯加倉邊界。</p></div>
-                <div class="p-4 border rounded-xl bg-rose-500/5"><b class="text-rose-600 block mb-1">THREATS (威脅)[cite: 6]</b><p>極端單邊行情可能產生回撤重疊壓力。</p></div>
-                <div class="p-4 border-2 border-purple-500 bg-purple-500/10 text-center font-black flex flex-col justify-center items-center text-xs rounded-xl">🎯 當前大腦:<br><span class="text-purple-600 text-sm mt-1 font-mono">${eaName}</span></div>
-                <div class="p-4 border rounded-xl bg-orange-500/5"><b class="text-orange-600 block mb-1">WEAKNESSES (劣勢)[cite: 6]</b><p>網格持倉在深層加倉時保證金佔用率較高。</p></div>
-                <div class="p-4 border rounded-xl bg-indigo-500/5"><b class="text-indigo-600 block mb-1">TO戰略[cite: 6]</b><p>依據週間活動數據優化挂單時間。</p></div>
-                <div class="p-4 border rounded-xl bg-cyan-500/5"><b class="text-cyan-600 block mb-1">OPPORTUNITIES (機會)[cite: 6]</b><p>利用高頻波動率放大馬丁分層套利利潤。</p></div>
-                <div class="p-4 border rounded-xl bg-fuchsia-500/5"><b class="text-fuchsia-600 block mb-1">WO戰略[cite: 6]</b><p>通過優化配置文件剔除不良重倉資產。</p></div>
-            `;
+        // 3. 全局暗黑/明亮模式法球切換
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+            // 重新刷新 TradingView 色調
+            if (!document.getElementById('page-home').classList.contains('hidden')) {
+                renderTradingViewWidget();
+            }
         }
 
+        // 4. 底部狀態欄解算延遲 Latency 實時隨機跳動
+        setInterval(() => {
+            const latencyEl = document.getElementById('sidebar-latency');
+            if (latencyEl) {
+                const randomLatency = Math.floor(Math.random() * 8) + 8; // 8ms - 15ms
+                latencyEl.innerText = randomLatency + " ms";
+            }
+        }, 3000);
+
+        // 5. 高頻 Live Tick Stream 模擬實盤波動
+        function startLiveTickStream() {
+            const box = document.getElementById('tick-stream-box');
+            if(!box) return;
+            setInterval(() => {
+                if(box.children.length > 30) box.removeChild(box.firstChild);
+                const basePrice = 2350.00;
+                const change = (Math.random() * 0.6 - 0.3).toFixed(2);
+                const currentPrice = (basePrice + parseFloat(change)).toFixed(2);
+                const isUp = parseFloat(change) >= 0;
+                
+                const timeStr = new Date().toLocaleTimeString();
+                const colorClass = isUp ? 'text-green-500' : 'text-red-500';
+                const icon = isUp ? '▲' : '▼';
+                
+                box.innerHTML += `<div class="flex justify-between py-0.5 border-b border-gray-100/30 dark:border-gray-800/20">
+                    <span class="text-gray-400">${timeStr}</span>
+                    <span class="font-bold">XAUUSD</span>
+                    <span class="${colorClass}">${icon} ${currentPrice}</span>
+                </div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 1500);
+        }
+
+        // 頁面初始化
         window.onload = function() {
-            switchMartinTableCcy('XAUUSD');
-            switchEASwotDemo();
+            switchPage('home');
+            startLiveTickStream();
         };
     </script>
 </body>
