@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-HK" data-theme="wood" data-mode="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSS Portal 旗艦級風控控制台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></link>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    borderRadius: { 'xl': '10px', '2xl': '14px', '3xl': '20px' }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ======================================================= */
+        /* TSS PORTAL 全域多主題色彩 CSS 變數                      */
+        /* ======================================================= */
+        html[data-mode="light"][data-theme="gold"] {
+            --bg-main: #fffaf0; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #f1dfc1;
+            --text-primary: #c26900; --bg-accent-soft: #fff3db; --text-main: #2d2a24; --bg-accent-active: #b45309;
+        }
+        html[data-mode="light"][data-theme="wood"] {
+            --bg-main: #f1fcf5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #d0ebd9;
+            --text-primary: #047857; --bg-accent-soft: #e6f9ed; --text-main: #222d26; --bg-accent-active: #047857;
+        }
+        html[data-mode="light"][data-theme="water"] {
+            --bg-main: #f0f7fc; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #cfe3f1;
+            --text-primary: #0369a1; --bg-accent-soft: #e0f2fe; --text-main: #202b36; --bg-accent-active: #0369a1;
+        }
+        html[data-mode="light"][data-theme="fire"] {
+            --bg-main: #fff5f5; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #fcd4d4;
+            --text-primary: #dc2626; --bg-accent-soft: #ffebeb; --text-main: #331f1f; --bg-accent-active: #dc2626;
+        }
+        html[data-mode="light"][data-theme="earth"] {
+            --bg-main: #fcf8f2; --bg-sidebar: #ffffff; --bg-card: #ffffff; --border-theme: #eddcc4;
+            --text-primary: #92400e; --bg-accent-soft: #fcf1df; --text-main: #2e241f; --bg-accent-active: #92400e;
+        }
+        html[data-mode="dark"] {
+            --bg-main: #080413; --bg-sidebar: #0e0721; --bg-card: #130a2a; --border-theme: #2d1854; --text-main: #ede9f5;
+        }
+        html[data-mode="dark"][data-theme="wood"] { --text-primary: #10b981; --bg-accent-soft: #062f20; --bg-accent-active: #10b981; }
+        
+        body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.2s ease; margin: 0; font-family: system-ui, sans-serif; }
+        .theme-sidebar { background-color: var(--bg-sidebar); border-color: var(--border-theme); }
+        .theme-card { background-color: var(--bg-card); border-color: var(--border-theme); }
+        .theme-border { border-color: var(--border-theme); }
+        .theme-text { color: var(--text-primary); }
+        .theme-btn-active { background-color: var(--bg-accent-active); color: #ffffff !important; }
+        .theme-bg-soft { background-color: var(--bg-accent-soft); }
+
+        /* 🔮 3D 水晶半透明元素魔法球及能量環 */
+        .orb-wrapper { position: relative; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
+        .magic-ring { position: absolute; inset: 0px; border: 1px dashed transparent; border-radius: 50%; pointer-events: none; transition: all 0.4s ease; }
+        .orb-wrapper.active .magic-ring { border-color: var(--text-primary); animation: spin 8s linear infinite; }
+        .magic-orb { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; position: relative; transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: inset 0 -2px 4px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4), 0 3px 6px rgba(0,0,0,0.16); }
+        .magic-orb:hover { transform: scale(1.15); }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 馬丁雙色層與藍色霓虹 */
+        .level-safe { background: rgba(34, 197, 94, 0.07) !important; }
+        .level-risk { background: rgba(248, 113, 113, 0.07) !important; }
+        @keyframes neonBlue { 0%, 100% { background: rgba(37,99,235,0.1); color:#2563eb; } 50% { background:#2563eb; color:#fff; box-shadow:0 0 10px #2563eb; } }
+        .win-100-neon { animation: neonBlue 1.3s infinite ease-in-out; padding: 1px 5px; border-radius: 4px; }
+
+        /* 走馬燈新聞樣式 */
+        .marquee-container { overflow: hidden; white-space: nowrap; width: 100%; background: rgba(0,0,0,0.03); padding: 6px 0; }
+        .marquee-content { display: inline-block; animation: marquee 25s linear infinite; font-size: 11px; font-weight: 700; }
+        @keyframes marquee { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        /* 能量條 */
+        .bar-track { border-radius: 999px; background: #e2e8f0; height: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #10b981); transition: width 0.4s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 📢 頂部 Header & 走馬燈新聞 -->
+    <header class="h-14 border-b theme-sidebar flex items-center justify-between px-6 z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="font-bold text-base tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-crown theme-text"></i> <span>TSS</span> <span class="theme-text">PORTAL</span>
+            </div>
+            <!-- 📰 走馬燈新聞資產 -->
+            <div class="w-[450px] ml-4 bg-slate-100 rounded-lg overflow-hidden border theme-border">
+                <div class="marquee-container">
+                    <div class="marquee-content theme-text">
+                        🔥 實時風控快訊：XAUUSD 黃金多維交叉模型當前對沖度 98.4% 穩定 ｜ EURUSD 週間活動頻率符合預期 ｜ 系統已 Sync 最新外網真實數據鏈結。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 水晶五行魔法球 -->
+        <div class="flex items-center gap-4">
+            <div class="flex gap-0.5 bg-slate-100 rounded-xl px-1.5 py-0.5 border theme-border">
+                <div class="orb-wrapper" id="orb-gold"><div onclick="setTheme('gold')" class="magic-orb bg-amber-400"></div></div>
+                <div class="orb-wrapper active" id="orb-wood"><div onclick="setTheme('wood')" class="magic-orb bg-emerald-500"></div></div>
+                <div class="orb-wrapper" id="orb-water"><div onclick="setTheme('water')" class="magic-orb bg-sky-500"></div></div>
+                <div class="orb-wrapper" id="orb-fire"><div onclick="setTheme('fire')" class="magic-orb bg-rose-500"></div></div>
+                <div class="orb-wrapper" id="orb-earth"><div onclick="setTheme('earth')" class="magic-orb bg-amber-700"></div></div>
+            </div>
+            <button onclick="toggleDarkMode()" class="px-2.5 py-1 text-xs font-bold bg-white border theme-border rounded-xl shadow-sm"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- ◀ 左側 Sidebar 導航列 -->
+        <aside class="w-44 border-r theme-sidebar p-3 flex flex-col justify-between shrink-0">
+            <div class="space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 block px-2 mb-1.5 uppercase">核心面板</span>
+                <button id="nav-cp" onclick="switchPage('crosspower')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all theme-btn-active"><i class="fa-solid fa-chart-line"></i> Cross Power</button>
+                <button id="nav-tha" onclick="switchPage('analyzer')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all text-slate-500 hover:bg-slate-50"><i class="fa-solid fa-magnifying-glass-chart"></i> History Analyzer</button>
+            </div>
+            <div class="text-[10px] font-mono text-center text-slate-400 border-t theme-border pt-2">V9.5 定稿版</div>
+        </aside>
+
+        <!-- 💻 主工作區 (分頁隔離) -->
+        <main class="flex-1 p-5 overflow-y-auto">
+            
+            <!-- ⚡ PAGE 1: CROSS POWER 分頁 (完裝完好保留) -->
+            <div id="page-crosspower" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 2s 高頻跳動行情卡片 -->
+                    <div class="theme-card border p-4 rounded-xl bg-white shadow-sm">
+                        <span class="text-[10px] text-slate-400 font-bold block">實時高頻行情 (2s Sync)</span>
+                        <div class="text-xl font-mono font-black text-emerald-500 mt-1">🟡 XAUUSD: 2345.82</div>
+                        <div class="text-[11px] text-slate-400 font-medium">波動率: +0.34% ｜ 外網連線正常</div>
+                    </div>
+                    <!-- 時段 TF 快切按鈕 -->
+                    <div class="theme-card border p-4 rounded-xl bg-white shadow-sm space-y-2">
+                        <span class="text-[10px] text-slate-400 font-bold block">時段選擇器 (Timeframe)</span>
+                        <div class="flex flex-wrap gap-1">
+                            <button class="px-2 py-0.5 bg-slate-100 border rounded font-mono text-[10px] font-bold theme-btn-active">M1</button>
+                            <button class="px-2 py-0.5 bg-white border rounded font-mono text-[10px] font-bold">M5</button>
+                            <button class="px-2 py-0.5 bg-white border rounded font-mono text-[10px] font-bold">M15</button>
+                            <button class="px-2 py-0.5 bg-white border rounded font-mono text-[10px] font-bold">H1</button>
+                            <button class="px-2 py-0.5 bg-white border rounded font-mono text-[10px] font-bold">D1</button>
+                        </div>
+                    </div>
+                    <!-- 貨幣強度排行榜 -->
+                    <div class="theme-card border p-4 rounded-xl bg-white shadow-sm">
+                        <span class="text-[10px] text-slate-400 font-bold block">法幣對沖強度計</span>
+                        <div class="text-xs font-bold text-slate-600 mt-1">🥇 USD [8.2] ｜ 🥈 EUR [6.5] ｜ 🥉 JPY [3.1]</div>
+                    </div>
+                </div>
+
+                <!-- 各國國旗對沖 Matrix 表格資產 (100% 完好保留) -->
+                <div class="theme-card border p-4 rounded-xl bg-white shadow-sm space-y-2">
+                    <h3 class="text-xs font-black text-slate-700 uppercase"><i class="fa-solid fa-table-cells theme-text"></i> 貨幣強度交叉對沖對比矩陣 (Matrix Table)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center border-collapse text-xs font-semibold">
+                            <thead>
+                                <tr class="bg-slate-50 text-[11px] text-slate-400">
+                                    <th class="p-2 border theme-border">貨幣</th>
+                                    <th class="p-2 border theme-border">🇺🇸 USD</th>
+                                    <th class="p-2 border theme-border">🇪🇺 EUR</th>
+                                    <th class="p-2 border theme-border">🇬🇧 GBP</th>
+                                    <th class="p-2 border theme-border">🇯🇵 JPY</th>
+                                    <th class="p-2 border theme-border">🇦🇺 AUD</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y theme-border font-mono">
+                                <tr><td class="p-2 font-bold bg-slate-50/50 border">🇺🇸 USD</td><td class="p-2 border text-slate-300">0.00</td><td class="p-2 border text-emerald-500">+1.70</td><td class="p-2 border text-emerald-500">+2.15</td><td class="p-2 border text-emerald-500">+5.10</td><td class="p-2 border text-rose-500">-0.45</td></tr>
+                                <tr><td class="p-2 font-bold bg-slate-50/50 border">🇪🇺 EUR</td><td class="p-2 border text-rose-500">-1.70</td><td class="p-2 border text-slate-300">0.00</td><td class="p-2 border text-emerald-500">+0.45</td><td class="p-2 border text-emerald-500">+3.40</td><td class="p-2 border text-rose-500">-2.15</td></tr>
+                                <tr><td class="p-2 font-bold bg-slate-50/50 border">🇬🇧 GBP</td><td class="p-2 border text-rose-500">-2.15</td><td class="p-2 border text-rose-500">-0.45</td><td class="p-2 border text-slate-300">0.00</td><td class="p-2 border text-emerald-500">+2.95</td><td class="p-2 border text-rose-500">-2.60</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 PAGE 2: HISTORY ANALYZER (THA) 分頁 (智慧 Menu & 歷史庫外殼) -->
+            <div id="page-analyzer" class="space-y-5 hidden">
+                <!-- 📁 面板 1：數據導入與智慧控制核心 -->
+                <div class="theme-card border p-5 rounded-xl bg-white shadow-sm space-y-4">
+                    <h2 class="text-xs font-black uppercase text-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-database theme-text"></i> 1. 匯入 MT4/MT5 報表 CSV & .SET 文件</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- 上傳輸入區 -->
+                        <div class="border-2 border-dashed theme-border rounded-xl p-4 text-center bg-slate-50/30 flex flex-col justify-center items-center">
+                            <i class="fa-solid fa-file-csv text-2xl theme-text mb-1.5 opacity-60"></i>
+                            <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleFileSelected()"></input>
+                            <button onclick="document.getElementById('csvFileInput').click()" class="px-3 py-1.5 bg-white border theme-border text-slate-700 text-xs font-bold rounded-xl shadow-sm"><i class="fa-solid fa-folder-open mr-1.5"></i>選擇本地交易報告 CSV</button>
+                            <span id="file-v-echo" class="text-[11px] font-mono font-bold text-purple-600 mt-2 block"></span>
+                        </div>
+                        <!-- EA 下拉選單與專案 ID -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">內嵌 SIGNALS ID (專案名稱)</label>
+                                <input type="text" id="signalsIdInput" value="AI Signals Hub" class="w-full bg-slate-50 border theme-border rounded-xl p-2 text-xs font-bold focus:outline-none"></input>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">專案策略數據模型選擇 (eaSelect)</label>
+                                <select id="eaSelect" class="w-full bg-slate-50 border theme-border rounded-xl p-2 text-xs font-bold focus:outline-none">
+                                    <optgroup label="Standard Version 3.0 系列">
+                                        <option value="SMA 3.0" selected>SMA 3.0</option>
+                                        <option value="MKD 3.0">MKD 3.0</option>
+                                        <option value="S10 3.0">S10 3.0</option>
+                                        <option value="Flash 3.0">Flash 3.0</option>
+                                        <option value="Dragon Wave 2.0">Dragon Wave 2.0</option>
+                                        <option value="Dragon Wave 2.1">Dragon Wave 2.1</option>
+                                        <option value="Quant Poseidon 1.0">Quant Poseidon 1.0</option>
+                                        <option value="Quant Poseidon 2.0">Quant Poseidon 2.0</option>
+                                    </optgroup>
+                                    <optgroup label="Pro Version 5.0 系列">
+                                        <option value="SMA Pro 5.0">SMA Pro 5.0</option>
+                                        <option value="MKD Pro 5.0">MKD Pro 5.0</option>
+                                        <option value="S10 Pro 5.0">S10 Pro 5.0</option>
+                                        <option value="Flash Pro 5.0">Flash Pro 5.0</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 按鈕列 -->
+                    <div class="flex gap-2">
+                        <button onclick="triggerParsingProcess()" class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-black rounded-xl shadow-md"><i class="fa-solid fa-rocket mr-1"></i> 開始分析</button>
+                        <button onclick="resetAllCsvData()" class="px-3 py-2 bg-slate-100 border text-slate-600 text-xs font-bold rounded-xl">Reset</button>
+                    </div>
+                </div>
+
+                <!-- ⏳ THA 未導入提示 Placeholder -->
+                <div id="analyzer-placeholder" class="theme-card border p-10 rounded-xl bg-white text-center text-slate-400 font-medium text-xs">
+                    📊 ⏳ 系統提示：等待導入交易歷史數據以激活分析面板
+                </div>
+
+                <!-- 🟢 THA 激活後的主控制面板（智慧分頁 Menu 外殼） -->
+                <div id="analyzer-main-panel" class="space-y-4 hidden">
+                    
+                    <!-- 🗂️ 核心：智慧分頁選單按鈕列 (Menu Tabs) -->
+                    <div class="flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl border theme-border w-fit">
+                        <button id="btn-tha-tab-summary" onclick="switchTHAMenu('summary')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all theme-btn-active">📋 帳戶總覽卡</button>
+                        <button id="btn-tha-tab-charts" onclick="switchTHAMenu('charts')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600">📉 帳戶多維圖表</button>
+                        <button id="btn-tha-tab-martingale" onclick="switchTHAMenu('martingale')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600">🧱 馬丁層數穿透</button>
+                        <button id="btn-tha-tab-swot" onclick="switchTHAMenu('swot')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600">🎯 SWOT 交叉矩陣</button>
+                    </div>
+
+                    <!-- TAB BLOCK A: 帳戶總覽 -->
+                    <div id="summaryCardsSection" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="theme-card border p-4 rounded-xl bg-white space-y-1">
+                            <span class="text-[10px] text-slate-400 font-bold block">成長 ＆ 期間</span>
+                            <div id="growthValue" class="text-xl font-mono font-black text-cyan-500">--</div>
+                            <div id="growthPeriod" class="text-[11px] text-slate-400">--</div>
+                        </div>
+                        <div class="theme-card border p-4 rounded-xl bg-white space-y-2">
+                            <div class="flex justify-between text-[11px] font-bold"><span>Initial Deposit</span><span id="initialDepositValue" class="font-mono">0.00</span></div>
+                            <div class="space-y-1">
+                                <div class="text-[9px] text-slate-400 font-bold">Equity 能量 Fill 條</div>
+                                <div class="bar-track"><div id="equityBar" class="bar-fill"></div></div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="text-[9px] text-slate-400 font-bold">Profit 能量 Fill 條</div>
+                                <div class="bar-track"><div id="profitBar" class="bar-fill bg-gradient-to-r from-emerald-400 to-teal-500"></div></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] font-mono text-slate-400 pt-0.5">
+                                <span>結餘: $<span id="equityValue">0</span></span><span>利潤: <span id="profitValue">0</span></span>
+                            </div>
+                        </div>
+                        <div class="theme-card border p-4 rounded-xl bg-white space-y-1">
+                            <span class="text-[10px] text-slate-400 font-bold block">Minimum Area (Key Stats)</span>
+                            <div id="minimumArea" class="text-[11px] text-slate-500 space-y-1 font-mono"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB BLOCK B: 多維圖表矩陣 -->
+                    <div id="accountSection" class="theme-card border p-4 rounded-xl bg-white space-y-4" style="display:none;">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div id="accountStats" class="bg-slate-50 p-3 rounded-xl border font-mono text-[11px] space-y-1"></div>
+                            <div class="md:col-span-3 border border-slate-100 rounded-xl p-3 h-[240px] relative">
+                                <canvas id="equityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB BLOCK C: 馬丁層數穿透 (安全綠/風險紅) -->
+                    <div id="martinSection" class="theme-card border p-4 rounded-xl bg-white space-y-3" style="display:none;">
+                        <div class="flex gap-2"><button class="px-2.5 py-0.5 text-[11px] font-bold rounded bg-slate-100 border border-slate-300">🟡 XAUUSD</button></div>
+                        <div class="overflow-x-auto rounded-xl border">
+                            <table class="w-full text-center border-collapse text-xs font-semibold">
+                                <thead>
+                                    <tr class="bg-slate-50 text-[10px] text-slate-400"><th class="p-2 border">層級</th><th class="p-2 border">方向</th><th class="p-2 border">標準手數</th><th class="p-2 border">交易筆數</th><th class="p-2 border">累計利潤</th><th class="p-2 border">勝率</th></tr>
+                                </thead>
+                                <tbody id="martingale-table-body" class="divide-y"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB BLOCK D: SWOT 九宮格 (動態圓心綁定) -->
+                    <div id="swotSection" class="theme-card border p-4 rounded-xl bg-white" style="display:none;">
+                        <div class="grid grid-cols-3 gap-3" id="swot-grid-container"></div>
+                    </div>
+                </div>
+
+                <!-- 📦 CSV History Library 快照儲存庫 (全自動智慧去重歸檔) -->
+                <div class="theme-card border p-5 rounded-xl bg-white shadow-sm space-y-3">
+                    <div class="font-black text-xs uppercase text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-boxes-stacked theme-text"></i> CSV History Library (歷史分析存庫快照)</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-semibold border-collapse">
+                            <thead>
+                                <tr class="border-b text-[10px] text-slate-400">
+                                    <th class="py-2">庫存 Record Name ([ID]+[EA]+[Date])</th><th class="py-2">總利潤</th><th class="py-2">總筆數</th><th class="py-2">勝率</th><th class="py-2">儲存時間</th><th class="py-2">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="library-records-body" class="divide-y font-mono text-[11px]">
+                                <tr><td colspan="6" class="text-center py-4 text-slate-400">目前暫無歷史庫分析快照</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 彈窗通知機制 -->
+    <div id="toast-box" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl transition-all duration-300 transform translate-y-20 opacity-0 z-50"></div>
+
+    <script>
+        // 大平台基礎分頁切換邏輯
+        function switchPage(pageId) {
+            document.getElementById('page-crosspower').classList.add('hidden');
+            document.getElementById('page-analyzer').classList.add('hidden');
+            document.getElementById('nav-cp').className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all text-slate-500 hover:bg-slate-50";
+            document.getElementById('nav-tha').className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all text-slate-500 hover:bg-slate-50";
+            
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById(`nav-${pageId === 'crosspower' ? 'cp' : 'tha'}`).className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all theme-btn-active";
+        }
+
+        // 主題控制與深淺切換
+        function setTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            document.querySelectorAll('.orb-wrapper').forEach(w => w.classList.remove('active'));
+            document.getElementById(`orb-${t}`).classList.add('active');
+        }
+        function toggleDarkMode() {
+            const m = document.documentElement.getAttribute('data-mode') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-mode', m);
+        }
+
+        // Toast 彈窗
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            box.innerText = msg; box.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => { box.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+        }
+
+        // 上傳回顯檔名
+        function handleFileSelected() {
+            const f = document.getElementById('csvFileInput').files[0];
+            if (f) document.getElementById('file-v-echo').innerText = `📄 已選擇檔案: ${f.name}`;
+        }
+    </script>
+    <!-- 🎛️ 最後掛載唯一需要頻繁維護的 THA 大腦 -->
+    <script src="js/app-analyzer.js"></script>
+</body>
+</html>
