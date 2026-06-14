@@ -1,6 +1,6 @@
 /**
- * TSS Portal - THA 歷史分析與自動智慧存庫大腦 (app-analyzer.js)
- * 100% 獨立分析、自動加號命名歸檔、一鍵Call回調
+ * TSS Portal - THA 歷史分析大腦 (app-analyzer.js)
+ * 【V9.5 終極定稿修正版：完全對齊 SMA/MKD/DW 有馬丁，其餘皆無之官方大底】
  */
 
 const THA_CONFIG = {
@@ -8,7 +8,7 @@ const THA_CONFIG = {
     INITIAL_BALANCE: 10000.00
 };
 
-// 全域數據與 Library 儲存庫
+// 全域數據緩衝與 Library 儲存庫
 window.globalTrades = [];
 window.globalAnalysis = null;
 window.csvHistoryLibrary = []; 
@@ -19,9 +19,10 @@ window.csvHistoryLibrary = [];
 function triggerParsingProcess() {
     const fileInput = document.getElementById('csvFileInput');
     const eaSelected = document.getElementById('eaSelect').value;
-    const signalsId = document.getElementById('signalsIdInput').value.trim() || "AI Signals Hub";
     
-    // 如果是從 Library 裡面一鍵 Call 出來的，直接使用全域緩衝重繪
+    // 內嵌固定 SIGNALS ID，絕不擅自添加任何前端輸入框
+    const signalsId = "AI Signals Hub"; 
+    
     if (window.globalTrades.length > 0 && (!fileInput || !fileInput.files[0])) {
         executeAnalysisEngine(eaSelected, signalsId);
         return;
@@ -33,7 +34,6 @@ function triggerParsingProcess() {
         return;
     }
 
-    // 🌟 呼叫 PapaParse 工具 (修復上載無反應的缺口)
     Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -43,7 +43,6 @@ function triggerParsingProcess() {
             let mockTicket = 990100;
 
             rows.forEach(row => {
-                // 讀取常規歷史報表主要欄位
                 const timeField = row['Time'] || row['time'] || Object.values(row)[0];
                 const symbolField = row['Symbol'] || row['symbol'] || Object.values(row)[1];
                 const typeField = row['Type'] || row['type'] || Object.values(row)[2];
@@ -52,9 +51,15 @@ function triggerParsingProcess() {
 
                 if (!timeField || !symbolField) return;
 
+                const tradeDate = new Date(timeField.trim());
+                const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                const weekday = weekdayLabels[tradeDate.getDay()] || "Mon";
+
                 trades.push({
                     ticket: mockTicket++,
                     time: timeField.trim(),
+                    dateObj: tradeDate,
+                    weekday: weekday,
                     symbol: symbolField.trim().toUpperCase(),
                     type: typeField.toUpperCase().includes("BUY") ? "BUY" : "SELL",
                     lots: parseFloat(lotsField) || 0.01,
@@ -63,22 +68,22 @@ function triggerParsingProcess() {
             });
 
             if (trades.length === 0) {
-                alert('無法識別有效 CSV 交易數據，請檢查標頭！');
+                alert('無法識別有效 CSV 交易數據，請檢查標頭欄位！');
                 return;
             }
 
-            // 🌟 100% 清空並覆蓋：只針對剛剛上載的這份新 CSV 進行純淨排序與分析
-            window.globalTrades = trades.sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
+            // 所有數據裝載嚴格遵循【由最遠 ➔ 到最近期】正序排列
+            window.globalTrades = trades.sort((a, b) => a.dateObj - b.dateObj);
             executeAnalysisEngine(eaSelected, signalsId);
         },
         error: function(err) {
-            alert('PapaParse 讀取 CSV 發生嚴重崩潰，請檢查編碼！');
+            alert('CSV 讀取發生錯誤，請確認檔案格式！');
         }
     });
 }
 
 /**
- * 核心分析運算與【自動 Save 入庫去重】
+ * 核心分析運算與【MEF ✕ MAF 因子精算注入】
  */
 function executeAnalysisEngine(eaSelected, signalsId) {
     document.getElementById('analyzer-placeholder').classList.add('hidden');
@@ -88,14 +93,21 @@ function executeAnalysisEngine(eaSelected, signalsId) {
     let winCount = 0;
     const balanceCurve = [];
     const labels = [];
+    
+    let totalLotsVolume = 0;
+    let totalProfitSum = 0;
 
     window.globalTrades.forEach((t, idx) => {
         balance += t.profit;
         balanceCurve.push(balance);
         labels.push(t.time.split(' ')[0]);
         if (t.profit > 0) winCount++;
+        
+        totalLotsVolume += t.lots;
+        totalProfitSum += t.profit;
     });
 
+    const mefFactor = totalLotsVolume > 0 ? (totalProfitSum / totalLotsVolume).toFixed(2) : "0.00";
     const lastRecordDate = window.globalTrades.length > 0 ? window.globalTrades[window.globalTrades.length - 1].time.split(' ')[0] : "N/A";
     const growthPct = ((balance - THA_CONFIG.INITIAL_BALANCE) / THA_CONFIG.INITIAL_BALANCE * 100).toFixed(1);
     const winRate = window.globalTrades.length ? (winCount / window.globalTrades.length * 100).toFixed(1) : 0;
@@ -111,27 +123,41 @@ function executeAnalysisEngine(eaSelected, signalsId) {
         winRate: `${winRate}%`,
         totalTrades: `${window.globalTrades.length} 筆`,
         balanceCurve: balanceCurve,
-        labels: labels
+        labels: labels,
+        mef: mefFactor 
     };
 
-    // 🚀 核心：完全依據 [SIGNALS ID]+[EA]+[Last record date] 智慧去重歸檔
+    // 自動加號去重歸檔 [SIGNALS ID]+[EA]+[Last record date]
     autoArchiveToLibrary(window.globalAnalysis);
 
-    // 渲染 UI 數值
+    // 同步 UI 數值與解鎖全部看板平鋪展示
     applyDataToUIExpressions();
-
-    // 🚀 上傳完畢後，預設切換到第一個分頁「Summary」，畫面絕不拉長
-    switchTHAMenu('summary');
 }
 
 /**
- * 🚀 全自動智慧歸檔：[SIGNALS ID]+[EA]+[Last record date] 留新去舊覆蓋
+ * 置頂 Jump Menu 的一鍵平滑跳轉（Jump To Section）機制
+ */
+function jumpToTHABlock(sectionId, activeBtnId) {
+    const menuBtnIds = ['btn-tha-tab-summary', 'btn-tha-tab-charts', 'btn-tha-tab-martingale', 'btn-tha-tab-swot'];
+    menuBtnIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.className = "px-4 py-2 text-slate-500 font-black rounded-xl text-xs hover:bg-slate-50 dark:hover:bg-slate-900 transition-all";
+    });
+
+    const currentBtn = document.getElementById(activeBtnId);
+    if (currentBtn) currentBtn.className = "px-4 py-2 text-xs font-black rounded-xl shadow-sm transition-all theme-btn-active";
+
+    const targetTarget = document.getElementById(sectionId);
+    if (targetTarget) {
+        targetTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+/**
+ * 自動智慧去重歸檔
  */
 function autoArchiveToLibrary(analysis) {
-    // 🌟 緊湊的加號聯結命名規範
     const recordName = analysis.signalsId + "+" + analysis.eaSelected + "+" + analysis.lastRecordDate;
-    
-    // 尋找快照庫內有沒有同一個專案 ID 的舊檔案
     const existingIdx = window.csvHistoryLibrary.findIndex(r => r.signalsId === analysis.signalsId);
 
     const newRecord = {
@@ -145,21 +171,19 @@ function autoArchiveToLibrary(analysis) {
         profit: analysis.profit,
         winRate: analysis.winRate,
         totalTrades: analysis.totalTrades,
-        tradesBackup: [...window.globalTrades], // 鎖定儲存完整持倉數據以供隨時回調
+        tradesBackup: [...window.globalTrades], 
         saveTime: new Date().toLocaleTimeString()
     };
 
     if (existingIdx > -1) {
         const oldRecord = window.csvHistoryLibrary[existingIdx];
-        // 智慧對比日期：如果新上載的 CSV 日期更新更靠後，就直接執行去重覆蓋
         if (Date.parse(analysis.lastRecordDate) >= Date.parse(oldRecord.lastRecordDate)) {
             window.csvHistoryLibrary[existingIdx] = newRecord;
             showToast("🔄 偵測到同名專案，系統已智慧覆蓋並 Keep 最新 CSV 紀錄！");
         } else {
-            showToast("⚠️ 上傳日期較舊，系統已自動拒絕並保留 Library 內最新檔案。");
+            showToast("⚠️ 上傳日期較舊，系統已自動保留 Library 內最新檔案。");
         }
     } else {
-        // 全新 Signals ID 專案直接存入 Table
         window.csvHistoryLibrary.push(newRecord);
         showToast("📦 已自動為此全新專案建立快照存庫！");
     }
@@ -168,31 +192,7 @@ function autoArchiveToLibrary(analysis) {
 }
 
 /**
- * 🗂️ THA 分頁 Menu 快切邏輯 (只顯示選中，其餘隱藏控制網頁長度)
- */
-function switchTHAMenu(tabName) {
-    const panels = {
-        'summary': 'summaryCardsSection',
-        'charts': 'accountSection',
-        'martingale': 'martinSection',
-        'swot': 'swotSection'
-    };
-
-    Object.keys(panels).forEach(key => {
-        const btn = document.getElementById(`btn-tha-tab-${key}`);
-        const block = document.getElementById(panels[key]);
-        if (btn) btn.className = "px-4 py-2 text-slate-500 font-black rounded-xl text-xs hover:bg-slate-50 transition-all";
-        if (block) block.style.display = "none";
-    });
-
-    const activeBtn = document.getElementById(`btn-tha-tab-${tabName}`);
-    const activeBlock = document.getElementById(panels[tabName]);
-    if (activeBtn) activeBtn.className = "px-4 py-2 text-xs font-black rounded-xl shadow-sm transition-all theme-btn-active";
-    if (activeBlock) activeBlock.style.display = activeBlock.id === 'summaryCardsSection' ? 'grid' : 'block';
-}
-
-/**
- * 📂 一鍵【Call】回調還原數據
+ * 一鍵【Call】回調還原數據
  */
 function callRecordFromLibrary(idx) {
     const record = window.csvHistoryLibrary[idx];
@@ -200,7 +200,6 @@ function callRecordFromLibrary(idx) {
 
     window.globalTrades = [...record.tradesBackup];
     document.getElementById('eaSelect').value = record.eaSelected;
-    document.getElementById('signalsIdInput').value = record.signalsId;
 
     window.globalAnalysis = {
         signalsId: record.signalsId,
@@ -213,24 +212,31 @@ function callRecordFromLibrary(idx) {
         winRate: record.winRate,
         totalTrades: record.totalTrades,
         balanceCurve: [],
-        labels: []
+        labels: [],
+        mef: "0.00"
     };
 
     let balance = THA_CONFIG.INITIAL_BALANCE;
+    let totVol = 0, totPrf = 0;
     window.globalTrades.forEach(t => {
         balance += t.profit;
+        totVol += t.lots;
+        totPrf += t.profit;
         window.globalAnalysis.balanceCurve.push(balance);
         window.globalAnalysis.labels.push(t.time.split(' ')[0]);
     });
+    window.globalAnalysis.mef = totVol > 0 ? (totPrf / totVol).toFixed(2) : "0.00";
 
     document.getElementById('analyzer-placeholder').classList.add('hidden');
     document.getElementById('analyzer-main-panel').classList.remove('hidden');
 
     applyDataToUIExpressions();
-    switchTHAMenu('summary');
     showToast(`📂 成功回調歷史紀錄：${record.recordName}`);
 }
 
+/**
+ * 數據同步與全版塊平鋪解鎖
+ */
 function applyDataToUIExpressions() {
     const ana = window.globalAnalysis;
     document.getElementById('growthValue').innerText = ana.growth;
@@ -247,115 +253,132 @@ function applyDataToUIExpressions() {
         <div>獲利因子 (PF): <b class="theme-text">1.85</b></div>
         <div>最大回撤 (Max DD): <b class="text-rose-500">12.4%</b></div>
         <div>總交易筆數: <b>${ana.totalTrades}</b></div>
+        <div class="pt-1 mt-1 border-t border-slate-100 text-purple-600 font-black">⚡ 馬丁效率因子 (MEF): <span class="font-mono">$${ana.mef}/Lot</span></div>
     `;
 
     document.getElementById('accountStats').innerHTML = `
+        <div class="font-black text-slate-700 dark:text-slate-300 mb-2 pb-1 border-b text-[11px] uppercase tracking-wide"><i class="fa-solid fa-chart-pie theme-text"></i> 統計維護面板</div>
         <div class="flex justify-between py-1 border-b"><span>初始解算金額:</span><span>$${THA_CONFIG.INITIAL_BALANCE.toFixed(2)}</span></div>
         <div class="flex justify-between py-1 border-b"><span>帳戶淨結餘:</span><span>$${ana.equity}</span></div>
         <div class="flex justify-between py-1 border-b"><span>回測總獲利:</span><span class="text-emerald-500 font-bold">$${ana.profit}</span></div>
     `;
 
-    renderChartCurve(ana.labels, ana.balanceCurve);
+    // 看板版塊全部平鋪並存，完全由 Jump Menu 控制鏡頭滾動
+    document.getElementById('summaryCardsSection').style.display = 'grid';
+    document.getElementById('accountSection').style.display = 'block';
+    document.getElementById('martinSection').style.display = 'block';
+    document.getElementById('swotSection').style.display = 'block';
+
+    // 重新編譯三大圖表
+    rebuildThreeCoreCharts();
+    
+    // 渲染智慧馬丁與 SWOT
     renderMartingaleTable();
     renderSWOT九宮格(ana.eaSelected);
+
+    // 將最頂部的 Jump Menu 選單綁定為快切跳轉引擎
+    document.getElementById('btn-tha-tab-summary').setAttribute('onclick', "jumpToTHABlock('summaryCardsSection', 'btn-tha-tab-summary')");
+    document.getElementById('btn-tha-tab-charts').setAttribute('onclick', "jumpToTHABlock('accountSection', 'btn-tha-tab-charts')");
+    document.getElementById('btn-tha-tab-martingale').setAttribute('onclick', "jumpToTHABlock('martinSection', 'btn-tha-tab-martingale')");
+    document.getElementById('btn-tha-tab-swot').setAttribute('onclick', "jumpToTHABlock('swotSection', 'btn-tha-tab-swot')");
 }
 
-function renderLibraryTableDOM() {
-    const body = document.getElementById('library-records-body');
-    if (!body) return;
-    body.innerHTML = '';
+/**
+ * 重新編譯三大圖表
+ */
+let globalChartInstances = { eq: null, wk: null, sb: null };
+function rebuildThreeCoreCharts() {
+    if (globalChartInstances.eq) globalChartInstances.eq.destroy();
+    if (globalChartInstances.wk) globalChartInstances.wk.destroy();
+    if (globalChartInstances.sb) globalChartInstances.sb.destroy();
 
-    if (window.csvHistoryLibrary.length === 0) {
-        body.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">目前暫無歷史庫分析快照</td></tr>`;
-        return;
+    const canvasContainer = document.querySelector('#accountSection .md\\:col-span-3');
+    if (!canvasContainer) return;
+
+    canvasContainer.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full w-full">
+            <div class="border rounded-xl p-2 bg-white h-full relative flex flex-col">
+                <span class="text-[9px] font-black text-slate-400 block uppercase mb-1">圖表 A: Equity Curve (淨值增長曲線)</span>
+                <div class="flex-1 relative"><canvas id="chart-equity-canvas"></canvas></div>
+            </div>
+            <div class="border rounded-xl p-2 bg-white h-full relative flex flex-col">
+                <span class="text-[9px] font-black text-slate-400 block uppercase mb-1">圖表 B: Weekday Trades (週間熱度直方圖)</span>
+                <div class="flex-1 relative"><canvas id="chart-weekday-canvas"></canvas></div>
+            </div>
+            <div class="border rounded-xl p-2 bg-white h-full relative flex flex-col">
+                <span class="text-[9px] font-black text-slate-400 block uppercase mb-1">圖表 C: Symbol Profit (品種貢獻排行)</span>
+                <div class="flex-1 relative"><canvas id="chart-symbol-canvas"></canvas></div>
+            </div>
+        </div>
+    `;
+
+    let runningBalance = THA_CONFIG.INITIAL_BALANCE;
+    const eqData = [];
+    const eqLabels = [];
+    window.globalTrades.forEach(t => {
+        runningBalance += t.profit;
+        eqData.push(runningBalance);
+        eqLabels.push(t.time.split(' ')[0]);
+    });
+
+    const wkCounter = { "Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0 };
+    window.globalTrades.forEach(t => { if (wkCounter[t.weekday] !== undefined) wkCounter[t.weekday]++; });
+
+    const symCounter = {};
+    window.globalTrades.forEach(t => { symCounter[t.symbol] = (symCounter[t.symbol] || 0) + t.profit; });
+
+    const ctxA = document.getElementById('chart-equity-canvas');
+    if (ctxA) {
+        globalChartInstances.eq = new Chart(ctxA.getContext('2d'), {
+            type: 'line',
+            data: { labels: eqLabels, datasets: [{ label: '整體淨值曲線', data: eqData, borderColor: '#0ea5e9', borderWidth: 1.5, pointRadius: 0, fill: false }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 6 } } } }
+        });
     }
 
-    window.csvHistoryLibrary.forEach((r, idx) => {
-        body.innerHTML += `
-            <tr class="hover:bg-slate-50/60 transition-all">
-                <td class="p-3 font-bold text-slate-700 dark:text-slate-300 text-xs">${r.recordName}</td>
-                <td class="text-emerald-500 font-black font-mono">$${r.profit}</td>
-                <td class="font-mono text-slate-500">${r.totalTrades}</td>
-                <td class="text-indigo-500 font-black font-mono">${r.winRate}</td>
-                <td class="text-slate-400 text-[10px] font-mono">${r.saveTime}</td>
-                <td class="p-3 text-center">
-                    <button onclick="callRecordFromLibrary(${idx})" class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 text-xs font-black rounded-xl transition-all shadow-sm">📂 Call</button>
-                </td>
-            </tr>
-        `;
-    });
+    const ctxB = document.getElementById('chart-weekday-canvas');
+    if (ctxB) {
+        globalChartInstances.wk = new Chart(ctxB.getContext('2d'), {
+            type: 'bar',
+            data: { labels: Object.keys(wkCounter), datasets: [{ label: '開倉筆數', data: Object.values(wkCounter), backgroundColor: '#34d399', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    const ctxC = document.getElementById('chart-symbol-canvas');
+    if (ctxC) {
+        globalChartInstances.sb = new Chart(ctxC.getContext('2d'), {
+            type: 'bar',
+            data: { labels: Object.keys(symCounter), datasets: [{ label: '利潤貢獻', data: Object.values(symCounter), backgroundColor: '#f59e0b', borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+        });
+    }
 }
 
+/**
+ * 🚀 核心優化：完全依據【SMA/MKD/DW 有馬丁，其餘派系皆無】進行智慧分層穿透
+ */
 function renderMartingaleTable() {
     const body = document.getElementById('martingale-table-body');
     if (!body) return; body.innerHTML = '';
 
-    let mockLayers = [
-        { lots: "0.01", count: 142, profit: 320.10, wr: 68.5 },
-        { lots: "0.02", count: 85, profit: 450.20, wr: 74.2 },
-        { lots: "0.04", count: 42, profit: 120.50, wr: 81.0 },
-        { lots: "0.08", count: 12, profit: -210.00, wr: 50.0 },
-        { lots: "0.16", count: 5, profit: 650.00, wr: 90.0 },
-        { lots: "0.32", count: 4, profit: 820.00, wr: 100.0 }
-    ];
+    const currentEAName = window.globalAnalysis.eaSelected.toUpperCase();
+    
+    // 🌟 智慧判定：檢查當前選中的 EA 名稱是否包含 SMA、MKD 或 縮寫 DW
+    const hasMartingaleGene = currentEAName.includes("SMA") || currentEAName.includes("MKD") || currentEAName.includes("DRAGON WAVE") || currentEAName.includes("DW");
 
-    mockLayers.forEach((l, i) => {
-        const isHl = l.wr === 100 ? "class='win-100-neon'" : "";
-        // 🧱 完美重現頂部配置抽離：L1-L3安全綠，L4+自動觸發風險紅
-        const colorClass = (i + 1 > THA_CONFIG.SAFE_LAYERS_MAX) ? "level-risk" : "level-safe";
+    const currentSymbol = window.globalTrades.length > 0 ? window.globalTrades[0].symbol : "XAUUSD";
 
-        body.innerHTML += `
-            <tr class="${colorClass} hover:bg-slate-100/30 transition-all">
-                <td class="p-3 font-bold border theme-border">L${i+1}</td>
-                <td class="text-blue-500 font-black border theme-border">BUY/SELL</td>
-                <td class="font-mono font-bold border theme-border">${l.lots}</td>
-                <td class="border theme-border text-slate-500">${l.count} 筆</td>
-                <td class="${l.profit>=0?'text-emerald-500':'text-rose-500'} font-mono font-black border theme-border">$${l.profit.toFixed(2)}</td>
-                <td class="p-3 border theme-border"><span ${isHl}>${l.wr.toFixed(1)}%</span></td>
-            </tr>
-        `;
-    });
-}
+    const buyTrades = window.globalTrades.filter(t => t.symbol === currentSymbol && t.type === "BUY");
+    const sellTrades = window.globalTrades.filter(t => t.symbol === currentSymbol && t.type === "SELL");
 
-function renderSWOT九宮格(eaName) {
-    const container = document.getElementById('swot-grid-container');
-    if (!container) return;
-    container.innerHTML = `
-        <div class="p-4 border rounded-xl bg-blue-500/5"><b class="text-blue-600 block mb-1">ST戰略 (TOWS)</b><p>精準對沖多維交叉匯率風險。</p></div>
-        <div class="p-4 border rounded-xl bg-emerald-500/5"><b class="text-emerald-600 block mb-1">STRENGTHS (優勢)</b><p>100%真實歷史持倉穿透，無假數據雜質。</p></div>
-        <div class="p-4 border rounded-xl bg-amber-500/5"><b class="text-amber-600 block mb-1">SW戰略</b><p>實時監配各品種與階梯加倉邊界。</p></div>
-        <div class="p-4 border rounded-xl bg-rose-500/5"><b class="text-rose-600 block mb-1">THREATS (威脅)</b><p>極端單邊行情可能產生回撤重疊壓力。</p>
-        </div>
-        
-        <div class="p-4 border-2 border-purple-500 bg-purple-500/10 text-center font-black flex flex-col justify-center items-center text-xs rounded-xl shadow-inner">
-            🎯 當前模型:<br><span class="text-purple-600 text-sm mt-1 font-mono uppercase">${eaName}</span>
-        </div>
-        
-        <div class="p-4 border rounded-xl bg-orange-500/5"><b class="text-orange-600 block mb-1">WEAKNESSES (劣勢)</b><p>網格持倉在深層加倉時保證金佔用率較高。</p></div>
-        <div class="p-4 border rounded-xl bg-indigo-500/5"><b class="text-indigo-600 block mb-1">TO戰略</b><p>依據週間活動數據優化挂單時間。</p></div>
-        <div class="p-4 border rounded-xl bg-cyan-500/5"><b class="text-cyan-600 block mb-1">OPPORTUNITIES (機會)</b><p>利用高頻波動率放大馬丁分層套利利潤。</p></div>
-        <div class="p-4 border rounded-xl bg-fuchsia-500/5"><b class="text-fuchsia-600 block mb-1">WO戰略</b><p>通過優化配置文件剔除不良重倉資產。</p></div>
-    `;
-}
+    function compileMartingaleLayers(tradesList, directionText) {
+        // 🌟 智慧過濾：如果屬於無馬丁派系，強行壓縮 uniqueLots 只留下第一層 L1，其餘後續加倉層級不予處理
+        let uniqueLots = [...new Set(tradesList.map(t => t.lots))].sort((a, b) => a - b);
+        if (!hasMartingaleGene && uniqueLots.length > 0) {
+            uniqueLots = [uniqueLots[0]]; // 鎖定只抓取首筆單量手數
+        }
 
-function resetAllCsvData() {
-    window.globalTrades = []; window.globalAnalysis = null;
-    document.getElementById('csvFileInput').value = "";
-    document.getElementById('file-v-echo').innerText = "";
-    document.getElementById('analyzer-main-panel').classList.add('hidden');
-    document.getElementById('analyzer-placeholder').classList.remove('hidden');
-    showToast("🧹 歷史分析快照數據緩衝已完全重置倒空。");
-}
+        const mafThreshold = 2.00;
 
-let activeChart = null;
-function renderChartCurve(labels, data) {
-    if (activeChart) activeChart.destroy();
-    const ctx = document.getElementById('equityChart');
-    if (ctx) {
-        activeChart = new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: { labels, datasets: [{ label: 'Net Equity', data, borderColor: '#0ea5e9', borderWidth: 2, pointRadius: 0, fill: false }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-}
+        uniqueLots.forEach((lot
