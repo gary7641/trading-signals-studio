@@ -23,7 +23,6 @@
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -38,7 +37,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-        /* Theme Accent Overrides */
         .theme-bg-active {
             background-color: #7c3aed !important;
             color: #ffffff !important;
@@ -49,9 +47,8 @@
         .theme-border {
             border-color: #e2e8f0;
         }
-        /* Custom UI Elements */
         .card-custom {
-            border-radius: 8px !important; /* 精準要求：小圓角 */
+            border-radius: 8px !important; /* 小圓角 */
             background: #ffffff;
             border: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
@@ -60,7 +57,6 @@
         .card-custom:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.04);
         }
-        /* Martingale Table Highlighting */
         .level-safe {
             background-color: #f8fafc;
         }
@@ -75,25 +71,12 @@
             border-radius: 4px;
             font-weight: 900;
         }
-        /* Marquee ticker simulation */
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .ticker-text {
-            display: inline-block;
-            animation: marquee 25s linear infinite;
-        }
-        .ticker-text:hover {
-            animation-play-state: paused;
-        }
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- 頂部 HEADER (完全符合走馬燈、Light/Dark與亮點規格) -->
+    <!-- 頂部 HEADER (鎖死原裝設計) -->
     <header class="h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-50 shrink-0">
-        <!-- 左側 LOGO -->
         <div class="flex items-center gap-3">
             <div class="bg-purple-600 h-8 w-8 rounded-lg flex items-center justify-center font-black tracking-tighter text-sm text-white shadow-md">
                 TSS
@@ -101,31 +84,10 @@
             <span class="font-black text-sm tracking-wider bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">THA QUANTITY PORTAL</span>
         </div>
 
-        <!-- 中間走馬燈最 UPDATE NEWS -->
-        <div class="hidden md:flex flex-1 max-w-xl mx-8 bg-slate-950/80 h-7 rounded-md items-center overflow-hidden border border-slate-800 px-3 text-xs text-purple-400 font-medium">
-            <i class="fa-solid fa-bullhorn mr-2 shrink-0 text-amber-500 text-[10px]"></i>
-            <div class="w-full overflow-hidden relative">
-                <span class="ticker-text whitespace-nowrap text-[11px]">
-                    🔥 SYSTEM NOTICE: THA 歷史數據分析大腦 V11.5 已成功部署 ── 完美穿透多貨幣對 [All / Separate] 分流引擎，提供100%全正序真實持倉數據反饋！
-                </span>
-            </div>
-        </div>
-
-        <!-- 右手邊 LIGHT SWITCH DARK | 頭像 PROFILE -->
         <div class="flex items-center gap-4">
-            <!-- 屬性核心五行面板切換鏈接 -->
-            <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-                <span class="px-1.5 py-0.5 rounded text-yellow-500 bg-slate-900 border border-slate-800 cursor-pointer">金</span>
-                <span class="px-1.5 py-0.5 rounded text-emerald-500 opacity-60 hover:opacity-100 cursor-pointer">木</span>
-                <span class="px-1.5 py-0.5 rounded text-cyan-400 opacity-60 hover:opacity-100 cursor-pointer">水</span>
-                <span class="px-1.5 py-0.5 rounded text-rose-500 opacity-60 hover:opacity-100 cursor-pointer">火</span>
-                <span class="px-1.5 py-0.5 rounded text-amber-700 opacity-60 hover:opacity-100 cursor-pointer">土</span>
-            </div>
-            <!-- 模式切換 -->
             <button class="text-slate-400 hover:text-white transition-colors text-xs">
                 <i class="fa-solid fa-moon"></i>
             </button>
-            <!-- 用戶頭像與下拉菜單項目 -->
             <div class="flex items-center gap-2 border-l border-slate-800 pl-4">
                 <div class="h-7 w-7 rounded-full bg-purple-500 flex items-center justify-center text-xs font-black text-white cursor-pointer ring-2 ring-purple-600/30">
                     GC
@@ -138,12 +100,11 @@
         </div>
     </header>
 
-    <!-- 主體內容容器 (左側固定 Sidebar + 右側主內容滾動區) -->
+    <!-- 主體內容容器 -->
     <div class="flex-1 flex overflow-hidden">
         
-        <!-- 左側固定 SIDEBAR -->
+        <!-- 左側固定 SIDEBAR (鎖死原裝設計) -->
         <aside class="w-60 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 text-slate-400 z-40">
-            <!-- 上部導航鏈接 -->
             <div class="p-3 space-y-1">
                 <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-3 mb-2">主控分析模組</div>
                 
@@ -164,20 +125,14 @@
                 </button>
             </div>
 
-            <!-- 下部權限及版本 -->
-            <div class="p-4 bg-slate-950/40 border-t border-slate-800 text-[10px] text-slate-500 space-y-1">
-                <div>語言 / Language: <b class="text-slate-400">繁體中文</b></div>
+            <div class="p-4 bg-slate-950/40 border-t border-slate-800 text-[10px] text-slate-500">
                 <div>核心引擎版本: <b class="font-mono text-purple-500">V11.5 Stable</b></div>
-                <div class="pt-2 flex justify-between items-center text-rose-500 font-bold cursor-pointer hover:text-rose-400">
-                    <span><i class="fa-solid fa-right-from-bracket mr-1"></i> 登出系統</span>
-                    <span class="text-[8px] bg-rose-500/10 px-1 rounded">LOGOUT</span>
-                </div>
             </div>
         </aside>
 
-        <!-- 右側主要工作看板 (內含錨點按鈕區 + 縱向自然滾動面板) -->
+        <!-- 右側工作看板 -->
         <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-            <!-- 錨點快捷選單列 Anchor Quick Jump Menu -->
+            <!-- 錨點快捷選單列 -->
             <div class="h-11 bg-white border-b border-slate-200 px-4 flex items-center justify-between shrink-0 z-30">
                 <div class="flex gap-1.5">
                     <button onclick="jumpToTHABlock('summarySection', 'btn-tha-tab-summary')" id="btn-tha-tab-summary" class="px-3 py-1.5 text-xs font-black rounded-lg transition-all theme-btn-active shadow-sm">
@@ -194,7 +149,6 @@
                     </button>
                 </div>
                 
-                <!-- 開配置與核心切換設定 -->
                 <div class="flex items-center gap-2">
                     <select id="eaSelect" class="bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-black px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
                         <option value="EA - SMA 3.0">EA - SMA 3.0 (網格馬丁版)</option>
@@ -204,31 +158,25 @@
                 </div>
             </div>
 
-            <!-- 可單獨滾動的實體區塊群 -->
+            <!-- 縱向滾動工作區 -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
                 
-                <!-- ==================== 區塊一：數據源與歷史備份庫 ==================== -->
+                <!-- 區塊一：數據源與歷史備份庫 -->
                 <section id="summarySection" class="scroll-mt-4">
                     <div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
-                        <!-- CSV 核心解析卡 -->
                         <div class="card-custom p-4 xl:col-span-1 bg-gradient-to-br from-white to-slate-50 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-center mb-3">
                                     <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider">📥 交易報告解析核心</h2>
                                     <span class="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">CSV CORE</span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed mb-4">
-                                    請直接拖放或瀏覽從 MetaTrader 4 / MetaTrader 5 匯出的標準帳戶歷史交易報告（`.csv` 格式文件）。
-                                </p>
-                                
-                                <div class="border-2 border-dashed border-slate-200 hover:border-purple-400 bg-white p-4 rounded-lg text-center cursor-pointer transition-colors relative mb-3">
+                                <div class="border-2 border-dashed border-slate-200 hover:border-purple-400 bg-white p-4 rounded-lg text-center cursor-pointer relative mb-3">
                                     <input type="file" id="csvFileInput" accept=".csv" onchange="document.getElementById('file-v-echo').innerText = this.files[0] ? this.files[0].name : '';" class="absolute inset-0 opacity-0 cursor-pointer">
                                     <i class="fa-solid fa-cloud-arrow-up text-slate-300 text-xl block mb-1"></i>
                                     <span class="text-[11px] font-bold text-slate-600 block">點擊或拖放交易 CSV</span>
                                     <span id="file-v-echo" class="text-[9px] text-purple-600 block font-mono truncate mt-1"></span>
                                 </div>
                             </div>
-
                             <div class="flex gap-2 mt-2">
                                 <button onclick="triggerParsingProcess()" class="flex-1 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black rounded-lg shadow-sm transition-colors">
                                     <i class="fa-solid fa-bolt mr-1"></i> 執行數據解算
@@ -239,13 +187,10 @@
                             </div>
                         </div>
 
-                        <!-- 歷史檔案備份庫 -->
                         <div class="card-custom p-4 xl:col-span-3">
                             <div class="flex justify-between items-center mb-3">
                                 <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider">📁 歷史檔案快照備份庫（自動歸檔存儲）</h2>
-                                <span class="text-[9px] font-mono text-slate-400">Library Snapshots</span>
                             </div>
-                            
                             <div class="overflow-x-auto max-h-[165px]">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
@@ -257,100 +202,64 @@
                                             <th class="p-2">存儲時間</th>
                                             <th class="p-2 text-center">操作</th>
                                         </tr>
-                                    </table>
-                                    <div id="library-records-body" class="divide-y divide-slate-100">
-                                        <!-- 動態加載快照清單 -->
-                                        <div class="text-center py-8 text-[11px] text-slate-400 font-medium">
-                                            <i class="fa-solid fa-box-open block text-lg text-slate-200 mb-1"></i>
-                                            目前暫無歷史庫分析快照，請先執行上方交易解算。
-                                        </div>
-                                    </div>
+                                    </thead>
+                                    <tbody id="library-records-body" class="divide-y divide-slate-100">
+                                        <!-- 動態快照 -->
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 數據未加載佔位符 -->
-                <div id="analyzer-placeholder" class="card-custom p-12 text-center bg-white border border-slate-100">
-                    <div class="max-w-md mx-auto space-y-3">
-                        <div class="h-12 w-12 rounded-full bg-purple-50 flex items-center justify-center mx-auto text-purple-600 text-lg shadow-inner animate-pulse">
-                            <i class="fa-solid fa-chart-pie"></i>
-                        </div>
-                        <h3 class="text-sm font-black text-slate-800">等待注入量化交易數據源</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            請在上方「交易報告解析核心」中上傳符合標準欄位的歷史報告，系統將一秒生成11大基礎數據指標、馬丁加倉軌跡以及[All / Separate]雙態多線交叉分析。
-                        </p>
-                    </div>
+                <!-- 未載入佔位 -->
+                <div id="analyzer-placeholder" class="card-custom p-12 text-center bg-white">
+                    <h3 class="text-sm font-black text-slate-800">等待注入量化交易數據源</h3>
                 </div>
 
-                <!-- ==================== 核心主分析控制面板區 (預設隱藏，解算後展示) ==================== -->
+                <!-- 核心主面板 (解算後開啟) -->
                 <div id="analyzer-main-panel" class="hidden space-y-4">
-                    
-                    <!-- 基本利潤概覽看板 -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="card-custom p-3 bg-gradient-to-r from-purple-900 to-slate-900 text-white flex flex-col justify-between h-[100px]">
-                            <span class="text-[9px] font-black text-purple-300 uppercase tracking-widest block">帳戶淨值增長率 (GROWTH)</span>
-                            <b id="growthValue" class="text-2xl font-mono font-black tracking-tight text-white block">--</b>
+                            <span class="text-[9px] font-black text-purple-300 uppercase block">帳戶淨值增長率 (GROWTH)</span>
+                            <b id="growthValue" class="text-2xl font-mono font-black block">--</b>
                             <span id="growthPeriod" class="text-[9px] text-slate-400 block truncate">--</span>
                         </div>
                         <div class="card-custom p-3 flex flex-col justify-between h-[100px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">初始解算基金 (DEPOSIT)</span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase block">初始解算基金 (DEPOSIT)</span>
                             <b class="text-xl font-mono font-black text-slate-800 block">$<span id="initialDepositValue">0.00</span></b>
-                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div class="bg-blue-500 h-full w-full"></div></div>
                         </div>
                         <div class="card-custom p-3 flex flex-col justify-between h-[100px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">帳戶當前淨結餘 (EQUITY)</span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase block">帳戶當前淨結餘 (EQUITY)</span>
                             <b class="text-xl font-mono font-black text-slate-800 block">$<span id="equityValue">0.00</span></b>
                             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div id="equityBar" class="bg-purple-600 h-full" style="width: 0%"></div></div>
                         </div>
                         <div class="card-custom p-3 bg-white flex flex-col justify-between h-[100px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block">回測總淨獲利 (PROFIT)</span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase block">回測總淨獲利 (PROFIT)</span>
                             <b class="text-xl font-mono font-black text-emerald-500 block">$<span id="profitValue">0.00</span></b>
                             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div id="profitBar" class="bg-emerald-500 h-full" style="width: 0%"></div></div>
                         </div>
                     </div>
 
-                    <!-- ==================== 區塊二：帳戶多維圖表矩陣 ==================== -->
+                    <!-- 區塊二：帳戶多維圖表矩陣 -->
                     <section id="accountSection" class="scroll-mt-4">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <!-- 左側純文字統計總帳明細 -->
-                            <div id="minimumArea" class="card-custom p-3 bg-white md:col-span-1 space-y-2">
-                                <!-- 數據由 app-analyzer.js 自動注入，內含11大基礎數據指標 -->
-                            </div>
-                            
-                            <!-- 右側三大獨立圖表畫布 (平鋪) -->
+                            <div id="minimumArea" class="card-custom p-3 bg-white md:col-span-1 space-y-2"></div>
                             <div class="md:col-span-3 space-y-4">
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 h-[200px] w-full">
-                                    <!-- 由 JS 重新渲染 -->
-                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 h-[200px] w-full"></div>
                             </div>
                         </div>
-                        
-                        <!-- 數據庫裝載之 Symbol 穿透交叉雷達與 [All / Separate] 滑動開關容器 -->
-                        <div id="advanced-quantum-radar-container" class="mt-4">
-                            <!-- 圖表與開關在此動態爆發 -->
-                        </div>
+                        <div id="advanced-quantum-radar-container" class="mt-4"></div>
                     </section>
 
-                    <!-- ==================== 區塊三：馬丁格爾分層穿透 ==================== -->
+                    <!-- 區塊三：馬丁格爾分層穿透 -->
                     <section id="martinSection" class="scroll-mt-4">
                         <div class="card-custom p-4 bg-white">
-                            <div class="flex justify-between items-center mb-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="h-4 w-1 bg-amber-500 rounded"></span>
-                                    <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider">⚡ 馬丁格爾分層加倉軌跡判定面板</h2>
-                                </div>
-                                <span class="text-[9px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-bold font-mono">SAFE LAYERS CAP: 3</span>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">
-                                系統自動根據同品種、同向、開倉時間差在5秒內的多筆訂單歸類為「同一個加倉波段」。當手數（Lots）或分層超出 3 層安全閾值時，系統將觸發紅色高風險提示。
-                            </p>
-                            
+                            <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-3">⚡ 馬丁格爾分層加倉軌跡判定面板</h2>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="bg-slate-900 text-white text-[10px] font-black border-b border-slate-700">
+                                        <tr class="bg-slate-900 text-white text-[10px] font-black">
                                             <th class="p-3 text-center">分層階梯</th>
                                             <th class="p-3 text-center">方向</th>
                                             <th class="p-3">每層頭寸手數異動與開倉時間戳 (LOTS TRACKS)</th>
@@ -359,29 +268,17 @@
                                             <th class="p-3 text-center">分層平均勝率</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="martingale-table-body" class="divide-y divide-slate-200">
-                                        <!-- 馬丁分析層級數據動態填充 -->
-                                    </tbody>
+                                    <tbody id="martingale-table-body" class="divide-y divide-slate-200"></tbody>
                                 </table>
                             </div>
                         </div>
                     </section>
 
-                    <!-- ==================== 區塊四：Custom SWOT 戰略九宮格 ==================== -->
+                    <!-- 區塊四：Custom SWOT 戰略九宮格 -->
                     <section id="swotSection" class="scroll-mt-4">
                         <div class="card-custom p-4 bg-white">
-                            <div class="flex justify-between items-center mb-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="h-4 w-1 bg-emerald-500 rounded"></span>
-                                    <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider">🎯 Custom TOWS / SWOT 量化交易九宮格推演</h2>
-                                </div>
-                                <span class="text-[9px] font-mono text-emerald-600 font-bold">SWOT Matrix</span>
-                            </div>
-                            
-                            <!-- 嚴格執行去編號、自訂核心佈局 (EA為九宮格靈魂中心點) -->
-                            <div id="swot-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 text-[11px] leading-relaxed">
-                                <!-- 由 JS 動態依據當前選擇的模型渲染 -->
-                            </div>
+                            <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-3">🎯 Custom TOWS / SWOT 量化交易九宮格推演</h2>
+                            <div id="swot-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 text-[11px] leading-relaxed"></div>
                         </div>
                     </section>
                 </div>
@@ -389,15 +286,10 @@
         </main>
     </div>
 
-    <!-- Toast 微提示浮動框 -->
     <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <div class="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-2">
             <span id="toast-msg"></span>
         </div>
     </div>
-
-    <!-- 🌟 全域引導邏輯與核心跳轉控制器 (app-analyzer.js 為大腦) -->
-    <script src="js/app-analyzer.js"></script>
 </body>
 </html>
