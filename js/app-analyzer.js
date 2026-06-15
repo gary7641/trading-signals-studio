@@ -1,6 +1,6 @@
 /**
  * TSS Portal - THA 歷史分析大腦 (app-analyzer.js)
- * 【V12.0 終極完美定稿版：全圖表時間軸嚴格正序（最遠 ➔ 最近） ✕ [All / Separate] 雙態多線拆分 ✕ 11大基本資料精算】
+ * 【V12.5 真正對齊焊接版：解決 HTML ID 對接錯誤、解鎖 CSV 讀取 ✕ Jump Menu 快切 ✕ 時間正序】
  */
 
 const THA_CONFIG = {
@@ -17,6 +17,9 @@ window.activeRadarDisplayMode = "SEPARATE";
 let subChartInstances = { cum: null, wkP: null, wkT: null, hrP: null, hrT: null };
 let globalChartInstances = { eq: null, wk: null, sb: null };
 
+/**
+ * 🚀 核心觸發解析：精準綁定 HTML 元件
+ */
 function triggerParsingProcess() {
     const fileInput = document.getElementById('csvFileInput');
     const eaSelected = document.getElementById('eaSelect').value;
@@ -28,7 +31,10 @@ function triggerParsingProcess() {
     }
 
     const file = fileInput ? fileInput.files[0] : null;
-    if (!file) { return; }
+    if (!file) {
+        alert('請先選擇或拖曳交易歷史 CSV 報告檔案！');
+        return;
+    }
 
     Papa.parse(file, {
         header: true,
@@ -67,18 +73,25 @@ function triggerParsingProcess() {
                 });
             });
 
-            if (trades.length === 0) return;
+            if (trades.length === 0) {
+                alert('交易數據為空，請檢查 CSV 格式！');
+                return;
+            }
 
-            // 🌟 鐵律：將所有交易按 Closing Time 從【最遠歷史 ➔ 最近期】進行絕對正序排序
+            // 🌟 鐵律：強制正序大排序
             window.globalTrades = trades.sort((a, b) => a.dateObj - b.dateObj);
             window.activeSymbolView = "ALL SYMBOLS"; 
             window.activeRadarDisplayMode = "SEPARATE"; 
             executeAnalysisEngine(eaSelected, signalsId);
+        },
+        error: function() {
+            alert('CSV 文件解析失敗！');
         }
     });
 }
 
 function executeAnalysisEngine(eaSelected, signalsId) {
+    // 解鎖面板
     document.getElementById('analyzer-placeholder').classList.add('hidden');
     document.getElementById('analyzer-main-panel').classList.remove('hidden');
 
@@ -155,7 +168,7 @@ function applyDataToUIExpressions() {
     document.getElementById('equityBar').style.width = `${Math.min(100, Math.max(10, (parseFloat(ana.equity)/THA_CONFIG.INITIAL_BALANCE)*50))}%`;
     document.getElementById('profitBar').style.width = `75%`;
 
-    // 11大項目基本資料明細 (純淨去編號)
+    // 完美無數字編號注入
     document.getElementById('minimumArea').innerHTML = `
         <div class="border-b pb-1 mb-1 font-black text-slate-400 text-[10px] uppercase tracking-wider">📋 項目基本資料明細</div>
         <div class="flex justify-between text-[11px] py-0.5"><span>SIGNALS ID:</span><b class="text-purple-600 font-mono">${ana.signalsId}</b></div>
@@ -183,17 +196,19 @@ function rebuildThreeCoreCharts() {
     if (globalChartInstances.wk) globalChartInstances.wk.destroy();
     if (globalChartInstances.sb) globalChartInstances.sb.destroy();
 
-    const canvasContainer = document.querySelector('#accountSection .md\\:col-span-3'); if (!canvasContainer) return;
-    canvasContainer.innerHTML = `
+    const canvasWrapper = document.getElementById('core-charts-wrapper'); 
+    if (!canvasWrapper) return;
+    
+    // 焊接對齊：重新生成 Canvas 插槽
+    canvasWrapper.innerHTML = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 h-[200px] w-full mb-4">
             <div class="border rounded-xl p-2 bg-white flex flex-col"><span class="text-[9px] font-black text-slate-400 uppercase mb-1">Equity Curve</span><div class="flex-1 relative"><canvas id="chart-equity-canvas"></canvas></div></div>
             <div class="border rounded-xl p-2 bg-white flex flex-col"><span class="text-[9px] font-black text-slate-400 uppercase mb-1">Weekday Trades</span><div class="flex-1 relative"><canvas id="chart-weekday-canvas"></canvas></div></div>
             <div class="border rounded-xl p-2 bg-white flex flex-col"><span class="text-[9px] font-black text-slate-400 uppercase mb-1">品種利潤貢獻排行</span><div class="flex-1 relative"><canvas id="chart-symbol-canvas"></canvas></div></div>
         </div>
-        <div id="advanced-quantum-radar-container" class="mt-4 border-t pt-4"></div>
     `;
 
-    // 🌟 圖表 A：歷史數據嚴格由最遠到最近期正序推進
+    // 🌟 鐵律：時間正序推進
     let runningBal = THA_CONFIG.INITIAL_BALANCE; const eqData = []; const eqLabels = [];
     window.globalTrades.forEach(t => { runningBal += t.profit; eqData.push(runningBal); eqLabels.push(t.closeTime.split(' ')[0]); });
     globalChartInstances.eq = new Chart(document.getElementById('chart-equity-canvas').getContext('2d'), {
@@ -236,7 +251,7 @@ function injectAdvancedSymbolQuantumRadarDOM() {
         miniChartsHTML += `
             <div class="border rounded-xl p-2 bg-slate-50/60 flex flex-col justify-between h-[55px] ${window.activeSymbolView === sym ? 'border-purple-500 bg-white ring-1 ring-purple-400' : 'border-slate-100'}">
                 <span class="text-[10px] font-black text-slate-600 block leading-none">${sym}</span>
-                <span class="text-[11px] font-mono font-black ${trades.reduce((s,t)=>s+t.profit,0) >= 0 ? 'text-emerald-500' : 'text-rose-500'} text-right block leading-none">${trades.reduce((s,t)=>s+t.profit,0).toFixed(0)}</span>
+                <span class="text-[11px] font-mono font-black ${trades.reduce((s,t)=>s + t.profit,0) >= 0 ? 'text-emerald-500' : 'text-rose-500'} text-right block leading-none">${trades.reduce((s,t)=>s+t.profit,0).toFixed(0)}</span>
             </div>
         `;
     });
@@ -294,7 +309,7 @@ function compileFiveAdvancedRadarCharts(trades) {
 
     const cumCtx = document.getElementById('sub-chart-cumulative').getContext('2d');
 
-    // 🌟 鐵律：子趨勢圖時間軸亦嚴格由最遠到最近期正序渲染
+    // 🌟 子趨勢圖時間軸正序
     if (window.activeRadarDisplayMode === "SEPARATE") {
         const symGroup = {}; trades.forEach(t => { symGroup[t.symbol] = symGroup[t.symbol] || []; symGroup[t.symbol].push(t); });
         const colorPalette = ['#2563eb', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'];
@@ -351,7 +366,8 @@ function renderMartingaleTable() {
             const distinctLots = [...new Set(sortedByOpenTime.map(t => t.lots))].sort((a, b) => a - b);
             
             const layersMap = {}; sortedByOpenTime.forEach(trade => { layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`] = layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`] || []; layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`].push(trade); });
-            body.innerHTML += `<tr class="bg-slate-100/80 font-sans text-[10px] font-black text-slate-500"><td colspan="6" class="p-2 border theme-border text-left">📦 馬丁集體平倉波段 #${clusterCounter++} ── 📥 結算平倉時間：<span class="font-mono text-purple-600">${closingTimeStr}</span> (${directionText} 軌道)</td></tr>`;
+            body.innerHTML += `<tr class="bg-slate-100/80 font-sans text-[10px] font-black text-slate-500"><td colspan="6" class="p-2 border theme-border text-left">📦 馬丁集體平倉波段 #${clusterCounter} ── 📥 結算平倉時間：<span class="font-mono text-purple-600">${closingTimeStr}</span> (${directionText} 軌道)</td></tr>`;
+            clusterCounter++;
 
             Object.keys(layersMap).sort().forEach(layerKey => {
                 const layerTrades = layersMap[layerKey]; const totalCount = layerTrades.length;
@@ -374,7 +390,7 @@ function renderSWOT九宮格(eaName) {
         <div class="p-4 border rounded-xl bg-blue-500/5"><b class="text-blue-600 block mb-1">ST戰略 (TOWS)</b><p>精準對沖多維交叉匯率風險。</p></div>
         <div class="p-4 border rounded-xl bg-emerald-500/5"><b class="text-emerald-600 block mb-1">STRENGTHS (優勢)</b><p>100%真實歷史持倉穿透，無假數據雜質。</p></div>
         <div class="p-4 border rounded-xl bg-amber-500/5"><b class="text-amber-600 block mb-1">SW戰略</b><p>實時監配各品種與階梯加倉邊界。</p></div>
-        <div class="p-4 border rounded-xl bg-rose-500/5"><b class="text-rose-600 block mb-1">THREATS (威脅)</b><p>極端單邊行情可能產生回撤重疊壓力。</p></div>
+        <div class="p-4 border rounded-xl bg-rose-500/5"><b class="text-rose-600 block mb-1">THREATS (威脅)</b><p>極端單單邊行情可能產生回撤重疊壓力。</p></div>
         <div class="p-4 border-2 border-purple-500 bg-purple-500/10 text-center font-black flex flex-col justify-center items-center text-xs rounded-xl shadow-inner">🎯 當前模型:<br><span class="text-purple-600 text-sm mt-1 font-mono uppercase">${eaName}</span></div>
         <div class="p-4 border rounded-xl bg-orange-500/5"><b class="text-orange-600 block mb-1">WEAKNESSES (劣勢)</b><p>網格持倉在深層加倉時保證金佔用率較高。</p></div>
         <div class="p-4 border rounded-xl bg-indigo-500/5"><b class="text-indigo-600 block mb-1">TO戰略</b><p>依據週間活動數據優化挂單時間。</p></div>
@@ -402,8 +418,9 @@ function renderLibraryTableDOM() {
 function jumpToTHABlock(sectionId, activeBtnId) {
     const menuBtnIds = ['btn-tha-tab-summary', 'btn-tha-tab-charts', 'btn-tha-tab-martingale', 'btn-tha-tab-swot'];
     menuBtnIds.forEach(id => { const btn = document.getElementById(id); if (btn) btn.className = "px-3 py-1.5 text-slate-500 font-black rounded-lg text-xs hover:bg-slate-100 transition-all"; });
-    const currentBtn = document.getElementById(activeBtnId); if (currentBtn) currentBtn.className = "px-3 py-1.5 text-xs font-black rounded-lg transition-all theme-btn-active shadow-sm";
-    const targetTarget = document.getElementById(sectionId); if (targetTarget) { targetTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    
+    const targetTarget = document.getElementById(sectionId); 
+    if (targetTarget) { targetTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 
 function resetAllCsvData() {
