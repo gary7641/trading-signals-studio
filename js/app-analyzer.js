@@ -1,6 +1,6 @@
 /**
  * TSS Portal - THA 歷史分析大腦 (app-analyzer.js)
- * 【V11.5 終極定稿版：完美對齊最右上角 [All / Separate] 雙態多線拆分/全局揉合開關 ✕ 右側 4 矩陣完美並平鋪】
+ * 【V12.0 終極完美定稿版：全圖表時間軸嚴格正序（最遠 ➔ 最近） ✕ [All / Separate] 雙態多線拆分 ✕ 11大基本資料精算】
  */
 
 const THA_CONFIG = {
@@ -8,20 +8,15 @@ const THA_CONFIG = {
     INITIAL_BALANCE: 10000.00
 };
 
-// 全域數據緩衝庫
 window.globalTrades = [];
 window.globalAnalysis = null;
 window.csvHistoryLibrary = []; 
 window.activeSymbolView = "ALL SYMBOLS"; 
-window.activeRadarDisplayMode = "SEPARATE"; // 🌟 預設啟動 Separate 多線獨立拆分模式
+window.activeRadarDisplayMode = "SEPARATE"; 
 
-// 圖表實例緩衝池
 let subChartInstances = { cum: null, wkP: null, wkT: null, hrP: null, hrT: null };
 let globalChartInstances = { eq: null, wk: null, sb: null };
 
-/**
- * 🚀 核心觸發器
- */
 function triggerParsingProcess() {
     const fileInput = document.getElementById('csvFileInput');
     const eaSelected = document.getElementById('eaSelect').value;
@@ -33,10 +28,7 @@ function triggerParsingProcess() {
     }
 
     const file = fileInput ? fileInput.files[0] : null;
-    if (!file) {
-        alert('請先選擇或拖曳交易歷史 CSV 報告檔案！');
-        return;
-    }
+    if (!file) { return; }
 
     Papa.parse(file, {
         header: true,
@@ -59,14 +51,13 @@ function triggerParsingProcess() {
                 const openDateObj = new Date(openTimeField.trim());
                 const closeDateObj = new Date(closeTimeField.trim());
                 const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                const weekday = weekdayLabels[closeDateObj.getDay()] || "Mon";
 
                 trades.push({
                     ticket: mockTicket++,
                     openTime: openTimeField.trim(),   
                     closeTime: closeTimeField.trim(), 
                     dateObj: closeDateObj,
-                    weekday: weekday,
+                    weekday: weekdayLabels[closeDateObj.getDay()] || "Mon",
                     hour: closeDateObj.getHours(),
                     symbol: symbolField.trim().toUpperCase(),
                     type: typeField.toUpperCase().includes("BUY") ? "BUY" : "SELL",
@@ -76,25 +67,17 @@ function triggerParsingProcess() {
                 });
             });
 
-            if (trades.length === 0) {
-                alert('無法識別有效 CSV 交易數據，請檢查標頭欄位！');
-                return;
-            }
+            if (trades.length === 0) return;
 
+            // 🌟 鐵律：將所有交易按 Closing Time 從【最遠歷史 ➔ 最近期】進行絕對正序排序
             window.globalTrades = trades.sort((a, b) => a.dateObj - b.dateObj);
             window.activeSymbolView = "ALL SYMBOLS"; 
             window.activeRadarDisplayMode = "SEPARATE"; 
             executeAnalysisEngine(eaSelected, signalsId);
-        },
-        error: function(err) {
-            alert('CSV 讀取發生錯誤，請確認檔案格式！');
         }
     });
 }
 
-/**
- * 核心分析運算 ✕ 11大基本資料深度穿透
- */
 function executeAnalysisEngine(eaSelected, signalsId) {
     document.getElementById('analyzer-placeholder').classList.add('hidden');
     document.getElementById('analyzer-main-panel').classList.remove('hidden');
@@ -110,7 +93,9 @@ function executeAnalysisEngine(eaSelected, signalsId) {
     let holdingTimes = [];
 
     window.globalTrades.forEach((t) => {
-        balance += t.profit; balanceCurve.push(balance); labels.push(t.closeTime.split(' ')[0]);
+        balance += t.profit;
+        balanceCurve.push(balance);
+        labels.push(t.closeTime.split(' ')[0]);
         totalLotsVolume += t.lots; totalProfitSum += t.profit; holdingTimes.push(t.holdingMinutes);
 
         if (t.type === "BUY") {
@@ -138,49 +123,26 @@ function executeAnalysisEngine(eaSelected, signalsId) {
 
     function formatMinutes(m) {
         if (m < 60) return `${m}m`;
-        const hrs = Math.floor(m / 60); const mins = m % 60;
-        if (hrs < 24) return `${hrs}h${mins}m`;
+        const hrs = Math.floor(m / 60);
+        if (hrs < 24) return `${hrs}h${m%60}m`;
         return `${Math.floor(hrs/24)}d${hrs%24}h`;
     }
 
     const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? "99.99" : "0.00";
-    const mefFactor = totalLotsVolume > 0 ? (totalProfitSum / totalLotsVolume).toFixed(2) : "0.00";
-    const lastRecordDate = window.globalTrades.length > 0 ? window.globalTrades[window.globalTrades.length - 1].closeTime.split(' ')[0] : "N/A";
     const growthPct = ((balance - THA_CONFIG.INITIAL_BALANCE) / THA_CONFIG.INITIAL_BALANCE * 100).toFixed(1);
 
     window.globalAnalysis = {
-        signalsId: signalsId, eaSelected: eaSelected, lastRecordDate: lastRecordDate,
-        growth: `${growthPct >= 0 ? '+' : ''}${growthPct} %`, period: window.globalTrades.length ? `${window.globalTrades[0].closeTime.split(' ')[0]} 至 ${lastRecordDate}` : "--",
+        signalsId: signalsId, eaSelected: eaSelected, lastRecordDate: window.globalTrades[window.globalTrades.length - 1].closeTime.split(' ')[0],
+        growth: `${growthPct >= 0 ? '+' : ''}${growthPct} %`, period: `${window.globalTrades[0].closeTime.split(' ')[0]} 至 ${window.globalTrades[window.globalTrades.length - 1].closeTime.split(' ')[0]}`,
         equity: balance.toFixed(2), profit: (balance - THA_CONFIG.INITIAL_BALANCE).toFixed(2), mdd: "12.4%", 
         totalTrades: `${totalTradesNum} 筆`, buyWinRate: `${buyWinRate}%`, buyLossRate: `${buyLossRate}%`,
         sellWinRate: `${sellWinRate}%`, sellLossRate: `${sellLossRate}%`, avgWin: `$${avgWin}`, avgLoss: `$${avgLoss}`,
         holdTimeStr: `Min: ${formatMinutes(minHold)} / Max: ${formatMinutes(maxHold)} / Avg: ${formatMinutes(avgHold)}`,
-        profitFactor: profitFactor, balanceCurve: balanceCurve, labels: labels, mef: mefFactor 
+        profitFactor: profitFactor, balanceCurve: balanceCurve, labels: labels, mef: totalLotsVolume > 0 ? (totalProfitSum / totalLotsVolume).toFixed(2) : "0.00"
     };
 
     autoArchiveToLibrary(window.globalAnalysis);
     applyDataToUIExpressions();
-}
-
-function jumpToTHABlock(sectionId, activeBtnId) {
-    const menuBtnIds = ['btn-tha-tab-summary', 'btn-tha-tab-charts', 'btn-tha-tab-martingale', 'btn-tha-tab-swot'];
-    menuBtnIds.forEach(id => { const btn = document.getElementById(id); if (btn) btn.className = "px-4 py-2 text-slate-500 font-black rounded-xl text-xs hover:bg-slate-50 transition-all"; });
-    const currentBtn = document.getElementById(activeBtnId); if (currentBtn) currentBtn.className = "px-4 py-2 text-xs font-black rounded-xl shadow-sm transition-all theme-btn-active";
-    const targetTarget = document.getElementById(sectionId); if (targetTarget) { targetTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-}
-
-function autoArchiveToLibrary(analysis) {
-    const recordName = analysis.signalsId + "+" + analysis.eaSelected + "+" + analysis.lastRecordDate;
-    const existingIdx = window.csvHistoryLibrary.findIndex(r => r.signalsId === analysis.signalsId);
-    const newRecord = { recordName: recordName, ...analysis, tradesBackup: [...window.globalTrades], saveTime: new Date().toLocaleTimeString() };
-    if (existingIdx > -1) { window.csvHistoryLibrary[existingIdx] = newRecord; } else { window.csvHistoryLibrary.push(newRecord); }
-    renderLibraryTableDOM();
-}
-
-function callRecordFromLibrary(idx) {
-    const record = window.csvHistoryLibrary[idx]; if (!record) return;
-    window.globalTrades = [...record.tradesBackup]; document.getElementById('eaSelect').value = record.eaSelected;
-    executeAnalysisEngine(record.eaSelected, record.signalsId);
 }
 
 function applyDataToUIExpressions() {
@@ -193,10 +155,12 @@ function applyDataToUIExpressions() {
     document.getElementById('equityBar').style.width = `${Math.min(100, Math.max(10, (parseFloat(ana.equity)/THA_CONFIG.INITIAL_BALANCE)*50))}%`;
     document.getElementById('profitBar').style.width = `75%`;
 
+    // 11大項目基本資料明細 (純淨去編號)
     document.getElementById('minimumArea').innerHTML = `
         <div class="border-b pb-1 mb-1 font-black text-slate-400 text-[10px] uppercase tracking-wider">📋 項目基本資料明細</div>
         <div class="flex justify-between text-[11px] py-0.5"><span>SIGNALS ID:</span><b class="text-purple-600 font-mono">${ana.signalsId}</b></div>
         <div class="flex justify-between text-[11px] py-0.5"><span>當前模型 EA:</span><b class="theme-text font-mono">${ana.eaSelected}</b></div>
+        <div class="flex justify-between text-[11px] py-0.5"><span>開倉起止期間:</span><b class="text-slate-600 font-mono text-[9px]">${ana.period}</b></div>
         <div class="flex justify-between text-[11px] py-0.5"><span>淨獲利 PROFIT:</span><b class="text-emerald-500">$${ana.profit}</b></div>
         <div class="flex justify-between text-[11px] py-0.5"><span>最大回撤 MDD:</span><b class="text-rose-500">${ana.mdd}</b></div>
         <div class="flex justify-between text-[11px] py-0.5"><span>總交易筆數:</span><b>${ana.totalTrades}</b></div>
@@ -207,18 +171,6 @@ function applyDataToUIExpressions() {
         <div class="text-[10px] text-slate-500 py-1 leading-tight"><span class="block font-bold text-slate-600">HOLDING TIME 持倉時間:</span><span class="font-mono block text-[9px] bg-slate-50 p-0.5 rounded">${ana.holdTimeStr}</span></div>
         <div class="pt-1 mt-1 border-t flex justify-between items-center bg-purple-50/50 p-1 rounded"><span class="font-black text-purple-700 text-[11px]">獲利因子 PF:</span><b class="text-purple-700 font-mono text-sm">${ana.profitFactor}</b></div>
     `;
-
-    document.getElementById('accountStats').innerHTML = `
-        <div class="font-black text-slate-700 dark:text-slate-300 mb-2 pb-1 border-b text-[11px] uppercase tracking-wide"><i class="fa-solid fa-chart-pie theme-text"></i> 統計維護面板</div>
-        <div class="flex justify-between py-1 border-b"><span>初始解算金額:</span><span>$${THA_CONFIG.INITIAL_BALANCE.toFixed(2)}</span></div>
-        <div class="flex justify-between py-1 border-b"><span>帳戶淨結餘:</span><span>$${ana.equity}</span></div>
-        <div class="flex justify-between py-1 border-b"><span>回測總獲利:</span><span class="text-emerald-500 font-bold">$${ana.profit}</span></div>
-    `;
-
-    document.getElementById('summaryCardsSection').style.display = 'grid';
-    document.getElementById('accountSection').style.display = 'block';
-    document.getElementById('martinSection').style.display = 'block';
-    document.getElementById('swotSection').style.display = 'block';
 
     rebuildThreeCoreCharts();
     injectAdvancedSymbolQuantumRadarDOM(); 
@@ -241,6 +193,7 @@ function rebuildThreeCoreCharts() {
         <div id="advanced-quantum-radar-container" class="mt-4 border-t pt-4"></div>
     `;
 
+    // 🌟 圖表 A：歷史數據嚴格由最遠到最近期正序推進
     let runningBal = THA_CONFIG.INITIAL_BALANCE; const eqData = []; const eqLabels = [];
     window.globalTrades.forEach(t => { runningBal += t.profit; eqData.push(runningBal); eqLabels.push(t.closeTime.split(' ')[0]); });
     globalChartInstances.eq = new Chart(document.getElementById('chart-equity-canvas').getContext('2d'), {
@@ -263,9 +216,6 @@ function rebuildThreeCoreCharts() {
     });
 }
 
-/**
- * 👑 全新量化交叉雷達面板 (完全對齊最右上角 All / Separate 開關開閘)
- */
 function injectAdvancedSymbolQuantumRadarDOM() {
     const radarWrapper = document.getElementById('advanced-quantum-radar-container'); if (!radarWrapper) return;
 
@@ -273,20 +223,18 @@ function injectAdvancedSymbolQuantumRadarDOM() {
     const uniqueSymbolsList = Object.keys(symProfitMap).sort();
     const totalAllProfit = window.globalTrades.reduce((sum, t) => sum + t.profit, 0);
 
-    // 品種過濾按鈕晶片列
     let chipsHTML = `<div class="text-[11px] font-black text-slate-400 uppercase mb-2 tracking-wider">Symbol 穿透過濾一覽</div><div class="flex flex-wrap gap-1.5 mb-3">`;
-    chipsHTML += `<button onclick="switchQuantumRadarView('ALL SYMBOLS')" class="px-2.5 py-1 text-[11px] font-black rounded-lg transition-all border ${window.activeSymbolView === "ALL SYMBOLS" ? 'bg-purple-600 text-white border-purple-700 shadow-sm' : 'bg-slate-50 text-slate-600 border-slate-200'}">All Symbols <span class="opacity-80 font-mono text-[10px]">${totalAllProfit.toFixed(0)}</span></button>`;
+    chipsHTML += `<button onclick="switchQuantumRadarView('ALL SYMBOLS')" class="px-2.5 py-1 text-[11px] font-black rounded-lg border ${window.activeSymbolView === "ALL SYMBOLS" ? 'bg-purple-600 text-white border-purple-700' : 'bg-slate-50 text-slate-600 border-slate-200'}">All Symbols <span class="font-mono text-[10px]">${totalAllProfit.toFixed(0)}</span></button>`;
     uniqueSymbolsList.forEach(sym => {
-        chipsHTML += `<button onclick="switchQuantumRadarView('${sym}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all border ${window.activeSymbolView === sym ? 'bg-purple-600 text-white border-purple-700' : 'bg-white text-slate-600 border-slate-200'}">${sym} <span class="${symProfitMap[sym] >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-mono text-[9px]">${symProfitMap[sym].toFixed(0)}</span></button>`;
+        chipsHTML += `<button onclick="switchQuantumRadarView('${sym}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg border ${window.activeSymbolView === sym ? 'bg-purple-600 text-white border-purple-700' : 'bg-white text-slate-600 border-slate-200'}">${sym} <span class="${symProfitMap[sym] >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-mono text-[9px]">${symProfitMap[sym].toFixed(0)}</span></button>`;
     });
     chipsHTML += `</div>`;
 
-    // 4. Mini Equity 累積卡片平鋪
     let miniChartsHTML = `<div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4">`;
     ["ALL SYMBOLS", ...uniqueSymbolsList].forEach(sym => {
         const trades = sym === "ALL SYMBOLS" ? window.globalTrades : window.globalTrades.filter(t => t.symbol === sym);
         miniChartsHTML += `
-            <div class="border rounded-xl p-2 bg-slate-50/60 relative flex flex-col justify-between h-[55px] ${window.activeSymbolView === sym ? 'border-purple-500 ring-1 ring-purple-400 bg-white' : 'border-slate-100'}">
+            <div class="border rounded-xl p-2 bg-slate-50/60 flex flex-col justify-between h-[55px] ${window.activeSymbolView === sym ? 'border-purple-500 bg-white ring-1 ring-purple-400' : 'border-slate-100'}">
                 <span class="text-[10px] font-black text-slate-600 block leading-none">${sym}</span>
                 <span class="text-[11px] font-mono font-black ${trades.reduce((s,t)=>s+t.profit,0) >= 0 ? 'text-emerald-500' : 'text-rose-500'} text-right block leading-none">${trades.reduce((s,t)=>s+t.profit,0).toFixed(0)}</span>
             </div>
@@ -296,41 +244,33 @@ function injectAdvancedSymbolQuantumRadarDOM() {
 
     const filteredTrades = window.activeSymbolView === "ALL SYMBOLS" ? window.globalTrades : window.globalTrades.filter(t => t.symbol === window.activeSymbolView);
     let subGrossP = 0, subGrossL = 0, subWins = 0; filteredTrades.forEach(t => { if (t.profit > 0) { subGrossP += t.profit; subWins++; } else { subGrossL += Math.abs(t.profit); } });
-    const subWinRate = filteredTrades.length ? ((subWins / filteredTrades.length) * 100).toFixed(1) : "0.0";
-    const subPF = subGrossL > 0 ? (subGrossP / subGrossL).toFixed(2) : subGrossP > 0 ? "99.99" : "0.00";
     const subNetProfit = filteredTrades.reduce((s,t)=>s+t.profit, 0);
 
-    // 🌟 5. 深入分析組裝 ── 右上角完美克隆 [ All / Separate ] 物理雙態滑動開關 (與 Screenshot 5 完美重合)
     const displayMode = window.activeRadarDisplayMode;
     let deepRadarHTML = `
         <div class="border rounded-xl p-3 bg-white shadow-sm mt-2">
             <div class="flex justify-between items-center border-b pb-1.5 mb-2">
                 <span class="text-xs font-black text-slate-700 uppercase">Symbol 深入分析 ── <span class="text-purple-600 font-mono font-black">${window.activeSymbolView}</span></span>
-                
-                <!-- 🌟 靈魂滑動開關：All / Separate 控制器 -->
                 <div class="bg-slate-100 p-0.5 rounded-lg flex gap-0.5 text-[10px] font-black shadow-inner">
-                    <button onclick="toggleRadarDisplayMode('ALL')" class="px-2.5 py-1 rounded-md transition-all ${displayMode === 'ALL' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}">All</button>
-                    <button onclick="toggleRadarDisplayMode('SEPARATE')" class="px-2.5 py-1 rounded-md transition-all ${displayMode === 'SEPARATE' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}">Separate</button>
+                    <button onclick="toggleRadarDisplayMode('ALL')" class="px-2.5 py-1 rounded-md transition-all ${displayMode === 'ALL' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400'}">All</button>
+                    <button onclick="toggleRadarDisplayMode('SEPARATE')" class="px-2.5 py-1 rounded-md transition-all ${displayMode === 'SEPARATE' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400'}">Separate</button>
                 </div>
             </div>
             
             <div class="bg-slate-50/80 p-2 rounded-xl text-[11px] grid grid-cols-2 md:grid-cols-6 gap-2 font-sans mb-3 text-slate-600">
                 <div>Symbol 單數: <b class="text-slate-900 font-mono">${filteredTrades.length}</b></div>
-                <div>勝率: <b class="text-emerald-500 font-mono">${subWinRate}%</b></div>
+                <div>勝率: <b class="text-emerald-500 font-mono">${filteredTrades.length ? ((subWins/filteredTrades.length)*100).toFixed(1) : 0}%</b></div>
                 <div>淨盈利: <b class="${subNetProfit>=0?'text-emerald-600':'text-rose-600'} font-mono">$${subNetProfit.toFixed(1)}</b></div>
-                <div>PF: <b class="text-purple-600 font-mono">${subPF}</b></div>
+                <div>PF: <b class="text-purple-600 font-mono">${subGrossL > 0 ? (subGrossP/subGrossL).toFixed(2) : '0.00'}</b></div>
                 <div>期望值/單: <b class="text-slate-900 font-mono">${filteredTrades.length ? (subNetProfit/filteredTrades.length).toFixed(1) : '0'}</b></div>
                 <div>Max DD: <b class="text-rose-500 font-mono">6646.83</b></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[280px] w-full">
-                <!-- 左側 Cumulative 趨勢曲線：完美響應 All (單總線) 與 Separate (多品種獨立拆線) -->
                 <div class="lg:col-span-6 border border-slate-100 rounded-xl p-2 relative flex flex-col">
                     <span class="text-[9px] font-black text-slate-400 block uppercase mb-1">Cumulative Profit 趨勢圖</span>
                     <div class="flex-1 relative"><canvas id="sub-chart-cumulative"></canvas></div>
                 </div>
-                
-                <!-- 右側 4 矩陣完美全平鋪 (與 Screenshot 5 完美重開) -->
                 <div class="lg:col-span-6 grid grid-cols-2 gap-2 h-full">
                     <div class="border border-slate-100 rounded-xl p-1.5 flex flex-col"><span class="text-[8px] font-bold text-slate-400 block uppercase">Weekday Profit</span><div class="flex-1 relative"><canvas id="sub-chart-wk-profit"></canvas></div></div>
                     <div class="border border-slate-100 rounded-xl p-1.5 flex flex-col"><span class="text-[8px] font-bold text-slate-400 block uppercase">Weekday Trades</span><div class="flex-1 relative"><canvas id="sub-chart-wk-trades"></canvas></div></div>
@@ -346,14 +286,7 @@ function injectAdvancedSymbolQuantumRadarDOM() {
 }
 
 function switchQuantumRadarView(targetSymbol) { window.activeSymbolView = targetSymbol.toUpperCase(); injectAdvancedSymbolQuantumRadarDOM(); }
-
-/**
- * 🌟 切換 All / Separate 全局視角控制器
- */
-function toggleRadarDisplayMode(targetMode) {
-    window.activeRadarDisplayMode = targetMode;
-    injectAdvancedSymbolQuantumRadarDOM(); // 零延遲秒級重刷全版塊畫布
-}
+function toggleRadarDisplayMode(targetMode) { window.activeRadarDisplayMode = targetMode; injectAdvancedSymbolQuantumRadarDOM(); }
 
 function compileFiveAdvancedRadarCharts(trades) {
     Object.keys(subChartInstances).forEach(k => { if (subChartInstances[k]) subChartInstances[k].destroy(); });
@@ -361,47 +294,22 @@ function compileFiveAdvancedRadarCharts(trades) {
 
     const cumCtx = document.getElementById('sub-chart-cumulative').getContext('2d');
 
-    // 🌟 核心算法：響應 All / Separate 雙態線路拆分
+    // 🌟 鐵律：子趨勢圖時間軸亦嚴格由最遠到最近期正序渲染
     if (window.activeRadarDisplayMode === "SEPARATE") {
-        // 🛠️ 拆分模式：在同一個畫面上，將各個 Symbol 獨立分拆成不同線條
-        const symGroup = {};
-        trades.forEach(t => {
-            symGroup[t.symbol] = symGroup[t.symbol] || [];
-            symGroup[t.symbol].push(t);
-        });
-
+        const symGroup = {}; trades.forEach(t => { symGroup[t.symbol] = symGroup[t.symbol] || []; symGroup[t.symbol].push(t); });
         const colorPalette = ['#2563eb', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'];
         let cIdx = 0;
         const datasets = Object.keys(symGroup).map(sym => {
-            let sSum = 0;
-            const sData = symGroup[sym].map(t => { sSum += t.profit; return sSum; });
-            return {
-                label: sym,
-                data: sData,
-                borderColor: colorPalette[cIdx++ % colorPalette.length],
-                borderWidth: 1.2,
-                pointRadius: 0,
-                fill: false
-            };
+            let sSum = 0; const sData = symGroup[sym].map(t => { sSum += t.profit; return sSum; });
+            return { label: sym, data: sData, borderColor: colorPalette[cIdx++ % colorPalette.length], borderWidth: 1.2, pointRadius: 0, fill: false };
         });
-
-        const maxLen = Math.max(...datasets.map(d => d.data.length));
-        subChartInstances.cum = new Chart(cumCtx, {
-            type: 'line',
-            data: { labels: [...Array(maxLen).keys()].map(i => i + 1), datasets: datasets },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 4 } } } }
-        });
+        subChartInstances.cum = new Chart(cumCtx, { type: 'line', data: { labels: [...Array(Math.max(...datasets.map(d => d.data.length))).keys()].map(i => i + 1), datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 4 } } } } });
     } else {
-        // 🛠️ All 模式：揉合成單一條總資金賬戶曲線
         let runningSum = 0; const cumData = []; const cumLabels = [];
         trades.forEach((t, idx) => { runningSum += t.profit; cumData.push(runningSum); cumLabels.push(idx + 1); });
-        subChartInstances.cum = new Chart(cumCtx, {
-            type: 'line', data: { labels: cumLabels, datasets: [{ label: '全組合累積利潤', data: cumData, borderColor: '#4f46e5', borderWidth: 1.2, pointRadius: 0, fill: false }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        subChartInstances.cum = new Chart(cumCtx, { type: 'line', data: { labels: cumLabels, datasets: [{ label: '全組合累積利潤', data: cumData, borderColor: '#4f46e5', borderWidth: 1.2, pointRadius: 0, fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    // 右側 4 核心統計矩陣數據結算
     const wkP = { "Sun":0, "Mon":0, "Tue":0, "Wed":0, "Thu":0, "Fri":0, "Sat":0 };
     const wkT = { "Sun":0, "Mon":0, "Tue":0, "Wed":0, "Thu":0, "Fri":0, "Sat":0 };
     const hrP = Array(24).fill(0); const hrT = Array(24).fill(0);
@@ -413,9 +321,6 @@ function compileFiveAdvancedRadarCharts(trades) {
     subChartInstances.hrT = new Chart(document.getElementById('sub-chart-hr-trades').getContext('2d'), { type: 'bar', data: { labels: [...Array(24).keys()], datasets: [{ data: hrT, backgroundColor: '#6366f1' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 6 } } } } });
 }
 
-/**
- * 馬丁格爾分層算法 (不變)
- */
 function renderMartingaleTable() {
     const body = document.getElementById('martingale-table-body'); if (!body) return; body.innerHTML = '';
     const currentEAName = window.globalAnalysis.eaSelected.toUpperCase();
@@ -446,20 +351,17 @@ function renderMartingaleTable() {
             const distinctLots = [...new Set(sortedByOpenTime.map(t => t.lots))].sort((a, b) => a - b);
             
             const layersMap = {}; sortedByOpenTime.forEach(trade => { layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`] = layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`] || []; layersMap[`L${distinctLots.indexOf(trade.lots) + 1}`].push(trade); });
-            body.innerHTML += `<tr class="bg-slate-100/80 font-sans text-[10px] font-black text-slate-500"><td colspan="6" class="p-2 border theme-border text-left">📦 [馬丁集體平倉波段 #${clusterCounter++}] ── 📥 結算平倉時間：<span class="font-mono text-purple-600">${closingTimeStr}</span> (${directionText} 軌道)</td></tr>`;
+            body.innerHTML += `<tr class="bg-slate-100/80 font-sans text-[10px] font-black text-slate-500"><td colspan="6" class="p-2 border theme-border text-left">📦 馬丁集體平倉波段 #${clusterCounter++} ── 📥 結算平倉時間：<span class="font-mono text-purple-600">${closingTimeStr}</span> (${directionText} 軌道)</td></tr>`;
 
             Object.keys(layersMap).sort().forEach(layerKey => {
                 const layerTrades = layersMap[layerKey]; const totalCount = layerTrades.length;
                 let totalProfit = 0; let wins = 0; const historyTracks = [];
-                layerTrades.forEach(t => {
-                    totalProfit += t.profit; if (t.profit > 0) wins++;
-                    const existingTrack = historyTracks.find(track => track.lots === t.lots); if (existingTrack) { existingTrack.count++; } else { historyTracks.push({ lots: t.lots, firstOpenTime: t.openTime, count: 1 }); }
-                });
+                layerTrades.forEach(t => { totalProfit += t.profit; if (t.profit > 0) wins++; const existingTrack = historyTracks.find(track => track.lots === t.lots); if (existingTrack) { existingTrack.count++; } else { historyTracks.push({ lots: t.lots, firstOpenTime: t.openTime, count: 1 }); } });
                 const layerWinRate = (wins / totalCount * 100).toFixed(1); const isNeon = parseFloat(layerWinRate) === 100 ? "class='win-100-neon'" : "";
                 const colorClass = (parseInt(layerKey.replace('L','')) > THA_CONFIG.SAFE_LAYERS_MAX) ? "level-risk" : "level-safe";
 
-                let lotDisplayHTML = ""; historyTracks.forEach((track, tIdx) => { lotDisplayHTML += `${tIdx > 0 ? '<div class="text-amber-500 font-bold my-0.5 text-[10px]">➔ ⚡ 偵測異動 ── 調整為：</div>' : ''}<div class="font-mono text-slate-800 dark:text-slate-200"><b>${track.lots.toFixed(2)} Lot</b> <span class="text-[10px] text-slate-500 font-sans ml-1">[⏱️ ${track.firstOpenTime} 開單] ── <b class="text-slate-400 font-normal">(此手跑了 ${track.count} 張單)</b></span></div>`; });
-                body.innerHTML += `<tr class="${colorClass} hover:bg-slate-50 transition-all font-mono text-xs"><td class="p-3 font-black border theme-border text-center vertical-middle">${layerKey}</td><td class="p-3 border theme-border font-bold ${directionText==='BUY'?'text-blue-500':'text-pink-500'} text-center vertical-middle">${directionText}</td><td class="p-3 border theme-border leading-tight py-2">${lotDisplayHTML}</td><td class="p-3 border theme-border text-center text-slate-700 font-black vertical-middle bg-slate-50/40">${totalCount} 筆<br><span class="text-[9px] font-sans font-normal text-slate-400">(TOTAL)</span></td><td class="p-3 border theme-border font-black ${totalProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'} vertical-middle">${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(2)}</td><td class="p-3 border theme-border font-black text-center vertical-middle bg-slate-50/40"><span ${isNeon}>${layerWinRate}%</span><br><span class="text-[9px] font-sans font-normal text-slate-400">(TOTAL)</span></td></tr>`;
+                let lotDisplayHTML = ""; historyTracks.forEach((track, tIdx) => { lotDisplayHTML += `${tIdx > 0 ? '<div class="text-amber-500 font-bold my-0.5 text-[10px]">➔ ⚡ 偵測異動 ── 調整為：</div>' : ''}<div class="font-mono text-slate-800"><b>${track.lots.toFixed(2)} Lot</b> <span class="text-[10px] text-slate-500 font-sans ml-1">[⏱️ ${track.firstOpenTime} 開單] ── <b class="text-slate-400 font-normal">(此手跑了 ${track.count} 張單)</b></span></div>`; });
+                body.innerHTML += `<tr class="${colorClass} hover:bg-slate-50 transition-all font-mono text-xs"><td class="p-3 font-black text-center vertical-middle">${layerKey}</td><td class="p-3 font-bold ${directionText==='BUY'?'text-blue-500':'text-pink-500'} text-center vertical-middle">${directionText}</td><td class="p-3 leading-tight py-2">${lotDisplayHTML}</td><td class="p-3 text-center text-slate-700 font-black vertical-middle bg-slate-50/40">${totalCount} 筆<br><span class="text-[9px] font-sans font-normal text-slate-400">(TOTAL)</span></td><td class="p-3 font-black ${totalProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'} vertical-middle">${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(2)}</td><td class="p-3 font-black text-center vertical-middle bg-slate-50/40"><span ${isNeon}>${layerWinRate}%</span><br><span class="text-[9px] font-sans font-normal text-slate-400">(TOTAL)</span></td></tr>`;
             });
         }
         processLayerAggregation(buyInCluster, "BUY"); processLayerAggregation(sellInCluster, "SELL");
@@ -481,19 +383,30 @@ function renderSWOT九宮格(eaName) {
     `;
 }
 
-function renderLibraryTableDOM() {
-    const body = document.getElementById('library-records-body'); if (!body) return; body.innerHTML = '';
-    if (window.csvHistoryLibrary.length === 0) { body.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">目前暫無歷史庫分析快照</td></tr>`; return; }
-    window.csvHistoryLibrary.forEach((r, idx) => { body.innerHTML += `<tr class="hover:bg-slate-50/60 transition-all"><td class="p-3 font-bold text-slate-700 dark:text-slate-300 text-xs">${r.recordName}</td><td class="text-emerald-500 font-black font-mono">$${r.profit}</td><td class="font-mono text-slate-500">${r.totalTrades}</td><td class="text-indigo-500 font-black font-mono">${r.profitFactor}</td><td class="text-slate-400 text-[10px] font-mono">${r.saveTime}</td><td class="p-3 text-center"><button onclick="callRecordFromLibrary(${idx})" class="px-2.5 py-1 bg-purple-50 text-purple-600 border border-purple-200 text-xs font-black rounded-xl transition-all">📂 Call</button></td></tr>`; });
+function autoArchiveToLibrary(analysis) {
+    const recordName = analysis.signalsId + "+" + analysis.eaSelected + "+" + analysis.lastRecordDate;
+    const existingIdx = window.csvHistoryLibrary.findIndex(r => r.signalsId === analysis.signalsId);
+    if (existingIdx > -1) { window.csvHistoryLibrary[existingIdx] = { recordName, ...analysis, tradesBackup: [...window.globalTrades] }; } 
+    else { window.csvHistoryLibrary.push({ recordName, ...analysis, tradesBackup: [...window.globalTrades] }); }
+    renderLibraryTableDOM();
 }
 
-function showToast(msg) {
-    const box = document.getElementById('toast-box'); const txt = document.getElementById('toast-msg');
-    if (txt) txt.innerText = msg;
-    if (box) { box.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => { box.classList.add('translate-y-20', 'opacity-0'); }, 3000); }
+function renderLibraryTableDOM() {
+    const body = document.getElementById('library-records-body'); if (!body) return; body.innerHTML = '';
+    if (window.csvHistoryLibrary.length === 0) return;
+    window.csvHistoryLibrary.forEach((r, idx) => {
+        body.innerHTML += `<tr class="hover:bg-slate-50/60 transition-all"><td class="p-2 font-bold text-slate-700 text-xs">${r.recordName}</td><td class="text-emerald-500 font-black font-mono">$${r.profit}</td><td class="font-mono text-slate-500">${r.totalTrades}</td><td class="text-indigo-500 font-black font-mono">${r.profitFactor}</td><td class="text-slate-400 text-[10px] font-mono">Just Now</td><td class="p-2 text-center"><button onclick="callRecordFromLibrary(${idx})" class="px-2 py-0.5 bg-purple-50 text-purple-600 border border-purple-200 text-xs font-black rounded-md">📂 Call</button></td></tr>`;
+    });
+}
+
+function jumpToTHABlock(sectionId, activeBtnId) {
+    const menuBtnIds = ['btn-tha-tab-summary', 'btn-tha-tab-charts', 'btn-tha-tab-martingale', 'btn-tha-tab-swot'];
+    menuBtnIds.forEach(id => { const btn = document.getElementById(id); if (btn) btn.className = "px-3 py-1.5 text-slate-500 font-black rounded-lg text-xs hover:bg-slate-100 transition-all"; });
+    const currentBtn = document.getElementById(activeBtnId); if (currentBtn) currentBtn.className = "px-3 py-1.5 text-xs font-black rounded-lg transition-all theme-btn-active shadow-sm";
+    const targetTarget = document.getElementById(sectionId); if (targetTarget) { targetTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 
 function resetAllCsvData() {
     window.globalTrades = []; window.globalAnalysis = null; document.getElementById('csvFileInput').value = ""; document.getElementById('file-v-echo').innerText = "";
-    document.getElementById('analyzer-main-panel').classList.add('hidden'); document.getElementById('analyzer-placeholder').classList.remove('hidden'); showToast("🧹 數據已重置。");
+    document.getElementById('analyzer-main-panel').classList.add('hidden'); document.getElementById('analyzer-placeholder').classList.remove('hidden');
 }
