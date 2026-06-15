@@ -24,8 +24,8 @@
             font-family: 'JetBrains Mono', monospace;
         }
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f5f9;
@@ -34,44 +34,43 @@
             background: #cbd5e1;
             border-radius: 3px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+
+        /* 👑 核心五行 Theme CSS 變數控制系統 */
+        :root {
+            --theme-color: #7c3aed;       /* 預設：木 (尊貴紫) */
+            --theme-bg-light: #f5f3ff;
+            --theme-glow: rgba(124, 58, 237, 0.15);
         }
-        .theme-btn-active {
-            background-color: #7c3aed !important;
+
+        /* 實時動態綁定類 */
+        .dynamic-theme-bg { background-color: var(--theme-color) !important; }
+        .dynamic-theme-text { color: var(--theme-color) !important; }
+        .dynamic-theme-border { border-color: var(--theme-color) !important; }
+        .dynamic-theme-btn-active {
+            background-color: var(--theme-color) !important;
             color: #ffffff !important;
         }
-        .theme-text {
-            color: #7c3aed;
+        .dynamic-theme-card-active {
+            border-color: var(--theme-color) !important;
+            box-shadow: 0 0 0 1px var(--theme-color) !important;
         }
-        .theme-border {
-            border-color: #e2e8f0;
-        }
+
+        /* 嚴格要求：卡片與按鈕 8px 小圓角規範 */
         .card-custom {
-            border-radius: 8px !important; /* 小圓角 */
+            border-radius: 8px !important;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.01);
             transition: all 0.2s ease;
         }
         .card-custom:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
-        .level-safe {
-            background-color: #f8fafc;
-        }
-        .level-risk {
-            background-color: #fff1f2;
-            border-left: 4px solid #f43f5e;
-        }
-        .win-100-neon {
-            background-color: #d1fae5;
-            color: #065f46;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 900;
-        }
-        /* User Profile Dropdown Menu Simulation */
+        .level-safe { background-color: #f8fafc; }
+        .level-risk { border-left: 3px solid #f43f5e; background-color: #fff1f2; }
+        .win-100-neon { background-color: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+        /* User Profile Dropdown 傳承結構 */
         .profile-dropdown {
             display: none;
             position: absolute;
@@ -81,95 +80,82 @@
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 8px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4);
             z-index: 100;
         }
-        .profile-trigger:hover .profile-dropdown, .profile-dropdown:hover {
-            display: block;
-        }
-        /* Marquee Announcement Animation */
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .ticker-text {
-            display: inline-block;
-            animation: marquee 25s linear infinite;
-        }
-        .ticker-text:hover {
-            animation-play-state: paused;
-        }
+        .profile-trigger:hover .profile-dropdown, .profile-dropdown:hover { display: block; }
+
+        /* 走馬燈無縫動畫 */
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .ticker-text { display: inline-block; animation: marquee 28s linear infinite; }
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- ==================== 👑 100% 鎖死原裝 HEADER (精準對齊 Mind Map 樹狀結構) ==================== -->
+    <!-- ==================== 👑 HEADER (全站大外殼 - 100% 鎖死) ==================== -->
     <header class="h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-50 shrink-0">
         <!-- Left: Logo + Trading Signals Studio -->
         <div class="flex items-center gap-3">
-            <div class="bg-purple-600 h-8 w-8 rounded-lg flex items-center justify-center font-black tracking-tighter text-sm text-white shadow-md">
+            <div class="dynamic-theme-bg h-8 w-8 rounded-lg flex items-center justify-center font-black text-sm text-white shadow-sm">
                 TSS
             </div>
-            <span class="font-black text-sm tracking-wider bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Trading Signals Studio</span>
+            <span class="font-bold text-sm tracking-wider text-slate-100">Trading Signals Studio</span>
         </div>
 
-        <!-- Center: Marquee (全站級快訊 / 市場快訊 / 系統公告 / 風險提示) -->
-        <div class="hidden md:flex flex-1 max-w-xl mx-8 bg-slate-950/80 h-7 rounded-md items-center overflow-hidden border border-slate-800 px-3 text-xs text-purple-400 font-medium">
-            <i class="fa-solid fa-bullhorn mr-2 shrink-0 text-amber-500 text-[10px]"></i>
+        <!-- Center: Marquee -->
+        <div class="hidden md:flex flex-1 max-w-xl mx-8 bg-slate-950 h-7 rounded-md items-center overflow-hidden border border-slate-800 px-3 text-xs text-slate-400">
+            <i class="fa-solid fa-bullhorn mr-2 shrink-0 text-slate-500 text-[10px]"></i>
             <div class="w-full overflow-hidden relative">
-                <span class="ticker-text whitespace-nowrap text-[11px]">
-                    🔥 全站級快訊：THA 大腦 V13.0 量子分流雷達上線，[All / Separate] 圖表側邊欄已全面鎖死「最遠歷史 ➔ 最近期」正序推進鐵律！
+                <span class="ticker-text whitespace-nowrap text-[11px] text-slate-300 font-medium">
+                    🔥 系統公告：THA 大腦 V13.5 已與全站「五行主題核心系統」完成交尾對接！預設【木】主題已就位，支持實時全矩陣變色驗收。
                 </span>
             </div>
         </div>
 
         <!-- Right: Quick Switch + User Profile Menu -->
         <div class="flex items-center gap-3">
-            <!-- Light / Dark Quick Switch -->
             <button class="text-slate-400 hover:text-white transition-colors text-xs p-1.5 rounded-lg hover:bg-slate-800">
                 <i class="fa-solid fa-moon"></i>
             </button>
 
-            <!-- User Profile Menu (內含 Mind Map 規定之所有下拉選單子項目) -->
+            <!-- User Profile Menu (下拉導航全齊) -->
             <div class="relative profile-trigger py-2">
                 <div class="flex items-center gap-2 cursor-pointer">
-                    <div class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-black text-white ring-2 ring-purple-600/30">
+                    <div class="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-200 ring-1 ring-slate-600">
                         GC
                     </div>
-                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                    <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
                 </div>
                 
-                <!-- Profile Dropdown (100% 對齊結構) -->
                 <div class="profile-dropdown p-2 mt-1 text-slate-300 text-xs">
-                    <div class="p-2 border-b border-slate-700/60 mb-1">
-                        <div class="font-black text-slate-200">Gary Cheung</div>
-                        <span class="text-[9px] text-purple-400 font-mono font-bold">Profile (User Data)</span>
+                    <div class="p-2 border-b border-slate-700 mb-1">
+                        <div class="font-bold text-slate-200 text-[13px]">Gary Cheung</div>
+                        <span class="text-[9px] text-slate-400 font-mono">Profile (User Data)</span>
                     </div>
-                    <!-- Admin Console Box -->
-                    <div class="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Admin Console</div>
-                    <a href="#" class="block px-3 py-1 rounded hover:bg-slate-800 text-[11px]"><i class="fa-solid fa-terminal mr-1.5 text-purple-400"></i>Log</a>
-                    <div class="px-3 py-1 text-[11px] font-bold text-slate-400 group relative">
-                        <i class="fa-solid fa-sliders mr-1.5 text-purple-400"></i>EA List Manager
-                        <div class="pl-4 space-y-0.5 mt-1 font-normal text-[10px] text-slate-400 border-l border-slate-700">
+                    <div class="px-2 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Admin Console</div>
+                    <a href="#" class="block px-3 py-1 rounded hover:bg-slate-800 text-[11px]"><i class="fa-solid fa-terminal mr-2 text-slate-400"></i>Log</a>
+                    <div class="px-3 py-1 text-[11px] font-bold text-slate-300">
+                        <i class="fa-solid fa-sliders mr-2 text-slate-400"></i>EA List Manager
+                        <div class="pl-3 space-y-0.5 mt-1 font-normal text-[10px] text-slate-400 border-l border-slate-700">
                             <div>• View All EA</div><div>• Add New EA</div><div>• Edit Existing EA</div><div>• Update Version</div><div>• Enable / Disable EA</div>
                         </div>
                     </div>
-                    <!-- Theme Box -->
-                    <div class="px-2 py-1 mt-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Theme (木 Default)</div>
-                    <div class="grid grid-cols-5 gap-0.5 px-2 text-center text-[10px] font-bold mb-1">
-                        <span class="text-yellow-500 bg-slate-800 rounded cursor-pointer">金</span>
-                        <span class="text-emerald-500 bg-purple-600 text-white rounded cursor-pointer">木</span>
-                        <span class="text-cyan-400 bg-slate-800 rounded cursor-pointer">水</span>
-                        <span class="text-rose-500 bg-slate-800 rounded cursor-pointer">火</span>
-                        <span class="text-amber-700 bg-slate-800 rounded cursor-pointer">土</span>
+                    
+                    <!-- 👑 核心補回：五行 Theme 切換核心（精準對齊雙態，並實時驅動全站大腦） -->
+                    <div class="px-2 py-0.5 mt-1 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Theme (五行面板)</div>
+                    <div class="grid grid-cols-5 gap-1 px-2 text-center text-[10px] font-bold mb-1.5">
+                        <span onclick="switchFiveElementsTheme('gold', '#eab308')" id="theme-btn-gold" class="py-0.5 rounded cursor-pointer hover:bg-slate-800 text-yellow-500">金</span>
+                        <span onclick="switchFiveElementsTheme('wood', '#7c3aed')" id="theme-btn-wood" class="py-0.5 rounded cursor-pointer bg-slate-800 border border-slate-700 text-purple-400 font-black">木</span>
+                        <span onclick="switchFiveElementsTheme('water', '#0ea5e9')" id="theme-btn-water" class="py-0.5 rounded cursor-pointer hover:bg-slate-800 text-cyan-400">水</span>
+                        <span onclick="switchFiveElementsTheme('fire', '#f43f5e')" id="theme-btn-fire" class="py-0.5 rounded cursor-pointer hover:bg-slate-800 text-rose-500">火</span>
+                        <span onclick="switchFiveElementsTheme('earth', '#b45309')" id="theme-btn-earth" class="py-0.5 rounded cursor-pointer hover:bg-slate-800 text-amber-600">土</span>
                     </div>
-                    <!-- Language Box -->
-                    <div class="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Language</div>
-                    <div class="flex gap-1 px-2 mb-2 text-[9px]">
-                        <span class="bg-purple-600 px-1 rounded text-white">繁</span><span class="bg-slate-800 px-1 rounded">簡</span><span class="bg-slate-800 px-1 rounded">EN</span><span class="bg-slate-800 px-1 rounded">JP</span>
+
+                    <div class="px-2 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Language</div>
+                    <div class="flex gap-2 px-2 mb-2 text-[10px] text-slate-400 font-bold">
+                        <span class="text-purple-400">繁</span><span>簡</span><span>EN</span><span>JP</span>
                     </div>
-                    <!-- Logout -->
-                    <a href="#" onclick="resetAllCsvData()" class="block p-2 text-rose-400 hover:bg-rose-500/10 rounded font-bold border-t border-slate-700/50 mt-1">
+                    <a href="#" onclick="resetAllCsvData()" class="block p-2 text-rose-400 hover:bg-rose-500/10 rounded font-bold border-t border-slate-700 mt-1">
                         <i class="fa-solid fa-right-from-bracket mr-1.5"></i>Logout
                     </a>
                 </div>
@@ -180,54 +166,50 @@
     <!-- 主體內容佈局 -->
     <div class="flex-1 flex overflow-hidden">
         
-        <!-- ==================== 👑 100% 鎖死原裝 SIDEBAR (精準對齊 Mind Map 樹狀目錄) ==================== -->
+        <!-- ==================== SIDEBAR (全站大導航 - 100% 鎖死) ==================== -->
         <aside class="w-60 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 text-slate-400 z-40">
-            <div class="p-3 space-y-3 overflow-y-auto">
-                <!-- 首頁控制台 -->
+            <div class="p-3 space-y-3 overflow-y-auto text-[11px]">
                 <div>
-                    <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">首頁控制台</div>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-bolt text-amber-400 w-3 text-center"></i>Cross Power</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-newspaper text-blue-400 w-3 text-center"></i>Market News</button>
+                    <div class="text-[9px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">首頁控制台</div>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-bolt text-slate-400 w-3 text-center"></i>Cross Power</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-newspaper text-slate-400 w-3 text-center"></i>Market News</button>
                 </div>
-                <!-- Live Signals -->
                 <div>
-                    <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">Live Signals</div>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-satellite-dish text-emerald-400 w-3 text-center"></i>My Signals (Live)</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-users text-cyan-400 w-3 text-center"></i>Signals Group</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-briefcase text-yellow-500 w-3 text-center"></i>Portfolio</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-chart-simple text-purple-400 w-3 text-center"></i>Performance</button>
+                    <div class="text-[9px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">Live Signals</div>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-satellite-dish text-slate-400 w-3 text-center"></i>My Signals (Live)</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-users text-slate-400 w-3 text-center"></i>Signals Group</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-briefcase text-slate-400 w-3 text-center"></i>Portfolio</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-chart-simple text-slate-400 w-3 text-center"></i>Performance</button>
                 </div>
-                <!-- Trading History -->
                 <div>
-                    <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">Trading History</div>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-black rounded-lg text-slate-200 bg-slate-800 border border-slate-700/60 text-left"><i class="fa-solid fa-calculator text-purple-500 w-3 text-center"></i>Trading History Analyzer (THA)</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-boxes-stacked text-indigo-400 w-3 text-center"></i>CSV History Library</button>
+                    <div class="text-[9px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">Trading History</div>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-bold rounded-lg text-slate-200 bg-slate-800 border border-slate-700/50 text-left"><i class="fa-solid fa-calculator text-purple-500 w-3 text-center"></i>Trading History Analyzer (THA)</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-boxes-stacked text-slate-400 w-3 text-center"></i>CSV History Library</button>
                 </div>
-                <!-- 工具與資訊 -->
                 <div>
-                    <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">工具與資訊</div>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-screwdriver-wrench text-slate-400 w-3 text-center"></i>FX Tools</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-tree text-emerald-500 w-3 text-center"></i>豐盛森林</button>
-                    <button class="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-scale-balanced text-amber-600 w-3 text-center"></i>EA Rules</button>
+                    <div class="text-[9px] font-bold tracking-widest text-slate-500 uppercase px-2 mb-1">工具與資訊</div>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-screwdriver-wrench text-slate-400 w-3 text-center"></i>FX Tools</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-tree text-slate-400 w-3 text-center"></i>豐盛森林</button>
+                    <button class="w-full flex items-center gap-2 px-2 py-1.5 font-medium rounded-lg hover:bg-slate-800/50 text-left"><i class="fa-solid fa-scale-balanced text-slate-400 w-3 text-center"></i>EA Rules</button>
                 </div>
             </div>
             <div class="p-3 bg-slate-950/40 border-t border-slate-800 text-[9px] font-mono text-slate-600">
-                TSS CORE ENGINE v13.0
+                TSS CORE ENGINE v13.5
             </div>
         </aside>
 
-        <!-- ==================== 🛠️ 右側 THA 主內頁工作看板 (不污染外殼) ==================== -->
+        <!-- 右側主內容內頁 (THA 子面板) -->
         <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-            <!-- 內頁麵包屑與模型選擇列 -->
+            <!-- 麵包屑與模型選擇列 -->
             <div class="h-11 bg-white border-b border-slate-200 px-4 flex items-center justify-between shrink-0 z-30">
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <span>Trading History</span><i class="fa-solid fa-angle-right text-[10px]"></i><span class="text-slate-800 font-black">Trading History Analyzer (THA)</span>
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                    <span>Trading History</span><i class="fa-solid fa-angle-right text-[9px]"></i><span class="text-slate-700 font-black">Trading History Analyzer (THA)</span>
                 </div>
                 
-                <!-- Step 3: 用緊咩 EA 選擇配置 -->
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-600">
-                    <span>🎯 Step 3: 選擇運行模型 EA</span>
-                    <select id="eaSelect" class="bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-black px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                <!-- Step 3: 選擇模型 EA -->
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                    <span>🎯 Step 3: 選擇模型 EA</span>
+                    <select id="eaSelect" class="bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-bold px-2 py-1 focus:outline-none focus:ring-1 focus:ring-slate-300">
                         <optgroup label="Standard Version 3.0">
                             <option value="SMA 3.0">SMA 3.0</option><option value="MKD 3.0">MKD 3.0</option><option value="S10 3.0">S10 3.0</option><option value="Flash 3.0">Flash 3.0</option><option value="Dragon Wave 2.0">Dragon Wave 2.0</option><option value="Dragon Wave 2.1">Dragon Wave 2.1</option><option value="Quant Poseidon 1.0">Quant Poseidon 1.0</option><option value="Quant Poseidon 2.0">Quant Poseidon 2.0</option>
                         </optgroup>
@@ -238,100 +220,97 @@
                 </div>
             </div>
 
-            <!-- THA 子頁面自然滾動面板 -->
+            <!-- 滾動工作區 -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
                 
-                <!-- Step 1 & Step 2: 上傳交互面板 -->
+                <!-- 上傳區 Panel -->
                 <section id="summarySection" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Step 1: Upload CSV -->
-                    <div class="card-custom p-4 bg-gradient-to-br from-white to-slate-50/50 flex flex-col justify-between">
+                    <div class="card-custom p-4 flex flex-col justify-between">
                         <div>
-                            <div class="text-xs font-black text-slate-800 mb-1">📥 Step 1: Upload CSV 歷史交易報告</div>
-                            <div class="border-2 border-dashed border-slate-200 hover:border-purple-400 bg-white p-3 rounded-lg text-center cursor-pointer relative">
+                            <div class="text-xs font-bold text-slate-700 mb-2">📥 Step 1: Upload CSV 歷史交易報告</div>
+                            <div class="border border-dashed border-slate-200 bg-slate-50/50 p-4 rounded-lg text-center cursor-pointer relative">
                                 <input type="file" id="csvFileInput" accept=".csv" onchange="document.getElementById('file-v-echo').innerText = this.files[0] ? this.files[0].name : '';" class="absolute inset-0 opacity-0 cursor-pointer">
-                                <i class="fa-solid fa-file-csv text-slate-300 text-lg block mb-0.5"></i>
-                                <span class="text-[11px] font-bold text-slate-600 block">點擊或拖放單一 CSV 檔案</span>
-                                <span id="file-v-echo" class="text-[10px] text-purple-600 font-mono block truncate mt-1"></span>
+                                <i class="fa-solid fa-file-csv text-slate-300 text-lg block mb-1"></i>
+                                <span class="text-[11px] font-bold text-slate-500 block">拖放單一 CSV 檔案</span>
+                                <span id="file-v-echo" class="text-[10px] dynamic-theme-text font-mono block truncate mt-1"></span>
                             </div>
                         </div>
                         <div class="flex gap-2 mt-3">
-                            <button onclick="triggerParsingProcess()" class="flex-1 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black rounded-lg shadow-sm transition-all"><i class="fa-solid fa-magnifying-glass-chart mr-1"></i> Step 4: 執行解算分析</button>
-                            <button onclick="resetAllCsvData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition-all"><i class="fa-solid fa-rotate-left"></i> Step 6: Reset</button>
+                            <button onclick="triggerParsingProcess()" class="dynamic-theme-bg flex-1 py-1.5 text-white text-xs font-bold rounded-lg transition-colors"><i class="fa-solid fa-chart-line mr-1"></i> Step 4: 執行分析</button>
+                            <button onclick="resetAllCsvData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition-colors"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
                         </div>
                     </div>
 
-                    <!-- Step 2: Upload EA Setting (Optional / 可一次多個 files) -->
-                    <div class="card-custom p-4 flex flex-col justify-between bg-white">
+                    <!-- Step 2: Upload EA Setting -->
+                    <div class="card-custom p-4 flex flex-col justify-between">
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <div class="text-xs font-black text-slate-800">⚙️ Step 2: Upload EA Setting 配置檔</div>
-                                <span class="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 rounded">Optional</span>
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="text-xs font-bold text-slate-700">⚙️ Step 2: Upload EA Setting 配置檔</div>
+                                <span class="text-[9px] text-slate-400 bg-slate-100 px-1 rounded">Optional</span>
                             </div>
-                            <div class="border-2 border-dashed border-slate-100 bg-slate-50/40 p-3 rounded-lg text-center cursor-pointer relative">
-                                <input type="file" id="setFilesInput" accept=".set" multiple class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('set-v-echo').innerText = `已排隊 ${this.files.length} 個配置檔案`;">
-                                <i class="fa-solid fa-sliders text-slate-300 text-lg block mb-0.5"></i>
-                                <span class="text-[11px] font-medium text-slate-400 block">支援上載多個 .set 參數檔案對齊審計</span>
-                                <span id="set-v-echo" class="text-[10px] text-emerald-600 font-mono block mt-1"></span>
+                            <div class="border border-dashed border-slate-200 bg-slate-50/50 p-4 rounded-lg text-center cursor-pointer relative">
+                                <input type="file" id="setFilesInput" accept=".set" multiple class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('set-v-echo').innerText = `已載入 ${this.files.length} 個配置檔`;">
+                                <i class="fa-solid fa-sliders text-slate-300 text-lg block mb-1"></i>
+                                <span class="text-[11px] font-medium text-slate-400 block">可一次上傳多個 .set 參數文件</span>
+                                <span id="set-v-echo" class="text-[10px] text-slate-500 font-mono block mt-1"></span>
                             </div>
                         </div>
-                        <button onclick="alert('📊 參數特徵鏈已與後台 Open Time 計算模型同步對稱焊接！')" class="w-full py-1.5 mt-3 border border-purple-200 hover:bg-purple-50 text-purple-600 text-xs font-black rounded-lg transition-all">📂 Step 5: Save to Library 快照歸檔</button>
+                        <button onclick="alert('📊 歸檔完成！已保存至 CSV History Library。')" class="w-full py-1.5 mt-3 border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-lg transition-colors">📂 Step 5: Save to Library</button>
                     </div>
                 </section>
 
-                <!-- THA 緩衝佔位符 -->
                 <div id="analyzer-placeholder" class="card-custom p-12 text-center bg-white">
-                    <h3 class="text-sm font-black text-slate-700">等待注入量化交易數據源</h3>
-                    <p class="text-xs text-slate-400 mt-1">請於上方 Step 1 上載歷史報告開閘，系統將一秒灌注交叉分析數據。</p>
+                    <h3 class="text-sm font-bold text-slate-600">等待注入量化交易數據源</h3>
                 </div>
 
-                <!-- THA Analysis Result Blocks (解算後解鎖) -->
+                <!-- 數據核心主面板 -->
                 <div id="analyzer-main-panel" class="hidden space-y-4">
                     
-                    <!-- Overview 數字快報 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="card-custom p-3 bg-gradient-to-r from-purple-900 to-slate-900 text-white flex flex-col justify-between h-[95px]">
-                            <span class="text-[9px] font-black text-purple-300 uppercase block">帳戶淨值增長率 (GROWTH)</span>
-                            <b id="growthValue" class="text-xl font-mono font-black block">--</b>
-                            <span id="growthPeriod" class="text-[9px] text-slate-400 block truncate">--</span>
+                    <!-- Overview 大數字快報區 -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                        <div class="card-custom p-3 bg-slate-900 text-white flex flex-col justify-between h-[85px]">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">帳戶淨值增長率 (GROWTH)</span>
+                            <b id="growthValue" class="text-lg font-mono font-black block">--</b>
+                            <span id="growthPeriod" class="text-[9px] text-slate-500 block truncate">--</span>
                         </div>
-                        <div class="card-custom p-3 flex flex-col justify-between h-[95px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase block">初始解算基金 (DEPOSIT)</span>
-                            <b class="text-lg font-mono font-black text-slate-800 block">$<span id="initialDepositValue">0.00</span></b>
+                        <div class="card-custom p-3 flex flex-col justify-between h-[85px]">
+                            <span class="text-[9px] font-bold text-slate-400 block">初始解算基金 (DEPOSIT)</span>
+                            <b class="text-base font-mono font-black text-slate-800 block">$<span id="initialDepositValue">0.00</span></b>
                         </div>
-                        <div class="card-custom p-3 flex flex-col justify-between h-[95px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase block">帳戶當前淨結餘 (EQUITY)</span>
-                            <b class="text-lg font-mono font-black text-slate-800 block">$<span id="equityValue">0.00</span></b>
-                            <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden"><div id="equityBar" class="bg-purple-600 h-full" style="width: 0%"></div></div>
+                        <div class="card-custom p-3 flex flex-col justify-between h-[85px]">
+                            <span class="text-[9px] font-bold text-slate-400 block">帳戶當前淨結餘 (EQUITY)</span>
+                            <b class="text-base font-mono font-black text-slate-800 block">$<span id="equityValue">0.00</span></b>
+                            <!-- 👑 變色進度條 -->
+                            <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden"><div id="equityBar" class="dynamic-theme-bg h-full" style="width: 0%"></div></div>
                         </div>
-                        <div class="card-custom p-3 bg-white flex flex-col justify-between h-[95px]">
-                            <span class="text-[9px] font-black text-slate-400 uppercase block">回測總淨獲利 (PROFIT)</span>
-                            <b class="text-lg font-mono font-black text-emerald-500 block">$<span id="profitValue">0.00</span></b>
+                        <div class="card-custom p-3 bg-white flex flex-col justify-between h-[85px]">
+                            <span class="text-[9px] font-bold text-slate-400 block">回測總淨獲利 (PROFIT)</span>
+                            <b class="text-base font-mono font-black text-emerald-500 block">$<span id="profitValue">0.00</span></b>
                             <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden"><div id="profitBar" class="bg-emerald-500 h-full" style="width: 0%"></div></div>
                         </div>
                     </div>
 
-                    <!-- Trade Stats ✕ 核心多維交叉矩陣 -->
+                    <!-- Trade Stats 區 -->
                     <section id="accountSection">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <!-- Trade Stats 文字總帳大底 -->
                             <div id="minimumArea" class="card-custom p-3 bg-white md:col-span-1 space-y-2"></div>
-                            <!-- 三大核心圖表畫布 -->
                             <div id="core-charts-wrapper" class="md:col-span-3"></div>
                         </div>
                         
-                        <!-- 👑 圖表 SIDEBAR ✕ 右側 4 矩陣左右並排核心量子雷達面板 -->
+                        <!-- 圖表 SIDEBAR ✕ 右側 4 矩陣雷達面板 -->
                         <div id="advanced-quantum-radar-container" class="mt-4"></div>
                     </section>
 
                     <!-- Martingale 判定面板 -->
                     <section id="martinSection">
                         <div class="card-custom p-4 bg-white">
-                            <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-2">⚡ Martingale 分層加倉軌跡判定面板</h2>
+                            <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">⚡ Martingale 分層加倉軌跡判定面板</h2>
                             <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
+                                <table class="w-full text-left border-collapse text-xs">
                                     <thead>
-                                        <tr class="bg-slate-900 text-white text-[10px] font-black">
-                                            <th class="p-3 text-center">分層階梯</th><th class="p-3 text-center">方向</th><th class="p-3">每層頭寸手數異動與開倉時間戳 (LOTS TRACKS)</th><th class="p-3 text-center">層內累計單數</th><th class="p-3">層內利潤結算總淨值</th><th class="p-3 text-center">分層平均勝率</th>
+                                        <tr class="bg-slate-900 text-white text-[10px] font-bold">
+                                            <th class="p-2.5 text-center">分層階梯</th><th class="p-2.5 text-center">方向</th><th class="p-2.5">每層頭寸手數異動與開倉時間戳 (LOTS TRACKS)</th><th class="p-2.5 text-center">層內累計單數</th><th class="p-2.5">層內利潤結算總淨值</th><th class="p-2.5 text-center">分層平均勝率</th>
                                         </tr>
                                     </thead>
                                     <tbody id="martingale-table-body" class="divide-y divide-slate-200"></tbody>
@@ -340,10 +319,10 @@
                         </div>
                     </section>
 
-                    <!-- SWOT 戰略九宮格 -->
+                    <!-- SWOT 戰略推演 -->
                     <section id="swotSection">
                         <div class="card-custom p-4 bg-white">
-                            <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-3">🎯 Custom SWOT 量化交易九宮格推演</h2>
+                            <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">🎯 Custom SWOT 量化交易九宮格推演</h2>
                             <div id="swot-grid-container" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 text-[11px] leading-relaxed"></div>
                         </div>
                     </section>
@@ -352,10 +331,35 @@
         </main>
     </div>
 
-    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl shadow-lg flex items-center gap-2">
-            <span id="toast-msg"></span>
-        </div>
-    </div>
+    <!-- 👑 核心補回：五行 Theme 動態驅動引擎腳本 -->
+    <script>
+        function switchFiveElementsTheme(themeKey, hexColor) {
+            // 1. 驅動全站 CSS 變數實時變色
+            document.documentElement.style.setProperty('--theme-color', hexColor);
+            
+            // 2. 清理與重繪五行面板的按鈕 Active 狀態
+            const themes = ['gold', 'wood', 'water', 'fire', 'earth'];
+            themes.forEach(t => {
+                const btn = document.getElementById(`theme-btn-${t}`);
+                if (btn) {
+                    btn.className = "py-0.5 rounded cursor-pointer hover:bg-slate-800 transition-all";
+                }
+            });
+            
+            // 高亮當前被選中的五行屬性
+            const activeBtn = document.getElementById(`theme-btn-${themeKey}`);
+            if (activeBtn) {
+                activeBtn.className = "py-0.5 rounded cursor-pointer bg-slate-800 border border-slate-700 font-black";
+            }
+            
+            // 3. 如果當前有數據，同步重繪 Chart.js 折線，使其與五行主題色彩對齊！
+            if (window.globalAnalysis && typeof rebuildThreeCoreCharts === 'function') {
+                rebuildThreeCoreCharts();
+                if (typeof injectAdvancedSymbolQuantumRadarDOM === 'function') {
+                    injectAdvancedSymbolQuantumRadarDOM();
+                }
+            }
+        }
+    </script>
 </body>
 </html>
