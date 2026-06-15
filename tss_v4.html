@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSS Portal - THA 歷史量化分析系統 V4</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
@@ -48,7 +44,7 @@
             border-color: #e2e8f0;
         }
         .card-custom {
-            border-radius: 8px !important; /* 小rounded圓角 */
+            border-radius: 8px !important; /* 精準要求：小圓角 */
             background: #ffffff;
             border: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
@@ -71,7 +67,8 @@
             border-radius: 4px;
             font-weight: 900;
         }
-        /* 走馬燈動畫效果 */
+        
+        /* 走馬燈動畫 (Marquee Ticker) */
         @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
@@ -87,9 +84,7 @@
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- 頂部 HEADER (🌟 原裝全齊件版) -->
     <header class="h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-50 shrink-0">
-        <!-- 左側 LOGO -->
         <div class="flex items-center gap-3">
             <div class="bg-purple-600 h-8 w-8 rounded-lg flex items-center justify-center font-black tracking-tighter text-sm text-white shadow-md">
                 TSS
@@ -97,7 +92,6 @@
             <span class="font-black text-sm tracking-wider bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">THA QUANTITY PORTAL</span>
         </div>
 
-        <!-- 👑 補回：走馬燈最 UPDATE NEWS -->
         <div class="hidden md:flex flex-1 max-w-xl mx-8 bg-slate-950/80 h-7 rounded-md items-center overflow-hidden border border-slate-800 px-3 text-xs text-purple-400 font-medium">
             <i class="fa-solid fa-bullhorn mr-2 shrink-0 text-amber-500 text-[10px]"></i>
             <div class="w-full overflow-hidden relative">
@@ -107,21 +101,23 @@
             </div>
         </div>
 
-        <!-- 右側工具鏈 -->
         <div class="flex items-center gap-4">
-            <!-- 👑 補回：屬性五行面板切換鏈接 -->
-            <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
-                <span class="px-1.5 py-0.5 rounded text-yellow-500 bg-slate-900 border border-slate-800 cursor-pointer">金</span>
-                <span class="px-1.5 py-0.5 rounded text-emerald-500 opacity-60 hover:opacity-100 cursor-pointer">木</span>
-                <span class="px-1.5 py-0.5 rounded text-cyan-400 opacity-60 hover:opacity-100 cursor-pointer">水</span>
-                <span class="px-1.5 py-0.5 rounded text-rose-500 opacity-60 hover:opacity-100 cursor-pointer">火</span>
-                <span class="px-1.5 py-0.5 rounded text-amber-700 opacity-60 hover:opacity-100 cursor-pointer">土</span>
+            <div class="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-2">
+                <span>THEME</span>
+                <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px] font-bold">
+                    <span class="px-2 py-0.5 rounded text-yellow-500 bg-slate-900 border border-slate-800 cursor-pointer">金</span>
+                    <span class="px-2 py-0.5 rounded text-emerald-500 opacity-60 hover:opacity-100 cursor-pointer">木</span>
+                    <span class="px-2 py-0.5 rounded text-cyan-400 opacity-60 hover:opacity-100 cursor-pointer">水</span>
+                    <span class="px-2 py-0.5 rounded text-rose-500 opacity-60 hover:opacity-100 cursor-pointer">火</span>
+                    <span class="px-2 py-0.5 rounded text-amber-700 opacity-60 hover:opacity-100 cursor-pointer">土</span>
+                </div>
             </div>
             
             <button class="text-slate-400 hover:text-white transition-colors text-xs">
-                <i class="fa-solid fa-moon"></i>
+                <i class="fa-solid fa-sun opacity-70"></i>
+                <span class="text-[10px] font-bold ml-1">LIGHT</span>
             </button>
-            
+
             <div class="flex items-center gap-2 border-l border-slate-800 pl-4">
                 <div class="h-7 w-7 rounded-full bg-purple-500 flex items-center justify-center text-xs font-black text-white cursor-pointer ring-2 ring-purple-600/30">
                     GC
@@ -134,10 +130,8 @@
         </div>
     </header>
 
-    <!-- 主體內容容器 -->
     <div class="flex-1 flex overflow-hidden">
         
-        <!-- 左側 SIDEBAR (🌟 原裝全齊件版) -->
         <aside class="w-60 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 text-slate-400 z-40">
             <div class="p-3 space-y-1">
                 <div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase px-3 mb-2">主控分析模組</div>
@@ -159,26 +153,24 @@
                 </button>
             </div>
 
-            <!-- 👑 補回：下部語言切換、版本及 LOGOUT 登出按鈕 -->
-            <div class="p-4 bg-slate-950/40 border-t border-slate-800 text-[10px] text-slate-500 space-y-1.5">
+            <div class="p-4 bg-slate-950/40 border-t border-slate-800 text-[10px] text-slate-500 space-y-2">
                 <div class="flex justify-between items-center">
-                    <span>語言 / Language:</span>
-                    <select class="bg-slate-900 border border-slate-800 text-slate-300 text-[9px] rounded font-bold px-1 py-0.5 focus:outline-none">
-                        <option>繁體中文</option>
-                        <option>English</option>
-                    </select>
+                    <span>Language / 語言:</span>
+                    <div class="flex gap-1 font-black text-[9px]">
+                        <span class="text-purple-400 bg-slate-900 px-1 py-0.5 rounded border border-slate-800 cursor-pointer">繁</span>
+                        <span class="opacity-50 hover:opacity-100 px-1 py-0.5 cursor-pointer">EN</span>
+                    </div>
                 </div>
                 <div>核心引擎版本: <b class="font-mono text-purple-500">V12.5 Stable</b></div>
-                <div onclick="resetAllCsvData()" class="pt-1.5 flex justify-between items-center text-rose-500 font-bold cursor-pointer hover:text-rose-400 transition-colors">
+                
+                <div onclick="resetAllCsvData()" class="pt-2 flex justify-between items-center text-rose-500 font-bold border-t border-slate-800/60 cursor-pointer hover:text-rose-400 transition-colors">
                     <span><i class="fa-solid fa-right-from-bracket mr-1"></i> 登出系統</span>
                     <span class="text-[8px] bg-rose-500/10 px-1 rounded">LOGOUT</span>
                 </div>
             </div>
         </aside>
 
-        <!-- 右側主要工作看板 -->
         <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-            <!-- 錨點快捷選單列 -->
             <div class="h-11 bg-white border-b border-slate-200 px-4 flex items-center justify-between shrink-0 z-30">
                 <div class="flex gap-1.5">
                     <button onclick="jumpToTHABlock('summarySection', 'btn-tha-tab-summary')" id="btn-tha-tab-summary" class="px-3 py-1.5 text-xs font-black rounded-lg transition-all theme-btn-active shadow-sm">
@@ -204,10 +196,8 @@
                 </div>
             </div>
 
-            <!-- 縱向自然滾動面板 -->
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
                 
-                <!-- 區塊一：數據源上傳卡 -->
                 <section id="summarySection" class="scroll-mt-4">
                     <div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
                         <div class="card-custom p-4 xl:col-span-1 bg-gradient-to-br from-white to-slate-50 flex flex-col justify-between">
@@ -233,7 +223,6 @@
                             </div>
                         </div>
 
-                        <!-- 快照備份庫 -->
                         <div class="card-custom p-4 xl:col-span-3">
                             <div class="flex justify-between items-center mb-3">
                                 <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider">📁 歷史檔案快照備份庫</h2>
@@ -250,21 +239,17 @@
                                             <th class="p-2 text-center">操作</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="library-records-body" class="divide-y divide-slate-100">
-                                        <!-- 自動追加 -->
-                                    </tbody>
+                                    <tbody id="library-records-body" class="divide-y divide-slate-100"></tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 未裝載數據提示 -->
                 <div id="analyzer-placeholder" class="card-custom p-12 text-center bg-white">
                     <h3 class="text-sm font-black text-slate-800">等待注入量化交易數據源</h3>
                 </div>
 
-                <!-- 數據 analysis 主區塊 -->
                 <div id="analyzer-main-panel" class="hidden space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="card-custom p-3 bg-gradient-to-r from-purple-900 to-slate-900 text-white flex flex-col justify-between h-[100px]">
@@ -288,7 +273,6 @@
                         </div>
                     </div>
 
-                    <!-- 區塊二：帳戶多維圖表矩陣 -->
                     <section id="accountSection" class="scroll-mt-4">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div id="minimumArea" class="card-custom p-3 bg-white md:col-span-1 space-y-2"></div>
@@ -297,7 +281,6 @@
                         <div id="advanced-quantum-radar-container" class="mt-4"></div>
                     </section>
 
-                    <!-- 區塊三：馬丁格爾分層穿透表 -->
                     <section id="martinSection" class="scroll-mt-4">
                         <div class="card-custom p-4 bg-white">
                             <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-3">⚡ 馬丁格爾分層加倉軌跡判定面板</h2>
@@ -319,7 +302,6 @@
                         </div>
                     </section>
 
-                    <!-- 區塊四：Custom SWOT 戰略九宮格 -->
                     <section id="swotSection" class="scroll-mt-4">
                         <div class="card-custom p-4 bg-white">
                             <h2 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-3">🎯 Custom TOWS / SWOT 量化交易九宮格推演</h2>
