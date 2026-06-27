@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Signals Studio – TSS Portal V5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    //cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        /* ── Theme 系統 ── */
+        :root { --theme-color: #7c3aed; }
+        .dynamic-theme-bg { background-color: var(--theme-color) !important; }
+        .dynamic-theme-text { color: var(--theme-color) !important; }
+        .dynamic-theme-border { border-color: var(--theme-color) !important; }
+
+        /* ── THA Design Tokens ── */
+        :root {
+            --tha-bg:        #0f172a;
+            --tha-card:      #1e293b;
+            --tha-border:    #334155;
+            --tha-text:      #f1f5f9;
+            --tha-muted:     #94a3b8;
+            --tha-accent:    #38bdf8;
+            --tha-blue:      #3b82f6;
+            --tha-green:     #22c55e;
+            --tha-red:       #ef4444;
+            --tha-gray:      #64748b;
+        }
+
+        /* ── Profile Dropdown ── */
+        .profile-dropdown {
+            display: none; position: absolute; top: 100%; right: 0;
+            width: 240px; background: #1e293b; border: 1px solid #334155;
+            border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); z-index: 200;
+        }
+        .profile-trigger:hover .profile-dropdown { display: block; }
+
+        /* ── Ticker ── */
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .ticker-text { display: inline-block; animation: marquee 35s linear infinite; }
+
+        /* ── Sidebar nav ── */
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; border-radius: 8px; color: #94a3b8;
+            cursor: pointer; transition: all .2s; font-size: 13px;
+            text-decoration: none; user-select: none;
+        }
+        .nav-item:hover { background: #1e293b; color: #f1f5f9; }
+        .nav-item.active { background: rgba(124,58,237,.18); color: #a78bfa; }
+        .nav-item.active i { color: #a78bfa; }
+        .nav-sub { padding-left: 36px; font-size: 12px; }
+
+        /* ── Analysis Mode Buttons ── */
+        .mode-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 14px; border-radius: 7px;
+            background: transparent; color: #94a3b8;
+            cursor: pointer; width: 100%; text-align: left;
+            font-size: 12px; border: none; transition: all .2s;
+        }
+        .mode-btn:hover { background: #334155; color: #f1f5f9; }
+        .mode-btn.active { background: #1d4ed8; color: #ffffff; }
+        .mode-btn.active i { color: #93c5fd; }
+
+        /* ── Summary Cards ── */
+        .s-card {
+            background: #1e293b; border-radius: 8px;
+            padding: 14px 16px; border: 1px solid #334155;
+        }
+        .s-card-title { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; }
+        .s-card-value { font-size: 22px; font-weight: 700; color: #f1f5f9; margin-top: 2px; }
+        .s-card-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+        /* ── THA Inputs ── */
+        .tha-input, .tha-select {
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 6px; padding: 7px 10px;
+            font-size: 12px; color: #f1f5f9; width: 100%;
+        }
+        .tha-input:focus, .tha-select:focus { outline: none; border-color: #38bdf8; }
+        .tha-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            background: #1d4ed8; color: #fff; border: none;
+            border-radius: 6px; padding: 8px 14px;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: .2s;
+        }
+        .btn-primary:hover { background: #1e40af; }
+        .btn-secondary {
+            background: transparent; color: #94a3b8;
+            border: 1px solid #334155; border-radius: 6px;
+            padding: 7px 12px; font-size: 12px; cursor: pointer; transition: .2s;
+        }
+        .btn-secondary:hover { background: #1e293b; color: #f1f5f9; }
+        .btn-danger {
+            background: transparent; color: #ef4444;
+            border: 1px solid #ef4444; border-radius: 6px;
+            padding: 7px 12px; font-size: 12px; cursor: pointer; transition: .2s;
+        }
+        .btn-danger:hover { background: #ef44441a; }
+
+        /* ── Preset chips ── */
+        .preset-chip {
+            padding: 3px 10px; border-radius: 20px; font-size: 11px;
+            border: 1px solid #334155; background: #0f172a;
+            color: #94a3b8; cursor: pointer; transition: .2s; white-space: nowrap;
+        }
+        .preset-chip:hover, .preset-chip.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+
+        /* ── Analysis Panel ── */
+        .a-panel {
+            background: #1e293b; border-radius: 8px;
+            border: 1px solid #334155; padding: 16px;
+        }
+        .a-panel-title { font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 12px; }
+
+        /* ── Profit Table Color Rules ── */
+        .mom-up       { color: #3b82f6; font-weight: 600; }
+        .mom-up::before { content: '↑ '; }
+        .mom-down     { color: #22c55e; }
+        .mom-down::before { content: '↓ '; }
+        .mom-neg      { color: #ef4444; font-weight: 600; }
+        .mom-neg::before { content: '▼ '; }
+
+        /* ── DD Conditional（只限 Profit Table）── */
+        .dd-safe     { color: #22c55e; }
+        .dd-mod      { color: #64748b; }
+        .dd-high     { color: #ef4444; font-weight: 600; }
+        .dd-crit     { color: #ef4444; font-weight: 700; animation: dd-flash 1.2s ease-in-out infinite; }
+        @keyframes dd-flash { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+        /* ── Table ── */
+        .tha-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tha-table th {
+            background: #0f172a; color: #64748b; font-weight: 600;
+            padding: 8px 10px; text-align: left; border-bottom: 1px solid #334155;
+            font-size: 11px; text-transform: uppercase; letter-spacing: .3px;
+            white-space: nowrap;
+        }
+        .tha-table td {
+            padding: 8px 10px; border-bottom: 1px solid #1e293b;
+            color: #cbd5e1; vertical-align: middle; white-space: nowrap;
+        }
+        .tha-table tr:hover td { background: rgba(255,255,255,.03); }
+        .tha-table .yr-row td { background: #0f172a; color: #f1f5f9; font-weight: 700; font-size: 12px; }
+
+        /* ── Year Summary Grid ── */
+        .yr-summary-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .yr-summary-table th {
+            background: #0f172a; color: #475569; font-weight: 600;
+            padding: 6px 8px; text-align: center; border-bottom: 1px solid #334155;
+            font-size: 10px; text-transform: uppercase; white-space: nowrap;
+        }
+        .yr-summary-table td {
+            padding: 6px 8px; border-bottom: 1px solid #1e293b;
+            color: #94a3b8; text-align: center; white-space: nowrap;
+        }
+        .yr-summary-table tr:hover td { background: rgba(255,255,255,.03); }
+        .yr-label { color: #f1f5f9; font-weight: 700; text-align: left !important; }
+
+        /* ── SWOT ── */
+        .swot-q {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 8px; padding: 14px;
+        }
+        .swot-q-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .swot-s { color: #22c55e; } .swot-w { color: #ef4444; }
+        .swot-o { color: #38bdf8; } .swot-t { color: #f59e0b; }
+
+        /* ── Page sections ── */
+        .page-section { display: none; }
+        .page-section.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+        /* ── Inner THA tabs ── */
+        .tha-mode-panel { display: none; }
+        .tha-mode-panel.active { display: block; }
+
+        /* ── Chart container ── */
+        .chart-wrap { position: relative; }
+
+        /* ── Cards for main dashboard ── */
+        .card-custom { border-radius: 8px; background: #1e293b; border: 1px solid #334155; }
+        .level-safe { background-color: rgba(34,197,94,.08); }
+        .level-risk { border-left: 3px solid #f43f5e; background-color: rgba(244,63,94,.08); }
+        .win-100-neon { background-color: #d1fae5; color: #065f46; padding: 2px 5px; border-radius: 4px; font-weight: 700; }
+
+        /* ── Upload Zone ── */
+        .upload-zone {
+            border: 2px dashed #334155; border-radius: 8px;
+            background: #0f172a; cursor: pointer; transition: .2s;
+            text-align: center; padding: 20px;
+        }
+        .upload-zone:hover { border-color: #38bdf8; background: rgba(56,189,248,.05); }
+        .upload-zone.dragging { border-color: #38bdf8; background: rgba(56,189,248,.08); }
+
+        /* ── Step Badge ── */
+        .step-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #1d4ed8; color: #fff;
+            font-size: 10px; font-weight: 700; shrink: 0;
+        }
+    </style>
+</head>
+
+<body class="text-slate-200 antialiased h-screen flex flex-col overflow-hidden">
+
+<!-- ════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<header class="h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800 z-50 shrink-0">
+    <!-- Left: Logo + Ticker -->
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="dynamic-theme-bg h-8 w-8 rounded-lg flex items-center justify-center font-black text-sm text-white shadow-sm shrink-0">TSS</div>
+        <span class="font-bold text-sm tracking-wider text-slate-100 shrink-0">Trading Signals Studio</span>
+        <div class="hidden md:flex flex-1 max-w-xl bg-slate-950 h-7 rounded-md items-center overflow-hidden border border-slate-800 px-3">
+            <i class="fa-solid fa-bullhorn text-purple-400 text-[10px] mr-2 shrink-0"></i>
+            <div class="w-full overflow-hidden relative">
+                <span class="ticker-text whitespace-nowrap text-
